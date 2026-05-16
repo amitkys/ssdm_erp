@@ -5,6 +5,8 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "generate": "prisma generate",
+    "dbpush": "prisma db push",
     "start": "next start",
     "lint": "biome check",
     "format": "biome format --write"
