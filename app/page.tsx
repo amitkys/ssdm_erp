@@ -1,11 +1,13 @@
-import { prisma } from "@/lib/db";
+
+import { db } from "@/lib/db";
+
 
 export default async function Page() {
-  const departments = await prisma.department.findFirst();
+  const users = await db.query.usersTable.findMany({});
 
   return (
     <div>
-      {departments?.name}
+      {users.map((user) => user.name)}
     </div>
   )
 
