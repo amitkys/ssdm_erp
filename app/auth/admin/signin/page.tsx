@@ -1,7 +1,7 @@
 import { InfoIcon } from "lucide-react";
 import Link from "next/link";
 
-import { AuthSubmitButton } from "@/app/auth/_components/auth-submit-button";
+import { AuthSubmitButton } from "@/app/auth/admin/_components/auth-submit-button";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
@@ -20,22 +20,11 @@ export default function Page() {
       <section className="flex w-full max-w-md flex-col gap-4">
         <Card>
           <CardHeader>
-            <CardTitle>Create account</CardTitle>
+            <CardTitle>Sign in</CardTitle>
           </CardHeader>
-          <CardContent className="flex flex-col">
+          <CardContent className="flex flex-col gap-6">
             <form className="flex flex-col gap-6">
               <FieldGroup>
-                <Field>
-                  <FieldLabel htmlFor="name">Name</FieldLabel>
-                  <Input
-                    id="name"
-                    name="name"
-                    type="text"
-                    placeholder="Your full name"
-                    autoComplete="name"
-                    required
-                  />
-                </Field>
                 <Field>
                   <FieldLabel htmlFor="email">Email</FieldLabel>
                   <Input
@@ -53,37 +42,24 @@ export default function Page() {
                     id="password"
                     name="password"
                     type="password"
-                    placeholder="At least 8 characters"
-                    autoComplete="new-password"
-                    required
-                  />
-                </Field>
-                <Field>
-                  <FieldLabel htmlFor="confirmPassword">
-                    Confirm password
-                  </FieldLabel>
-                  <Input
-                    id="confirmPassword"
-                    name="confirmPassword"
-                    type="password"
-                    placeholder="Repeat your password"
-                    autoComplete="new-password"
+                    placeholder="Enter your password"
+                    autoComplete="current-password"
                     required
                   />
                 </Field>
               </FieldGroup>
 
-              <AuthSubmitButton mode="signup" />
+              <AuthSubmitButton mode="signin" />
             </form>
           </CardContent>
         </Card>
 
-        <p className="text-center text-sm text-muted-foreground">
-          Already have an account?{" "}
+        {/* <p className="text-center text-sm text-muted-foreground">
+          New to SSDM ERP?{" "}
           <Button asChild variant="link" className="h-auto px-0">
-            <Link href="/auth/signin">Sign in</Link>
+            <Link href="/auth/signup">Create an account</Link>
           </Button>
-        </p>
+        </p> */}
       </section>
     </main>
   );

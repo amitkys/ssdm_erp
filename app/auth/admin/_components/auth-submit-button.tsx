@@ -2,8 +2,8 @@
 
 import { LogInIcon, UserPlusIcon } from "lucide-react";
 import { type MouseEvent, useState } from "react";
-import { signinSchema } from "@/app/auth/signin/lib/zod-type/signin-type";
-import { signupSchema } from "@/app/auth/signup/lib/zod-type/signup-type";
+import { signinSchema } from "@/app/auth/admin/signin/lib/zod-type/signin-type";
+import { signupSchema } from "@/app/auth/admin/signup/lib/zod-type/signup-type";
 import { Button } from "@/components/ui/button";
 import { signIn, signUp } from "@/lib/auth-client";
 
