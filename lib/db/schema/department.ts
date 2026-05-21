@@ -31,6 +31,7 @@ export const subjectTable = pgTable('subject', {
     name: varchar({ length: 100 }).notNull(), 
     description: varchar({ length: 255 }).notNull(),
     type: varchar({ length: 30 }).notNull().default('MJC'), 
+    isActive: boolean().default(true),
     hasPractical: boolean().notNull().default(false),
     practicalFee: integer().notNull().default(0),
     // courseId: integer().references(() => courseTable.id, { onDelete: 'cascade' }).notNull(),
@@ -119,9 +120,3 @@ export const feeTable = pgTable('fee', {
     updatedAt: timestamp().defaultNow().notNull(),
 });
 
-
-
-// Something happed here 
-// update 2 here
-// update 3 here
-// Update 4 here / after reject change something to merge
