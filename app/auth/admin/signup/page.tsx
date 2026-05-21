@@ -1,16 +1,8 @@
-import { InfoIcon } from "lucide-react";
 import Link from "next/link";
 
 import { AuthSubmitButton } from "@/app/auth/admin/_components/auth-submit-button";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 
@@ -71,6 +63,7 @@ export default function Page() {
                     required
                   />
                 </Field>
+                <Input type="hidden" name="role" value="admin" />
               </FieldGroup>
 
               <AuthSubmitButton mode="signup" />

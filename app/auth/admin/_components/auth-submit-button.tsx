@@ -77,6 +77,7 @@ export function AuthSubmitButton({ mode }: AuthSubmitButtonProps) {
         email: getFormValue(formData, "email"),
         password: getFormValue(formData, "password"),
         confirmPassword: getFormValue(formData, "confirmPassword"),
+        role: "admin",
       });
 
       if (!result.success) {
@@ -89,6 +90,7 @@ export function AuthSubmitButton({ mode }: AuthSubmitButtonProps) {
           name: result.data.name,
           email: result.data.email,
           password: result.data.password,
+          role: result.data.role,
           callbackURL: "/",
         },
         {
