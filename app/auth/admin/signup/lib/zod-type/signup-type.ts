@@ -10,7 +10,6 @@ export const signupSchema = z
       .min(1, { message: "Password is required" })
       .min(8, { message: "Password must be at least 8 characters" }),
     confirmPassword: z.string().min(1, { message: "Confirm your password" }),
-    role: z.enum(userRoleValues, { message: "Select a valid role" }),
   })
   .superRefine((data, ctx) => {
     if (data.password !== data.confirmPassword) {
