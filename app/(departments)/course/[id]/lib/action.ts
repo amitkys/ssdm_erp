@@ -2,7 +2,7 @@
 
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { courseTable } from "@/lib/db/schema";
+import { courseSessionTable, courseTable } from "@/lib/db/schema";
 import { and, eq } from "drizzle-orm";
 import { headers } from "next/headers";
 
@@ -18,13 +18,21 @@ export async function fetchCourseById(courseId: string) {
             return {success: false, message: "You are not authorized to access this page"}
         }
 
-        const course = await db.query.courseTable.findFirst({
-            where: and(eq(courseTable.id, courseId), eq(courseTable.isActive, true))
+        const courseWithCourseSession = await db.query.courseTable.findFirst({
+            where: and(eq(courseTable.id, courseId), eq(courseTable.isActive, true)),
+            with: {
+                courseSessions: {
+                    where: eq(courseSessionTable.courseId, courseId),
+                    with: {
+                        session: true
+                    }
+                }
+            }
         });
-        if (!course) return { success: false, message: "Course not found" }
+        if (!courseWithCourseSession) return { success: false, message: "Course not found" }
         return {
             success: true,
-            data: course,
+            data: courseWithCourseSession,
         }
 
     } catch (error) {

@@ -2,7 +2,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { getCourses } from "../query/get-department";
 import { CourseCard } from "./course-card";
-import { Button } from "@/components/ui/button";
 import { AddCourse } from "./add-course";
 
 

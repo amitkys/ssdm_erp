@@ -1,9 +1,16 @@
+import { dehydrate, HydrationBoundary, QueryClient } from "@tanstack/react-query";
+import { getCourseWithSession } from "./query/get-course";
+import { ListCourseSessions } from "./_components/list-course-sessions";
 
-export default function CourseByIdPage(){
+export default async function CourseByIdPage({params}: {params: Promise<{id: string}>}){
+    const {id} = await params
+
+    const queryClient = new QueryClient();
+    await queryClient.prefetchQuery(getCourseWithSession({id}))
 
     return (
-        <>
-        <h1>Course By Id Page</h1>
-        </>
+        <HydrationBoundary state={dehydrate(queryClient)}>
+            <ListCourseSessions id={id}/>
+        </HydrationBoundary>
     )
 }
