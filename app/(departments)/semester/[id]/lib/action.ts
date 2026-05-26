@@ -6,7 +6,7 @@ import { semesterSubjectTable, semesterTable, subjectTable } from "@/lib/db/sche
 import { eq, inArray } from "drizzle-orm";
 import { headers } from "next/headers";
 
-export async function fetchSemesterById(semesterId: string){
+export async function fetchSemesterWithSubjects(semesterId: string){
     try {
 
         const session = await auth.api.getSession({headers: await headers()})
