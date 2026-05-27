@@ -7,28 +7,28 @@ import { NewSubjectType, newSubjectSchema } from "../lib/zod-type/subject-type"
 import { InputForSubject } from "./input-for-subject"
 
 
-export const AddSubject = ()=>{
-
-    
-      const form = useForm<NewSubjectType>({
-        resolver: zodResolver(newSubjectSchema),
-        defaultValues: {
-          name: "",
-          code: "",
-          description: "",
-          hasPractical: false,
-          practicalFee: 0,
-        //   isActive: true,
-        }
-      })
-    
-      const onSubmit = (data: NewSubjectType) => {
-        console.log(data)
-      }
+export const AddSubject = () => {
 
 
-    return(
-<Dialog>
+  const form = useForm<NewSubjectType>({
+    resolver: zodResolver(newSubjectSchema),
+    defaultValues: {
+      name: "",
+      code: "",
+      description: "",
+      hasPractical: false,
+      practicalFee: 0,
+      //   isActive: true,
+    }
+  })
+
+  const onSubmit = (data: NewSubjectType) => {
+    console.log(data)
+  }
+
+
+  return (
+    <Dialog>
       <DialogTrigger asChild>
         <Button variant={"secondary"} className="text-blue-900 font-bold cursor-pointer shadow-lg">New Subject</Button>
       </DialogTrigger>
@@ -53,5 +53,5 @@ export const AddSubject = ()=>{
         </form>
       </DialogContent>
     </Dialog>
-    )
+  )
 }
