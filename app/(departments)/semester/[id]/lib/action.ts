@@ -6,7 +6,7 @@ import { semesterSubjectTable, semesterTable, subjectTable } from "@/lib/db/sche
 import { eq, inArray } from "drizzle-orm";
 import { headers } from "next/headers";
 
-export async function fetchSemesterById(semesterId: string){
+export async function fetchSemesterWithSubjects(semesterId: string){
     try {
 
         const session = await auth.api.getSession({headers: await headers()})
@@ -20,6 +20,7 @@ export async function fetchSemesterById(semesterId: string){
         const semester = await db.query.semesterTable.findFirst({
             where: eq(semesterTable.id, semesterId),
             with:{
+                fees: true,
                 semesterSubjects: {
                     with:{
                         subject: true
@@ -41,38 +42,3 @@ export async function fetchSemesterById(semesterId: string){
         }
     }
 }
-
-// export async function fetchSubjectsBySemester(semesterId: number) {
-//     try {
-
-//         const session = await auth.api.getSession({headers: await headers()})
-//         if(!session){
-//             return {success: false, message: "Unaothorized"}
-//         }
-//         if(session.user.role !== "admin"){
-//             return {success: false, message: "You are not authorized to access"}
-//         }
-
-//         const semesterSubjects = await db.query.semesterSubjectTable.findMany({
-//             where: eq(semesterSubjectTable.semesterId, semesterId)
-//         })
-//         // find subjects by subjectId in this semestertable using the subjectId
-//         const subjects = await db.query.subjectTable.findMany({
-//             where: inArray(subjectTable.id, semesterSubjects.map(ss => ss.subjectId))
-//         })
-
-//         if (!subjects) return { success: false, message: "No subjects found" }
-
-//         return {
-//             success: true,
-//             message: "Subjects fetched successfully",
-//             data: subjects,
-//         }
-//     } catch (error) {
-//         return {
-//             success: false,
-//             message: "Failded to fetch Subjects",
-//             error: error,
-//         }
-//     }
-// }

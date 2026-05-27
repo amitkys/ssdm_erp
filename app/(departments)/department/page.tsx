@@ -3,8 +3,10 @@ import {
   HydrationBoundary,
   QueryClient,
 } from "@tanstack/react-query";
+
 import { ListDepartment } from "./_components/list-department";
 import { getDepartment } from "./query/get-all-department";
+import { AddDepartment } from "./_components/add-department";
 
 export default async function DepartmentPage() {
   const queryClient = new QueryClient();
@@ -13,7 +15,10 @@ export default async function DepartmentPage() {
 
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
-      <ListDepartment />
+      <div className="w-screen py-2 ps-3 mb-5 bg-blue-400 flex justify-center">
+          <AddDepartment />
+      </div>
+        <ListDepartment />
     </HydrationBoundary>
   );
 }
