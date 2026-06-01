@@ -61,178 +61,174 @@ const COURSES_POOL = [
 
 const ROMAN_NUMERALS = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII"];
 
-async function main() {
+export async function seedDepartments() {
   const suffix = faker.string.alphanumeric(2).toUpperCase();
-  console.log(`🧹 Running script-level database seeding (Suffix: ${suffix})...`);
+  console.log(`🧹 Running department seeding (Suffix: ${suffix})...`);
 
-  try {
-    // 2. Seed Academic Sessions (Format: "2024-2028")
-    console.log("🌱 Seeding Academic Sessions...");
-    const sessionData = [
-      { startYear: 2024, duration: 4 },
-      { startYear: 2025, duration: 4 },
-      { startYear: 2026, duration: 4 },
-    ].map(({ startYear, duration }) => {
-      const endYear = startYear + duration;
-      return {
-        name: `${startYear}-${endYear}-${suffix}`, // Fits under the varchar(30) limit
-        startDate: `${startYear}-07-01`,
-        endDate: `${endYear}-06-30`,
-      };
-    });
+  // 1. Seed Academic Sessions (Format: "2024-2028")
+  console.log("🌱 Seeding Academic Sessions...");
+  const sessionData = [
+    { startYear: 2024, duration: 4 },
+    { startYear: 2025, duration: 4 },
+    { startYear: 2026, duration: 4 },
+  ].map(({ startYear, duration }) => {
+    const endYear = startYear + duration;
+    return {
+      name: `${startYear}-${endYear}-${suffix}`, // Fits under the varchar(30) limit
+      startDate: `${startYear}-07-01`,
+      endDate: `${endYear}-06-30`,
+    };
+  });
 
-    const insertedSessions = await db
-      .insert(academicSessionTable)
-      .values(sessionData)
-      .returning({ id: academicSessionTable.id, name: academicSessionTable.name });
+  const insertedSessions = await db
+    .insert(academicSessionTable)
+    .values(sessionData)
+    .returning({ id: academicSessionTable.id, name: academicSessionTable.name });
 
-    // 3. Seed Departments
-    console.log("🌱 Seeding Departments...");
-    const insertedDepts = await db
-      .insert(departmentTable)
-      .values(DEPARTMENTS.map(d => ({ ...d, code: `${d.code}-${suffix}`.slice(0, 10), name: `${d.name} ${suffix}`.slice(0, 30) })))
-      .returning({ id: departmentTable.id, code: departmentTable.code });
+  // 2. Seed Departments
+  console.log("🌱 Seeding Departments...");
+  const insertedDepts = await db
+    .insert(departmentTable)
+    .values(DEPARTMENTS.map(d => ({ ...d, code: `${d.code}-${suffix}`.slice(0, 10), name: `${d.name} ${suffix}`.slice(0, 30) })))
+    .returning({ id: departmentTable.id, code: departmentTable.code });
 
-    // 4. Seed Subjects
-    console.log("🌱 Seeding Subjects...");
-    const finalSubjects = await db
-      .insert(subjectTable)
-      .values(
-        SUBJECTS_POOL.map((sub) => ({
-          code: `${sub.code}${suffix}`.slice(0, 10),
-          name: `${sub.name} ${suffix}`.slice(0, 100),
-          description: `Syllabus coursework for ${sub.name}.`,
-          type: sub.type,
-          hasPractical: sub.hasPractical,
-          practicalFee: sub.fee,
-        }))
-      )
-      .returning({ id: subjectTable.id, code: subjectTable.code, type: subjectTable.type });
+  // 3. Seed Subjects
+  console.log("🌱 Seeding Subjects...");
+  const finalSubjects = await db
+    .insert(subjectTable)
+    .values(
+      SUBJECTS_POOL.map((sub) => ({
+        code: `${sub.code}${suffix}`.slice(0, 10),
+        name: `${sub.name} ${suffix}`.slice(0, 100),
+        description: `Syllabus coursework for ${sub.name}.`,
+        type: sub.type,
+        hasPractical: sub.hasPractical,
+        practicalFee: sub.fee,
+      }))
+    )
+    .returning({ id: subjectTable.id, code: subjectTable.code, type: subjectTable.type });
 
-    // 5. Seed Courses (Linking via numeric departmentId)
-    console.log("🌱 Seeding Higher Education Courses...");
-    const courseInsertValues = COURSES_POOL.map((c) => {
-      const targetDeptCode = `${c.deptCode}-${suffix}`.slice(0, 10);
-      const dept = insertedDepts.find((d) => d.code === targetDeptCode);
-      if (!dept) throw new Error(`Department with code ${targetDeptCode} not found during seeding runtime.`);
-      return {
-        name: `${c.name} ${suffix}`.slice(0, 50),
-        code: `${c.code}-${suffix}`.slice(0, 10),
-        type: c.type,
-        description: c.description,
-        departmentId: dept.id, // String references injection
-        duration: c.duration,
-      };
-    });
+  // 4. Seed Courses (Linking via departmentId)
+  console.log("🌱 Seeding Higher Education Courses...");
+  const courseInsertValues = COURSES_POOL.map((c) => {
+    const targetDeptCode = `${c.deptCode}-${suffix}`.slice(0, 10);
+    const dept = insertedDepts.find((d) => d.code === targetDeptCode);
+    if (!dept) throw new Error(`Department with code ${targetDeptCode} not found during seeding runtime.`);
+    return {
+      name: `${c.name} ${suffix}`.slice(0, 50),
+      code: `${c.code}-${suffix}`.slice(0, 10),
+      type: c.type,
+      description: c.description,
+      departmentId: dept.id,
+      duration: c.duration,
+    };
+  });
 
-    const finalCourses = await db
-      .insert(courseTable)
-      .values(courseInsertValues)
-      .returning({ id: courseTable.id, code: courseTable.code, duration: courseTable.duration });
+  const finalCourses = await db
+    .insert(courseTable)
+    .values(courseInsertValues)
+    .returning({ id: courseTable.id, code: courseTable.code, duration: courseTable.duration });
 
-    // 6. Seed Course Sessions Junction Table
-    console.log("🌱 Constructing Course-Session mappings...");
-    const courseSessionData = [];
+  // 5. Seed Course Sessions Junction Table
+  console.log("🌱 Constructing Course-Session mappings...");
+  const courseSessionData = [];
 
-    for (const course of finalCourses) {
-      for (const session of insertedSessions) {
-        courseSessionData.push({
-          courseId: course.id,
-          sessionId: session.id,
-        });
-      }
+  for (const course of finalCourses) {
+    for (const session of insertedSessions) {
+      courseSessionData.push({
+        courseId: course.id,
+        sessionId: session.id,
+      });
     }
+  }
 
-    const finalCourseSessions = await db
-      .insert(courseSessionTable)
-      .values(courseSessionData)
-      .returning({ id: courseSessionTable.id, courseId: courseSessionTable.courseId, sessionId: courseSessionTable.sessionId });
+  const finalCourseSessions = await db
+    .insert(courseSessionTable)
+    .values(courseSessionData)
+    .returning({ id: courseSessionTable.id, courseId: courseSessionTable.courseId, sessionId: courseSessionTable.sessionId });
 
-    // 7. Deep Cascaded Loop Setup (Batches, Semesters, Fees, and Subjects)
-    console.log("🌱 Executing deep relational cascade setup...");
+  // 6. Deep Cascaded Loop Setup (Batches, Semesters, Fees, and Subjects)
+  console.log("🌱 Executing deep relational cascade setup...");
 
-    for (const cs of finalCourseSessions) {
-      const parentCourse = finalCourses.find((c) => c.id === cs.courseId);
-      const parentSession = insertedSessions.find((s) => s.id === cs.sessionId);
-      if (!parentCourse || !parentSession) continue;
+  for (const cs of finalCourseSessions) {
+    const parentCourse = finalCourses.find((c) => c.id === cs.courseId);
+    const parentSession = insertedSessions.find((s) => s.id === cs.sessionId);
+    if (!parentCourse || !parentSession) continue;
 
-      // Seed Batches (Automatically naming e.g., "BCA (2024-2028)")
-      // Slicing at 30 characters maximum to respect batchTable.name length constraint!
-      const batchName = `${parentCourse.code} (${parentSession.name})`.slice(0, 30);
-      await db.insert(batchTable).values({
-        courseSessionId: cs.id,
-        name: batchName,
+    // Seed Batches (Automatically naming e.g., "BCA (2024-2028)")
+    // Slicing at 30 characters maximum to respect batchTable.name length constraint!
+    const batchName = `${parentCourse.code} (${parentSession.name})`.slice(0, 30);
+    await db.insert(batchTable).values({
+      courseSessionId: cs.id,
+      name: batchName,
+    });
+
+    // Compute total semesters (duration * 2)
+    const totalSemesters = parentCourse.duration * 2;
+
+    for (let semNum = 1; semNum <= totalSemesters; semNum++) {
+      const roman = ROMAN_NUMERALS[(semNum - 1) % ROMAN_NUMERALS.length] || semNum.toString();
+      
+      // Seed Semesters (e.g., "Semester I")
+      const [insertedSemester] = await db
+        .insert(semesterTable)
+        .values({
+          courseSessionId: cs.id,
+          name: `Semester ${roman}`,
+          semesterNumber: semNum,
+        })
+        .returning({ id: semesterTable.id });
+
+      // Seed Associated Structural Fees tailored by program stream 
+      const isTechOrScience = ["BCA", "MCA", "BSC-PHYS", "BSC-CHEM"].includes(parentCourse.code);
+      await db.insert(feeTable).values({
+        semesterId: insertedSemester.id,
+        institution: isTechOrScience ? faker.number.int({ min: 18000, max: 26000 }) : faker.number.int({ min: 8000, max: 14000 }),
+        university: faker.number.int({ min: 2000, max: 4000 }),
+        late: 300,
+        practical: isTechOrScience ? 1500 : 0,
+        cultural: 250,
+        sports: 250,
+        miscellaneous: 500,
       });
 
-      // Compute total semesters (duration * 2)
-      const totalSemesters = parentCourse.duration * 2;
+      // --- Realistic Subject Assignment Business Logic ---
+      const targetedSubjectIds: string[] = [];
+      const coursePrefix = parentCourse.code.includes("-") ? parentCourse.code.split("-")[1] : parentCourse.code;
+      const prefixMatch = coursePrefix.slice(0, 3); // e.g., "PHY", "BCA", "CHE"
 
-      for (let semNum = 1; semNum <= totalSemesters; semNum++) {
-        const roman = ROMAN_NUMERALS[(semNum - 1) % ROMAN_NUMERALS.length] || semNum.toString();
-        
-        // Seed Semesters (e.g., "Semester I")
-        const [insertedSemester] = await db
-          .insert(semesterTable)
-          .values({
-            courseSessionId: cs.id,
-            name: `Semester ${roman}`,
-            semesterNumber: semNum,
-          })
-          .returning({ id: semesterTable.id });
+      // 1. Core Paper (MJC) -> Matches the stream prefix
+      const corePaper = finalSubjects.find((s) => s.type === "MJC" && s.code.startsWith(prefixMatch));
+      if (corePaper) targetedSubjectIds.push(corePaper.id);
 
-        // Seed Associated Structural Fees tailored by program stream 
-        const isTechOrScience = ["BCA", "MCA", "BSC-PHYS", "BSC-CHEM"].includes(parentCourse.code);
-        await db.insert(feeTable).values({
-          semesterId: insertedSemester.id,
-          institution: isTechOrScience ? faker.number.int({ min: 18000, max: 26000 }) : faker.number.int({ min: 8000, max: 14000 }),
-          university: faker.number.int({ min: 2000, max: 4000 }),
-          late: 300,
-          practical: isTechOrScience ? 1500 : 0,
-          cultural: 250,
-          sports: 250,
-          miscellaneous: 500,
-        });
+      // 2. Subsidiary Paper (MIC) -> Separate elective domain
+      const subsidiaryPaper = finalSubjects.find((s) => s.type === "MIC" && !s.code.startsWith(prefixMatch));
+      if (subsidiaryPaper) targetedSubjectIds.push(subsidiaryPaper.id);
 
-        // --- Realistic Subject Assignment Business Logic ---
-        const targetedSubjectIds: string[] = [];
-        const coursePrefix = parentCourse.code.includes("-") ? parentCourse.code.split("-")[1] : parentCourse.code;
-        const prefixMatch = coursePrefix.slice(0, 3); // e.g., "PHY", "BCA", "CHE"
+      // 3. Multi-Disciplinary (MDC) -> Elective course
+      const mdcPaper = finalSubjects.find((s) => s.type === "MDC" && !s.code.startsWith(prefixMatch));
+      if (mdcPaper) targetedSubjectIds.push(mdcPaper.id);
 
-        // 1. Core Paper (MJC) -> Matches the stream prefix
-        const corePaper = finalSubjects.find((s) => s.type === "MJC" && s.code.startsWith(prefixMatch));
-        if (corePaper) targetedSubjectIds.push(corePaper.id);
+      // 4. Common Skill Competency / Values (SEC / VAC)
+      const skillPaper = finalSubjects.find((s) => s.type === "SEC" || s.type === "VAC");
+      if (skillPaper) targetedSubjectIds.push(skillPaper.id);
 
-        // 2. Subsidiary Paper (MIC) -> Separate elective domain
-        const subsidiaryPaper = finalSubjects.find((s) => s.type === "MIC" && !s.code.startsWith(prefixMatch));
-        if (subsidiaryPaper) targetedSubjectIds.push(subsidiaryPaper.id);
+      // Map arrays into the semester-subject junction table
+      const semesterSubjectEntries = targetedSubjectIds.map((subId) => ({
+        semesterId: insertedSemester.id,
+        subjectId: subId,
+      }));
 
-        // 3. Multi-Disciplinary (MDC) -> Elective course
-        const mdcPaper = finalSubjects.find((s) => s.type === "MDC" && !s.code.startsWith(prefixMatch));
-        if (mdcPaper) targetedSubjectIds.push(mdcPaper.id);
-
-        // 4. Common Skill Competency / Values (SEC / VAC)
-        const skillPaper = finalSubjects.find((s) => s.type === "SEC" || s.type === "VAC");
-        if (skillPaper) targetedSubjectIds.push(skillPaper.id);
-
-        // Map arrays into the semester-subject junction table
-        const semesterSubjectEntries = targetedSubjectIds.map((subId) => ({
-          semesterId: insertedSemester.id,
-          subjectId: subId,
-        }));
-
-        if (semesterSubjectEntries.length > 0) {
-          // Filter duplicates before firing execution query
-          const uniqueEntries = Array.from(new Map(semesterSubjectEntries.map(item => [item.subjectId, item])).values());
-          await db.insert(semesterSubjectTable).values(uniqueEntries);
-        }
+      if (semesterSubjectEntries.length > 0) {
+        // Filter duplicates before firing execution query
+        const uniqueEntries = Array.from(new Map(semesterSubjectEntries.map(item => [item.subjectId, item])).values());
+        await db.insert(semesterSubjectTable).values(uniqueEntries);
       }
     }
-
-    console.log("🎉 Database successfully hydrated with fresh college data configuration!");
-  } catch (error) {
-    console.error("❌ Seeding execution failed:", error);
-    process.exit(1);
   }
+
+  console.log("🎉 Department seeding completed successfully!");
 }
 
-main();
+// Allow standalone execution
+seedDepartments();
