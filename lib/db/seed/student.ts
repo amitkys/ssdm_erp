@@ -37,6 +37,7 @@ const RELIGIONS = ["Hindu", "Muslim", "Christian", "Sikh", "Buddhist", "Jain"];
 const CASTES = ["General", "OBC", "SC", "ST", "EWS"];
 const BOARDS = ["CBSE", "ICSE", "State Board", "NIOS"];
 const STATES = ["Bihar", "Jharkhand", "Uttar Pradesh", "West Bengal", "Delhi", "Maharashtra"];
+const MERIT_TYPES = ["1st", "2nd", "3rd", "Sports Merit", "Tribe Reserved", "Other"] as const;
 const REMARK_TYPES = ["Academic", "Attendance", "Discipline", "Other"] as const;
 const IMPORTANCE_LEVELS = ["Low", "Medium", "High", "Critical"] as const;
 const PAYMENT_MODES = ["UPI", "Cash", "NEFT", "RTGS", "DD"] as const;
@@ -114,6 +115,10 @@ export async function seedStudents() {
         registrationNumber: `REG-${faker.string.alphanumeric(8).toUpperCase()}`,
         universityRoll: `UNIV-${faker.string.numeric(8)}`,
         collegeRoll: `SSDC-${course.code}-${faker.string.numeric(4)}`.slice(0, 128),
+        admissionNo: `ADM-${faker.string.alphanumeric(8).toUpperCase()}`,
+        confidentialNo: `CONF-${faker.string.numeric(8)}`,
+        meritType: pickRandom([...MERIT_TYPES]),
+        profileNo: `PROF-${faker.string.alphanumeric(8).toUpperCase()}`,
         name: faker.person.fullName({ sex: gender === "Male" ? "male" : "female" }),
         avatar: "",
         DOB: faker.date.birthdate({ min: 18, max: 25, mode: "age" }).toISOString().split("T")[0],
@@ -154,6 +159,7 @@ export async function seedStudents() {
         SSMarks: ssMarks,
         SSPercentage: Math.round((ssMarks / 500) * 100),
         SSRollNo: faker.string.numeric(10),
+        SSRollCode: faker.string.alphanumeric(6).toUpperCase(),
         SSAddress: faker.location.streetAddress(),
         SSCity: faker.location.city(),
         SSDist: faker.location.city(),
@@ -165,11 +171,14 @@ export async function seedStudents() {
         HSSMarks: hssMarks,
         HSSPercentage: Math.round((hssMarks / 500) * 100),
         HSSRollNo: faker.string.numeric(10),
+        HSSRollCode: faker.string.alphanumeric(6).toUpperCase(),
         HSSAddress: faker.location.streetAddress(),
         HSSCity: faker.location.city(),
         HSSDist: faker.location.city(),
         HSSState: pickRandom(STATES),
         HSSPIN: faker.string.numeric(6),
+        // UG Roll No is always required
+        UGRollNo: faker.string.numeric(10),
         // UG Records (optional — only for ~30% of students, simulating PG applicants)
         ...(faker.datatype.boolean({ probability: 0.3 })
           ? {
@@ -177,7 +186,7 @@ export async function seedStudents() {
               UGUniversity: `University of ${faker.location.state()}`,
               UGMarks: faker.number.int({ min: 300, max: 600 }),
               UGPercentage: faker.number.int({ min: 50, max: 90 }),
-              UGRollNo: faker.string.numeric(10),
+              UGRollCode: faker.string.alphanumeric(6).toUpperCase(),
               UGAddress: faker.location.streetAddress(),
               UGCity: faker.location.city(),
               UGDist: faker.location.city(),
