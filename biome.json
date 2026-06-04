@@ -19,7 +19,7 @@
     "enabled": true,
     "indentStyle": "space",
     "indentWidth": 2,
-    "expand": "always"
+    "expand": "never"
   },
   "javascript": {
     "formatter": {
