@@ -69,17 +69,14 @@ export async function seedStudents() {
 
     for (let i = 0; i < ENROLLED_COUNT; i++) {
       const course = pickRandom(courses);
-      const dept = departments.find((d) => d.id === course.departmentId);
       const courseSession = courseSessions.find((cs) => cs.courseId === course.id);
-      if (!dept || !courseSession) continue;
+      if (!courseSession) continue;
 
       enrolledValues.push({
         UAN: generateUAN(i),
         name: faker.person.fullName(),
         gender: pickRandom([...GENDERS]),
-        departmentId: dept.id,
-        courseId: course.id,
-        courseSessionId: courseSession.id,
+        batchId: courseSession.id,
       });
     }
 
@@ -124,8 +121,8 @@ export async function seedStudents() {
         DOB: faker.date.birthdate({ min: 18, max: 25, mode: "age" }).toISOString().split("T")[0],
         AadharNumber: faker.string.numeric(12),
         gender: gender,
-        fatherName: faker.person.fullName({ sex: "male" }),
-        motherName: faker.person.fullName({ sex: "female" }),
+        fathersName: faker.person.fullName({ sex: "male" }),
+        mothersName: faker.person.fullName({ sex: "female" }),
         religion: pickRandom(RELIGIONS),
         caste: pickRandom(CASTES),
         isMinority: faker.datatype.boolean({ probability: 0.2 }),
@@ -148,50 +145,40 @@ export async function seedStudents() {
     // 4. Seed Previous Academic Records for each admitted student
     console.log("🌱 Seeding Student Previous Academic Records...");
     const academicRecords = insertedAdmitted.map((student) => {
-      const ssMarks = faker.number.int({ min: 200, max: 500 });
-      const hssMarks = faker.number.int({ min: 200, max: 500 });
+      const hssObtained = faker.number.int({ min: 200, max: 500 });
+      const hssTotal = 500;
 
       return {
         studentId: student.id,
-        // Secondary School
-        SSName: `${faker.location.city()} High School`,
-        SSBoard: pickRandom(BOARDS),
-        SSMarks: ssMarks,
-        SSPercentage: Math.round((ssMarks / 500) * 100),
-        SSRollNo: faker.string.numeric(10),
-        SSRollCode: faker.string.alphanumeric(6).toUpperCase(),
-        SSAddress: faker.location.streetAddress(),
-        SSCity: faker.location.city(),
-        SSDist: faker.location.city(),
-        SSState: pickRandom(STATES),
-        SSPIN: faker.string.numeric(6),
-        // Higher Secondary School
-        HSSName: `${faker.location.city()} Senior Secondary School`,
-        HSSBoard: pickRandom(BOARDS),
-        HSSMarks: hssMarks,
-        HSSPercentage: Math.round((hssMarks / 500) * 100),
-        HSSRollNo: faker.string.numeric(10),
-        HSSRollCode: faker.string.alphanumeric(6).toUpperCase(),
-        HSSAddress: faker.location.streetAddress(),
-        HSSCity: faker.location.city(),
-        HSSDist: faker.location.city(),
-        HSSState: pickRandom(STATES),
-        HSSPIN: faker.string.numeric(6),
-        // UG Roll No is always required
-        UGRollNo: faker.string.numeric(10),
+
+        // Higher Secondary School Records
+        schoolName: `${faker.location.city()} Senior Secondary School`,
+        board: pickRandom(BOARDS),
+        obtainedMarks: hssObtained,
+        totalMarks: hssTotal,
+        percentage: Math.round((hssObtained / hssTotal) * 100),
+        rollNo: faker.string.numeric(10),
+        rollCode: faker.string.alphanumeric(6).toUpperCase(),
+        address: faker.location.streetAddress(),
+        city: faker.location.city(),
+        district: faker.location.city(),
+        state: pickRandom(STATES),
+        pin: faker.string.numeric(6),
+
         // UG Records (optional — only for ~30% of students, simulating PG applicants)
         ...(faker.datatype.boolean({ probability: 0.3 })
           ? {
-              UGName: `${faker.location.city()} University`,
-              UGUniversity: `University of ${faker.location.state()}`,
-              UGMarks: faker.number.int({ min: 300, max: 600 }),
-              UGPercentage: faker.number.int({ min: 50, max: 90 }),
-              UGRollCode: faker.string.alphanumeric(6).toUpperCase(),
-              UGAddress: faker.location.streetAddress(),
-              UGCity: faker.location.city(),
-              UGDist: faker.location.city(),
-              UGState: pickRandom(STATES),
-              UGPIN: faker.string.numeric(6),
+              ugInstituteName: `${faker.location.city()} University`,
+              ugUniversityName: `University of ${faker.location.state()}`,
+              ugObtainedMarks: faker.number.int({ min: 300, max: 600 }),
+              ugTotalMarks: 600,
+              ugPercentage: faker.number.int({ min: 50, max: 90 }),
+              ugRollNo: faker.string.numeric(10),
+              ugAddress: faker.location.streetAddress(),
+              ugCity: faker.location.city(),
+              ugDistrict: faker.location.city(),
+              ugState: pickRandom(STATES),
+              ugPin: faker.string.numeric(6),
             }
           : {}),
       };

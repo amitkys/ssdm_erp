@@ -6,6 +6,9 @@ export function getEnrolledStudent({UAN, sessionId, courseId}: {UAN: string, ses
   return queryOptions({
     queryKey: [
       "enrolled_student",
+      UAN,
+      sessionId,
+      courseId,
     ],
     queryFn: async () => {
       const res = await fetchEnrolledStudent({UAN, sessionId, courseId});
