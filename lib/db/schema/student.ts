@@ -11,7 +11,7 @@ import {
   varchar,
 } from "drizzle-orm/pg-core";
 import { createId } from "@paralleldrive/cuid2";
-import { courseSessionTable, courseTable, departmentTable, semesterTable } from "./department";
+import { batchTable, courseTable, departmentTable, academicSessionTable, subjectTable } from "./department";
 
 // Enrolled Students 
 export const EnrolledStudentTable = pgTable('enrolled_students', {
@@ -20,8 +20,10 @@ export const EnrolledStudentTable = pgTable('enrolled_students', {
   universityRoll: varchar({ length: 128 }),
   name: varchar({ length: 150 }).notNull(),
   gender: varchar({ length: 15 }).notNull(),
-  batchId: varchar({ length: 128 }).references(() => courseSessionTable.id, { onDelete: 'cascade' }).notNull(),
-  createdAt: timestamp().defaultNow().notNull(),
+  subMJC: varchar({length: 128}).references(()=> subjectTable.id, {onDelete: 'cascade'}).notNull(),
+  subMIC: varchar({length: 128}).references(()=> subjectTable.id, {onDelete: 'cascade'}),
+  batchId: varchar({ length: 128 }).references(() => batchTable.id, { onDelete: 'cascade' }).notNull(),
+  createdAt: timestamp().defaultNow().notNull(), 
   updatedAt: timestamp().defaultNow().notNull(),
 },
   (table) => [
@@ -39,11 +41,11 @@ export const AdmittedStudentTable = pgTable('admitted_students', {
   UAN: varchar({ length: 128 }).unique().notNull(),
   registrationNumber: varchar({ length: 128 }),
   universityRoll: varchar({ length: 128 }),
-  collegeRoll: varchar({ length: 128 }).unique(), // Ex. SSDC UG 202629 123 (College Name, Course Type, Session, Unique No.)
+  collegeRoll: varchar({ length: 128 }).unique().notNull(), // Ex. SSDC UG 202629 123 (College Name, Course Type, Session, Unique No.)
   admissionNo: varchar({ length: 128 }).unique(),
   confidentialNo: varchar({ length: 128 }).unique(),
   meritType: text(),
-  profileNo: varchar({ length: 128 }).unique(),
+  profileNo: varchar({ length: 128 }),
   name: varchar({ length: 150 }).notNull(),
   avatar: text().default(''),
   DOB: date().notNull(),
@@ -51,11 +53,19 @@ export const AdmittedStudentTable = pgTable('admitted_students', {
   gender: varchar({ length: 15 }).notNull(),
   fathersName: varchar({ length: 50 }).notNull(),
   mothersName: varchar({ length: 50 }).notNull(),
-  religion: varchar({ length: 50 }).notNull(),
+  religion: varchar({ length: 50 }).notNull(), 
   caste: varchar({ length: 50 }).notNull(),
   isMinority: boolean().default(false),
+  batchId: varchar({ length: 128 }).references(() => batchTable.id, { onDelete: 'cascade' }).notNull(),
   currentSemesterCount: integer().notNull().default(1),
-  currentSemesterId: varchar({ length: 128 }).references(() => semesterTable.id, { onDelete: 'cascade' }).notNull(),
+  subMJC: varchar({length: 128}).references(()=> subjectTable.id, {onDelete: 'cascade'}).notNull(),
+  subMIC: jsonb().$type<string[]>().default([]),
+  subMDC: jsonb().$type<string[]>().default([]),
+  subSEC: jsonb().$type<string[]>().default([]),
+  subVAC: jsonb().$type<string[]>().default([]),
+
+  isInternshipStarted: boolean().default(false),
+  internshipFee: integer().default(0),
   isProfileCompleted: boolean().notNull().default(false),
   isDetained: boolean().notNull().default(false),
   isActive: boolean().notNull().default(true),
@@ -79,19 +89,6 @@ export const StudentPreviousAcademicRecordTable = pgTable('student_previous_acad
   id: varchar({ length: 128 }).primaryKey().$defaultFn(() => createId()),
   studentId: varchar({ length: 128 }).references(() => AdmittedStudentTable.id, { onDelete: 'cascade' }).notNull(),
 
-  // Secondary School Records
-  // SSName: text().notNull(),
-  // SSBoard: text().notNull(),
-  // SSMarks: integer().notNull(),
-  // SSPercentage: integer().notNull(),
-  // SSRollNo: varchar({ length: 128 }).notNull().unique(),
-  // SSRollCode: varchar({ length: 128 }).unique(),
-  // SSAddress: text().notNull(),
-  // SSCity: text().notNull(),
-  // SSDist: text().notNull(),
-  // SSState: text().notNull(),
-  // SSPIN: text().notNull(),
-
   // Higher Secondary School Records
   schoolName: text(),
   board: text(),
@@ -104,7 +101,7 @@ export const StudentPreviousAcademicRecordTable = pgTable('student_previous_acad
   city: text(),
   district: text(),
   state: text(),
-  pin: text(),
+  pinCode: text(),
 
   // UG Records 
   ugInstituteName: text(),
@@ -117,7 +114,7 @@ export const StudentPreviousAcademicRecordTable = pgTable('student_previous_acad
   ugCity: text(),
   ugDistrict: text(),
   ugState: text(),
-  ugPin: text(),
+  ugPinCode: text(),
 })
 
 
@@ -144,7 +141,7 @@ export const StudentDocumentsTable = pgTable('student_documents', {
 export const StudentFeePaymentTable = pgTable('student_fee_payment', {
   id: varchar({ length: 128 }).primaryKey().$defaultFn(() => createId()),
   studentId: varchar({ length: 128 }).references(() => AdmittedStudentTable.id, { onDelete: 'cascade' }).notNull(),
-  semesterId: varchar({ length: 128 }).references(() => semesterTable.id, { onDelete: 'cascade' }).notNull(),
+  semesterCount: integer().notNull(),
   amount: integer().notNull().default(0),
   paymentMode: varchar({ length: 30 }).notNull().default('UPI'),
   transactionId: varchar({ length: 255 }).notNull(),
@@ -181,19 +178,19 @@ export const StudentRemarkTable = pgTable('student_remark', {
 // ENROLLED STUDENT RELATIONS
 
 export const enrolledStudentRelations = relations(EnrolledStudentTable, ({ one }) => ({
-  courseSession: one(courseSessionTable, {
+  courseSession: one(batchTable, {
     fields: [EnrolledStudentTable.batchId],
-    references: [courseSessionTable.id],
+    references: [batchTable.id],
   }),
 }));
 
 // ADMITTED STUDENT RELATIONS
 
 export const admittedStudentRelations = relations(AdmittedStudentTable, ({ one, many }) => ({
-  currentSemester: one(semesterTable, {
-    fields: [AdmittedStudentTable.currentSemesterId],
-    references: [semesterTable.id],
-  }),
+  // currentSemester: one(semesterTable, {
+  //   fields: [AdmittedStudentTable.currentSemesterId],
+  //   references: [semesterTable.id],
+  // }),
 
   previousAcademicRecord: one(StudentPreviousAcademicRecordTable),
 
@@ -238,10 +235,10 @@ export const studentFeePaymentRelations = relations(
       references: [AdmittedStudentTable.id],
     }),
 
-    semester: one(semesterTable, {
-      fields: [StudentFeePaymentTable.semesterId],
-      references: [semesterTable.id],
-    }),
+    // semester: one(semesterTable, {
+    //   fields: [StudentFeePaymentTable.semesterId],
+    //   references: [semesterTable.id],
+    // }),
   }),
 );
 

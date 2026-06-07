@@ -1,5 +1,4 @@
 import { relations, sql } from "drizzle-orm";
-import { EnrolledStudentTable } from "./student";
 import {
   boolean,
   check,

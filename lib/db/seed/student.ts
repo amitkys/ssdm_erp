@@ -1,11 +1,10 @@
 import { faker } from "@faker-js/faker";
 import { db } from "@/lib/db";
-import { eq } from "drizzle-orm";
 import {
+  batchTable,
   courseTable,
-  courseSessionTable,
   departmentTable,
-  semesterTable,
+  subjectTable,
 } from "@/lib/db/schema";
 import {
   AdmittedStudentTable,
@@ -30,6 +29,12 @@ function pickRandom<T>(arr: T[]): T {
   return arr[Math.floor(Math.random() * arr.length)];
 }
 
+/** Pick N random unique elements from an array */
+function pickRandomN<T>(arr: T[], n: number): T[] {
+  const shuffled = [...arr].sort(() => 0.5 - Math.random());
+  return shuffled.slice(0, Math.min(n, shuffled.length));
+}
+
 // --- Data Pools ---
 
 const GENDERS = ["Male", "Female", "Transgender"] as const;
@@ -49,18 +54,18 @@ export async function seedStudents() {
   console.log("🧹 Running student seeding...");
 
   try {
-    // 1. Fetch existing department data (prerequisite: department seed must have run)
+    // 1. Fetch existing data (prerequisite: department seed must have run)
     const departments = await db.select({ id: departmentTable.id, code: departmentTable.code }).from(departmentTable);
     const courses = await db.select({ id: courseTable.id, code: courseTable.code, departmentId: courseTable.departmentId }).from(courseTable);
-    const courseSessions = await db.select({ id: courseSessionTable.id, courseId: courseSessionTable.courseId }).from(courseSessionTable);
-    const semesters = await db
-      .select({ id: semesterTable.id, courseSessionId: semesterTable.courseSessionId, semesterNumber: semesterTable.semesterNumber })
-      .from(semesterTable);
+    const batches = await db.select({ id: batchTable.id, courseId: batchTable.courseId }).from(batchTable);
+    const subjects = await db.select({ id: subjectTable.id, code: subjectTable.code }).from(subjectTable);
 
-    if (departments.length === 0 || courses.length === 0 || courseSessions.length === 0 || semesters.length === 0) {
-      console.error("❌ No department/course/session/semester data found. Please run the department seed first.");
+    if (departments.length === 0 || courses.length === 0 || batches.length === 0 || subjects.length === 0) {
+      console.error("❌ No department/course/batch/subject data found. Please run the department seed first.");
       process.exit(1);
     }
+
+    const subjectIds = subjects.map((s) => s.id);
 
     // 2. Seed Enrolled Students (pre-admission pipeline)
     console.log("🌱 Seeding Enrolled Students...");
@@ -69,14 +74,16 @@ export async function seedStudents() {
 
     for (let i = 0; i < ENROLLED_COUNT; i++) {
       const course = pickRandom(courses);
-      const courseSession = courseSessions.find((cs) => cs.courseId === course.id);
-      if (!courseSession) continue;
+      const batch = batches.find((b) => b.courseId === course.id);
+      if (!batch) continue;
 
       enrolledValues.push({
         UAN: generateUAN(i),
         name: faker.person.fullName(),
         gender: pickRandom([...GENDERS]),
-        batchId: courseSession.id,
+        subMJC: pickRandom(subjectIds),
+        subMIC: faker.datatype.boolean({ probability: 0.6 }) ? pickRandom(subjectIds) : null,
+        batchId: batch.id,
       });
     }
 
@@ -95,14 +102,8 @@ export async function seedStudents() {
     for (let i = 0; i < ADMITTED_COUNT; i++) {
       const course = pickRandom(courses);
       const dept = departments.find((d) => d.id === course.departmentId);
-      const courseSession = courseSessions.find((cs) => cs.courseId === course.id);
-      if (!dept || !courseSession) continue;
-
-      // Find the first semester for this course session
-      const firstSemester = semesters.find(
-        (s) => s.courseSessionId === courseSession.id && s.semesterNumber === 1
-      );
-      if (!firstSemester) continue;
+      const batch = batches.find((b) => b.courseId === course.id);
+      if (!dept || !batch) continue;
 
       const gender = pickRandom([...GENDERS]);
       const uan = generateUAN(ENROLLED_COUNT + i); // Offset to avoid UAN collision
@@ -126,8 +127,13 @@ export async function seedStudents() {
         religion: pickRandom(RELIGIONS),
         caste: pickRandom(CASTES),
         isMinority: faker.datatype.boolean({ probability: 0.2 }),
+        batchId: batch.id,
         currentSemesterCount: 1,
-        currentSemesterId: firstSemester.id,
+        subMJC: pickRandom(subjectIds),
+        subMIC: pickRandomN(subjectIds, faker.number.int({ min: 0, max: 3 })),
+        subMDC: pickRandomN(subjectIds, faker.number.int({ min: 0, max: 2 })),
+        subSEC: pickRandomN(subjectIds, faker.number.int({ min: 0, max: 2 })),
+        subVAC: pickRandomN(subjectIds, faker.number.int({ min: 0, max: 2 })),
         isProfileCompleted: faker.datatype.boolean({ probability: 0.7 }),
         isDetained: false,
         isActive: true,
@@ -138,7 +144,7 @@ export async function seedStudents() {
     const insertedAdmitted = await db
       .insert(AdmittedStudentTable)
       .values(admittedValues)
-      .returning({ id: AdmittedStudentTable.id, UAN: AdmittedStudentTable.UAN, currentSemesterId: AdmittedStudentTable.currentSemesterId });
+      .returning({ id: AdmittedStudentTable.id, UAN: AdmittedStudentTable.UAN });
 
     console.log(`   ✅ Admitted ${insertedAdmitted.length} students.`);
 
@@ -163,7 +169,7 @@ export async function seedStudents() {
         city: faker.location.city(),
         district: faker.location.city(),
         state: pickRandom(STATES),
-        pin: faker.string.numeric(6),
+        pinCode: faker.string.numeric(6),
 
         // UG Records (optional — only for ~30% of students, simulating PG applicants)
         ...(faker.datatype.boolean({ probability: 0.3 })
@@ -178,7 +184,7 @@ export async function seedStudents() {
               ugCity: faker.location.city(),
               ugDistrict: faker.location.city(),
               ugState: pickRandom(STATES),
-              ugPin: faker.string.numeric(6),
+              ugPinCode: faker.string.numeric(6),
             }
           : {}),
       };
@@ -214,19 +220,10 @@ export async function seedStudents() {
     for (const student of insertedAdmitted) {
       const paymentCount = faker.number.int({ min: 1, max: 3 });
 
-      // Find the semester(s) associated with this student's current semester
-      const studentSemester = semesters.find((s) => s.id === student.currentSemesterId);
-      if (!studentSemester) continue;
-
-      // Get all semesters for the same courseSession up to current
-      const relevantSemesters = semesters.filter(
-        (s) => s.courseSessionId === studentSemester.courseSessionId && s.semesterNumber <= studentSemester.semesterNumber
-      );
-
-      for (let p = 0; p < Math.min(paymentCount, relevantSemesters.length); p++) {
+      for (let p = 0; p < paymentCount; p++) {
         feePayments.push({
           studentId: student.id,
-          semesterId: relevantSemesters[p].id,
+          semesterCount: p + 1,
           amount: faker.number.int({ min: 5000, max: 30000 }),
           paymentMode: pickRandom([...PAYMENT_MODES]),
           transactionId: `TXN-${faker.string.alphanumeric(12).toUpperCase()}`,
