@@ -56,6 +56,12 @@ export function getMenuList(pathname: string): Group[] {
           icon: IconCalendarEvent,
           active: pathname.startsWith("/academic-session"),
         },
+        {
+          href: "/admission-open",
+          label: "Admission Opens",
+          icon: IconUserCheck,
+          active: pathname.startsWith("/admission-open"),
+        },
       ],
     },
     {
