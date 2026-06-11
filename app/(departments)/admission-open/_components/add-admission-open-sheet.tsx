@@ -28,6 +28,7 @@ export function AddAdmissionOpenSheet() {
   const addAdmissionOpenMutation = useAddAdmissionOpen();
 
   const form = useForm<AddAdmissionOpenSchema>({
+    // biome-ignore lint/suspicious/noExplicitAny: resolver type needs to bypass RHF/Zod type mismatches due to refined schemas
     resolver: zodResolver(addAdmissionOpenSchema) as any,
     defaultValues: {
       batchId: "",
@@ -72,7 +73,8 @@ export function AddAdmissionOpenSheet() {
           <SheetHeader>
             <SheetTitle>Open Admission</SheetTitle>
             <SheetDescription>
-              Set the start and end dates for a course batch's admission process.
+              Set the start and end dates for a course batch's admission
+              process.
             </SheetDescription>
           </SheetHeader>
 

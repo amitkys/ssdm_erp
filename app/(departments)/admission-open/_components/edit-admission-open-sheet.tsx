@@ -39,6 +39,7 @@ export function EditAdmissionOpenSheet({
   const updateAdmissionOpenMutation = useUpdateAdmissionOpen();
 
   const form = useForm<UpdateAdmissionOpenSchema>({
+    // biome-ignore lint/suspicious/noExplicitAny: resolver type needs to bypass RHF/Zod type mismatches due to refined schemas
     resolver: zodResolver(updateAdmissionOpenSchema) as any,
     defaultValues: {
       id: record.id,
