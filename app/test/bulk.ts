@@ -3,7 +3,7 @@
     UAN: "123654789",
     registrationNumber: "1236554789",
     aadharNumber: "1236547896",
-    ABCID: "123654789", 
+    ABCID: "123654789",
     name: "XYZ",
     fathersName: "ABC",
     mothersName: "ABC",
@@ -21,5 +21,5 @@
     subSEC: [],
     subVAC: [],
     batchId: "123456789",
-  }
-]
+  },
+];
