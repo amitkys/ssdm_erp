@@ -1,12 +1,12 @@
-import { processPaymentReturn } from "@/app/(students)/admission/payment/lib/action";
-import { PaymentResultDisplay } from "./_components/payment-result-display";
-import { getCollegeConfig } from "@/lib/college-config";
-import { SiteHeader } from "@/components/informative/site-header";
-import { SiteFooter } from "@/components/informative/site-footer";
-import { db } from "@/lib/db";
-import { StudentFeePaymentTable } from "@/lib/db/schema/student";
 import { eq } from "drizzle-orm";
 import { redirect } from "next/navigation";
+import { processPaymentReturn } from "@/app/(students)/admission/payment/lib/action";
+import { SiteFooter } from "@/components/informative/site-footer";
+import { SiteHeader } from "@/components/informative/site-header";
+import { getCollegeConfig } from "@/lib/college-config";
+import { db } from "@/lib/db";
+import { StudentFeePaymentTable } from "@/lib/db/schema/student";
+import { PaymentResultDisplay } from "./_components/payment-result-display";
 
 interface PageProps {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
@@ -39,12 +39,28 @@ export default async function PaymentSuccessPage({ searchParams }: PageProps) {
   }
 
   if (lookupPaymentId) {
-    const payment = await db.query.StudentFeePaymentTable.findFirst({
-      where: eq(StudentFeePaymentTable.id, lookupPaymentId),
-      with: {
-        student: true,
-      },
-    });
+    // Retry polling loop: check the database up to 5 times with a 1.2s delay if status is not Success yet
+    const sleep = (ms: number) =>
+      new Promise((resolve) => setTimeout(resolve, ms));
+    let payment = null;
+
+    for (let attempt = 1; attempt <= 5; attempt++) {
+      payment = await db.query.StudentFeePaymentTable.findFirst({
+        where: eq(StudentFeePaymentTable.id, lookupPaymentId),
+        with: { student: true },
+      });
+
+      if (payment && payment.status !== "Pending") {
+        break;
+      }
+
+      if (attempt < 5) {
+        console.log(
+          `[PaymentSuccessPage] Attempt ${attempt}: Status is ${payment?.status || "Unknown"}. Waiting for webhook callback...`,
+        );
+        await sleep(1200);
+      }
+    }
 
     if (payment) {
       paymentResult = {
@@ -52,7 +68,10 @@ export default async function PaymentSuccessPage({ searchParams }: PageProps) {
         status: payment.status || "Pending",
         amount: Number(payment.amount),
         txnId: payment.transactionId || "N/A",
-        errorMessage: payment.status === "Failed" ? "Transaction failed or cancelled." : null,
+        errorMessage:
+          payment.status === "Failed"
+            ? "Transaction failed or cancelled."
+            : null,
       };
       if (payment.student) {
         studentInfo = {

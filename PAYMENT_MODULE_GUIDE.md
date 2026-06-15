@@ -88,7 +88,7 @@ GETEPAY_URL=https://pay1.getepay.in:8443/getepayPortal/pg/v2/generateInvoice
 
 # ─── URLs (change in production) ────────────────────────────
 NEXT_PUBLIC_APP_URL=http://localhost:3000
-GETEPAY_RETURN_URL=http://localhost:3000/payment-success
+GETEPAY_RETURN_URL=http://localhost:3000/api/payments/redirect
 GETEPAY_CALLBACK_URL=http://localhost:3000/api/payments/callback
 ```
 
@@ -479,50 +479,111 @@ When GetEpay redirects the user's browser back to your `returnUrl`, it appends a
 ```typescript
 "use server";
 
+import { eq, or } from "drizzle-orm";
+import { db } from "@/lib/db";
+import { StudentFeePaymentTable, EnrolledStudentTable, AdmittedStudentTable } from "@/lib/db/schema/student";
+import { GcmPgEncryption } from "@/lib/getepay-encrypt";
+
 export async function processPaymentReturn(responseCiphertext: string) {
-  const encryptor = new GcmPgEncryption(
-    process.env.GETEPAY_IV!,
-    process.env.GETEPAY_KEY!,
-    process.env.NODE_ENV === "production",
-  );
+  const getepayKey = process.env.GETEPAY_KEY;
+  const getepayIv = process.env.GETEPAY_IV;
 
-  const decryptedText = await encryptor.decrypt(responseCiphertext);
-  const decrypted = JSON.parse(decryptedText);
-
-  // ─── Validate merchant ID ─────────────────────────────────
-  const configuredMid = process.env.GETEPAY_MID!.trim();
-  const responseMid = decrypted?.mid || "";
-  if (responseMid && responseMid.trim() !== configuredMid) {
-    throw new Error("Merchant ID mismatch — possible tampering.");
+  if (!getepayKey || !getepayIv) {
+    throw new Error("Missing GetEpay encryption keys in system configuration.");
   }
 
-  // ─── Extract key fields ────────────────────────────────────
-  //
-  // GetEpay callback payload fields:
-  //   merchantOrderNo   → Your paymentId
-  //   txnStatus         → "SUCCESS" or "FAILED"
-  //   getepayTxnId      → Bank transaction reference
-  //   txnAmount         → Amount string "5600.00"
-  //   paymentMode       → "Online", "UPI", "Card", etc.
-  //
-  const paymentId  = decrypted.merchantOrderNo;
-  const txnStatus  = String(decrypted.txnStatus || "").trim().toUpperCase();
-  const bankTxnNo  = decrypted.getepayTxnId || null;
-  const isSuccess  = txnStatus === "SUCCESS";
-  const status     = isSuccess ? "Success" : "Failed";
+  const cleanCiphertext = String(responseCiphertext).trim().includes(" ")
+    ? String(responseCiphertext).trim().replace(/ /g, "+")
+    : String(responseCiphertext).trim();
 
-  // ─── Update database ──────────────────────────────────────
+  const isProduction = process.env.NODE_ENV === "production";
+  const encryptor = new GcmPgEncryption(getepayIv, getepayKey, isProduction);
+  const decryptedText = await encryptor.decrypt(cleanCiphertext);
+  const decrypted = JSON.parse(decryptedText);
+
+  console.log("[processPaymentReturn] Decrypted return payload:", decrypted);
+
+  // Validate gateway credentials in response
+  const configuredMid = String(process.env.GETEPAY_MID || "").trim();
+  const responseMid =
+    decrypted?.mid || decrypted?.merchantId || decrypted?.merchantCode || "";
+  if (
+    configuredMid &&
+    responseMid &&
+    String(responseMid).trim() !== configuredMid
+  ) {
+    throw new Error("Merchant ID mismatch in gateway response.");
+  }
+
+  // Extract fields (Getepay returns either CUID or transaction ID under merchantOrderNo)
+  let paymentId = decrypted.merchantOrderNo;
+  const txnStatus = String(
+    decrypted.txnStatus || decrypted.paymentStatus || decrypted.status || "",
+  )
+    .trim()
+    .toUpperCase();
+  const bankTxnNo =
+    decrypted.getepayTxnId ||
+    decrypted.bankTxnNo ||
+    decrypted.referenceNo ||
+    null;
+  const paymentMode = decrypted.paymentMode || "Online";
+  const errorMessage = decrypted.message || decrypted.errorMessage || null;
+
+  if (!paymentId) {
+    throw new Error("Missing merchantOrderNo (paymentId) in response payload.");
+  }
+
+  // Lookup payment record by ID (CUID) or Transaction ID
+  const existingPayment = await db.query.StudentFeePaymentTable.findFirst({
+    where: or(
+      eq(StudentFeePaymentTable.id, paymentId),
+      eq(StudentFeePaymentTable.transactionId, paymentId),
+    ),
+  });
+
+  if (!existingPayment) {
+    throw new Error("Payment record not found in system.");
+  }
+
+  // Set paymentId to the actual database CUID
+  paymentId = existingPayment.id;
+
+  const isSuccess = txnStatus === "SUCCESS";
+  const status = isSuccess ? "Success" : "Failed";
+
+  // Update payment record in database
   await db
     .update(StudentFeePaymentTable)
     .set({
       status,
-      paymentMode: decrypted.paymentMode || "Online",
-      transactionId: bankTxnNo || undefined,
+      paymentMode,
+      transactionId: bankTxnNo || existingPayment.transactionId,
       updatedAt: new Date(),
     })
     .where(eq(StudentFeePaymentTable.id, paymentId));
 
-  return { success: true, paymentId, status };
+  if (isSuccess) {
+    const student = await db.query.AdmittedStudentTable.findFirst({
+      where: eq(AdmittedStudentTable.id, existingPayment.studentId),
+    });
+
+    if (student) {
+      await db
+        .update(EnrolledStudentTable)
+        .set({ isFeePaid: true, updatedAt: new Date() })
+        .where(eq(EnrolledStudentTable.UAN, student.UAN));
+    }
+  }
+
+  return {
+    success: true,
+    paymentId,
+    status,
+    amount: existingPayment.amount,
+    txnId: bankTxnNo || existingPayment.transactionId,
+    errorMessage: isSuccess ? null : errorMessage,
+  };
 }
 ```
 
@@ -535,11 +596,15 @@ Create `app/api/payments/callback/route.ts`. This handles the **server-to-server
 ```typescript
 // app/api/payments/callback/route.ts
 
+import { eq, or } from "drizzle-orm";
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { StudentFeePaymentTable } from "@/lib/db/schema/student";
+import {
+  AdmittedStudentTable,
+  EnrolledStudentTable,
+  StudentFeePaymentTable,
+} from "@/lib/db/schema/student";
 import { GcmPgEncryption } from "@/lib/getepay-encrypt";
-import { eq } from "drizzle-orm";
 
 export async function POST(req: Request) {
   try {
@@ -569,14 +634,31 @@ export async function POST(req: Request) {
     }
 
     // Fix spaces that may have replaced + signs during URL transit
-    const cipherText = String(rawResponse).trim().replace(/ /g, "+");
+    const responseCiphertext = String(rawResponse).trim().includes(" ")
+      ? String(rawResponse).trim().replace(/ /g, "+")
+      : String(rawResponse).trim();
 
     // ─── Decrypt ─────────────────────────────────────────────
+    const getepayKey = process.env.GETEPAY_KEY;
+    const getepayIv = process.env.GETEPAY_IV;
+
+    if (!getepayKey || !getepayIv) {
+      throw new Error("Missing GetEpay keys in system configuration.");
+    }
+
     const isProduction = process.env.NODE_ENV === "production";
-    const encryptor = new GcmPgEncryption(
-      process.env.GETEPAY_IV!, process.env.GETEPAY_KEY!, isProduction,
-    );
-    const decrypted = JSON.parse(await encryptor.decrypt(cipherText));
+    const encryptor = new GcmPgEncryption(getepayIv, getepayKey, isProduction);
+    const decrypted = JSON.parse(await encryptor.decrypt(responseCiphertext));
+
+    console.log("[Callback API] Decrypted Callback Payload:", decrypted);
+
+    // ─── Validate merchant ID ─────────────────────────────────
+    const configuredMid = String(process.env.GETEPAY_MID || "").trim();
+    const responseMid = decrypted?.mid || decrypted?.merchantId || decrypted?.merchantCode || "";
+
+    if (configuredMid && responseMid && String(responseMid).trim() !== configuredMid) {
+      throw new Error("Merchant ID mismatch in gateway response.");
+    }
 
     // ─── Resolve paymentId ───────────────────────────────────
     if (!paymentId) paymentId = decrypted.merchantOrderNo;
@@ -584,18 +666,25 @@ export async function POST(req: Request) {
 
     // ─── Fetch existing payment record ───────────────────────
     const existing = await db.query.StudentFeePaymentTable.findFirst({
-      where: eq(StudentFeePaymentTable.id, paymentId),
+      where: or(
+        eq(StudentFeePaymentTable.id, paymentId),
+        eq(StudentFeePaymentTable.transactionId, paymentId),
+      ),
     });
-    if (!existing) throw new Error(`Payment ${paymentId} not found.`);
+    if (!existing) throw new Error(`Payment record ${paymentId} not found.`);
 
-    // ─── Verify amount ───────────────────────────────────────
-    const txnStatus = String(decrypted.txnStatus || "").trim().toUpperCase();
+    // Set paymentId to the actual database CUID
+    paymentId = existing.id;
+
+    // ─── Verify amount mismatch ──────────────────────────────
+    const txnStatus = String(decrypted.txnStatus || decrypted.paymentStatus || decrypted.status || "").trim().toUpperCase();
     const txnAmount = decrypted.txnAmount || decrypted.totalAmount || null;
 
     if (txnStatus === "SUCCESS" && txnAmount !== null) {
       const expected = Number(existing.amount);
       const received = Number(String(txnAmount).replace(/,/g, ""));
       if (Math.abs(expected - received) > 0.01) {
+        console.error(`[Callback API] Amount mismatch: Expected ${expected}, Received ${received}`);
         await db.update(StudentFeePaymentTable)
           .set({ status: "Failed", updatedAt: new Date() })
           .where(eq(StudentFeePaymentTable.id, paymentId));
@@ -608,25 +697,36 @@ export async function POST(req: Request) {
 
     // ─── Update payment status ───────────────────────────────
     const isSuccess = txnStatus === "SUCCESS";
+    const status = isSuccess ? "Success" : "Failed";
+
     await db.update(StudentFeePaymentTable)
       .set({
-        status: isSuccess ? "Success" : "Failed",
+        status,
         paymentMode: decrypted.paymentMode || "Online",
-        transactionId: decrypted.getepayTxnId || existing.transactionId,
+        transactionId: bankTxnNo || existing.transactionId,
         updatedAt: new Date(),
       })
       .where(eq(StudentFeePaymentTable.id, paymentId));
 
-    // ─── Post-success logic (mark fee as paid, etc.) ─────────
+    // ─── Post-success logic ──────────────────────────────────
     if (isSuccess) {
-      // Update your user record, send email, etc.
+      const student = await db.query.AdmittedStudentTable.findFirst({
+        where: eq(AdmittedStudentTable.id, existing.studentId),
+      });
+
+      if (student) {
+        await db
+          .update(EnrolledStudentTable)
+          .set({ isFeePaid: true, updatedAt: new Date() })
+          .where(eq(EnrolledStudentTable.UAN, student.UAN));
+      }
     }
 
-    return NextResponse.json({ status: "success", message: "Callback processed" });
+    return NextResponse.json({ status: "success", message: "Callback processed successfully" });
   } catch (error: any) {
     console.error("[Callback API] Error:", error);
     return NextResponse.json(
-      { status: "error", message: error.message },
+      { status: "error", message: error.message || "Internal Server Error" },
       { status: 500 },
     );
   }
@@ -638,6 +738,128 @@ export async function POST(req: Request) {
 - **Idempotency:** Both the browser redirect and webhook may update the same record. The second write is harmless (same status value).
 - **`+ / space` issue:** URL-encoded Base64 can have `+` replaced by spaces during HTTP transit. Always do `.replace(/ /g, "+")` before decrypting.
 - **Body format:** GetEpay may send JSON or URL-encoded form data. Parse both.
+
+---
+
+## 7.5 Redirect Handler Route (Intermediate Page)
+
+Create `app/api/payments/redirect/route.ts`. Since Next.js App Router Page components cannot process POST requests, this Route Handler intercepts the gateway's POST/GET redirect, decrypts the response, updates the database immediately, and GET-redirects the browser to the success landing page.
+
+```typescript
+// app/api/payments/redirect/route.ts
+
+import { NextResponse } from "next/server";
+import { processPaymentReturn } from "@/app/(students)/admission/payment/lib/action";
+
+async function handleRedirect(req: Request) {
+  try {
+    const url = new URL(req.url);
+    const paymentId = url.searchParams.get("paymentId");
+
+    let body: Record<string, unknown> = {};
+    if (req.method === "POST") {
+      try {
+        const rawBodyText = await req.text();
+        console.log("[Redirect API] Raw body text received:", rawBodyText);
+
+        if (rawBodyText) {
+          try {
+            body = JSON.parse(rawBodyText) as Record<string, unknown>;
+          } catch {
+            try {
+              body = Object.fromEntries(new URLSearchParams(rawBodyText).entries()) as Record<string, unknown>;
+            } catch (formErr) {
+              console.error("[Redirect API] Form parsing failed:", formErr);
+            }
+          }
+        }
+      } catch (bodyErr) {
+        console.error("[Redirect API] Error reading body text:", bodyErr);
+      }
+    }
+
+    const rawResponse =
+      (body.response as string | undefined) ||
+      (body.resp as string | undefined) ||
+      url.searchParams.get("response") ||
+      url.searchParams.get("resp") ||
+      null;
+
+    console.log("[Redirect API] Raw Response received:", {
+      hasRawResponse: !!rawResponse,
+      paymentId,
+      method: req.method,
+    });
+
+    if (!rawResponse) {
+      console.warn("[Redirect API] Missing response ciphertext");
+      if (paymentId) {
+        return NextResponse.redirect(
+          new URL(`/payment-success?paymentId=${paymentId}`, req.url),
+          303,
+        );
+      }
+      return NextResponse.redirect(
+        new URL("/payment-success?error=missing_payload", req.url),
+        303,
+      );
+    }
+
+    const responseCiphertext = String(rawResponse).trim().includes(" ")
+      ? String(rawResponse).trim().replace(/ /g, "+")
+      : String(rawResponse).trim();
+
+    const result = await processPaymentReturn(responseCiphertext);
+    console.log("[Redirect API] Processed payment return result:", result);
+
+    const targetPaymentId = paymentId || result.paymentId;
+    if (targetPaymentId) {
+      return NextResponse.redirect(
+        new URL(`/payment-success?paymentId=${targetPaymentId}`, req.url),
+        303,
+      );
+    }
+
+    return NextResponse.redirect(
+      new URL("/payment-success?error=invalid_payload", req.url),
+      303,
+    );
+  } catch (error) {
+    const err = error as Error;
+    console.error("[Redirect API] Error processing return:", err);
+    const url = new URL(req.url);
+    const paymentId = url.searchParams.get("paymentId");
+    if (paymentId) {
+      return NextResponse.redirect(
+        new URL(
+          `/payment-success?paymentId=${paymentId}&error=${encodeURIComponent(
+            err.message || "processing_error",
+          )}`,
+          req.url,
+        ),
+        303,
+      );
+    }
+    return NextResponse.redirect(
+      new URL(
+        `/payment-success?error=${encodeURIComponent(err.message || "unknown_error")}`,
+        req.url,
+      ),
+      303,
+    );
+  }
+}
+
+export async function GET(req: Request) {
+  return handleRedirect(req);
+}
+
+export async function POST(req: Request) {
+  return handleRedirect(req);
+}
+```
+
+---
 
 ---
 
@@ -755,69 +977,109 @@ https://yoursite.com/payment-success?response=<encrypted-base64>&paymentId=<your
 ```typescript
 // app/payment-success/page.tsx
 
-import { processPaymentReturn } from "@/app/payment/lib/action";
+import { processPaymentReturn } from "@/app/(students)/admission/payment/lib/action";
+import { PaymentResultDisplay } from "./_components/payment-result-display";
+import { getCollegeConfig } from "@/lib/college-config";
+import { SiteHeader } from "@/components/informative/site-header";
+import { SiteFooter } from "@/components/informative/site-footer";
 import { db } from "@/lib/db";
 import { StudentFeePaymentTable } from "@/lib/db/schema/student";
 import { eq } from "drizzle-orm";
 import { redirect } from "next/navigation";
 
-export default async function PaymentSuccessPage({ searchParams }) {
-  const params = await searchParams;
-  const response = params.response as string | undefined;
+interface PageProps {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}
+
+export default async function PaymentSuccessPage({ searchParams }: PageProps) {
+  const resolvedParams = await searchParams;
+  const response = resolvedParams.response as string | undefined;
+
+  const config = getCollegeConfig();
 
   let paymentResult = null;
+  let errorMsg = null;
+  let studentInfo = null;
+
   let lookupPaymentId: string | null = null;
 
-  // ─── Channel 1: Decrypt browser redirect response ─────────
   if (response) {
     const res = await processPaymentReturn(response);
-    if (res.success) lookupPaymentId = res.paymentId;
-  }
-  // ─── Channel 2: Fallback to DB lookup by paymentId ─────────
-  else if (params.paymentId) {
-    lookupPaymentId = params.paymentId as string;
+    if (res.success && res.paymentId) {
+      lookupPaymentId = res.paymentId;
+    } else {
+      errorMsg = res.message || "Failed to parse transaction response.";
+    }
+  } else if (resolvedParams.paymentId) {
+    lookupPaymentId = resolvedParams.paymentId as string;
+  } else {
+    errorMsg =
+      "No transaction response payload was received from the payment gateway.";
   }
 
-  // ─── Fetch payment + student from DB ───────────────────────
   if (lookupPaymentId) {
-    const payment = await db.query.StudentFeePaymentTable.findFirst({
-      where: eq(StudentFeePaymentTable.id, lookupPaymentId),
-      with: { student: true },
-    });
+    // Retry polling loop: check the database up to 5 times with a 1.2s delay if status is Pending
+    const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+    let payment = null;
+
+    for (let attempt = 1; attempt <= 5; attempt++) {
+      payment = await db.query.StudentFeePaymentTable.findFirst({
+        where: eq(StudentFeePaymentTable.id, lookupPaymentId),
+        with: {
+          student: true,
+        },
+      });
+
+      if (payment && payment.status !== "Pending") {
+        break;
+      }
+
+      if (attempt < 5) {
+        console.log(`[PaymentSuccessPage] Attempt ${attempt}: Status is ${payment?.status || "Unknown"}. Waiting for webhook callback...`);
+        await sleep(1200);
+      }
+    }
 
     if (payment) {
       paymentResult = {
         paymentId: payment.id,
-        status: payment.status,
+        status: payment.status || "Pending",
         amount: Number(payment.amount),
-        txnId: payment.transactionId,
+        txnId: payment.transactionId || "N/A",
+        errorMessage: payment.status === "Failed" ? "Transaction failed or cancelled." : null,
       };
-
-      // ★ If FAILED → redirect back to checkout page to retry
-      if (payment.status === "Failed" && payment.student) {
-        redirect(
-          `/payment?studentId=${payment.student.id}&error=payment_failed`
-        );
+      if (payment.student) {
+        studentInfo = {
+          id: payment.student.id,
+          uan: payment.student.UAN,
+          name: payment.student.name,
+        };
       }
+    } else {
+      errorMsg = "Transaction reference was not found in our database records.";
     }
   }
 
-  // ─── Render success UI with print buttons ──────────────────
+  // If the payment failed, redirect the student back to the checkout page to retry
+  if (paymentResult && paymentResult.status === "Failed" && studentInfo) {
+    redirect(
+      `/admission/payment?uan=${studentInfo.uan}&studentId=${studentInfo.id}&error=payment_failed`,
+    );
+  }
+
   return (
-    <div>
-      <h1>Payment Successful!</h1>
-      <p>Amount: ₹{paymentResult?.amount}</p>
-      <p>Transaction: {paymentResult?.txnId}</p>
-
-      <a href={`/print/receipt?paymentId=${paymentResult?.paymentId}`}
-         target="_blank">
-        Print Payment Receipt
-      </a>
-
-      <a href={`/print/application?studentId=${student.id}`}
-         target="_blank">
-        Print Application
-      </a>
+    <div className="min-h-screen bg-slate-50 flex flex-col font-sans selection:bg-blue-900 selection:text-white">
+      <SiteHeader collegeName={config.name} />
+      <main className="flex-grow py-12 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-slate-50 to-slate-100/50 flex items-center justify-center">
+        <div className="max-w-2xl w-full">
+          <PaymentResultDisplay
+            result={paymentResult}
+            errorMessage={errorMsg}
+            student={studentInfo}
+          />
+        </div>
+      </main>
+      <SiteFooter config={config} />
     </div>
   );
 }
@@ -1051,6 +1313,9 @@ const received = Number(String(txnAmount).replace(/,/g, ""));
 │   │   │       └── printer-trigger.tsx            # Auto-print trigger
 │   │   └── application/
 │   │       └── page.tsx                          # Printable admission application
-│   └── api/payments/callback/
-│       └── route.ts                              # Webhook callback handler
+│   └── api/payments/
+│       ├── callback/
+│       │   └── route.ts                          # Webhook callback handler
+│       └── redirect/
+│           └── route.ts                          # Intermediate redirect Route Handler
 ```

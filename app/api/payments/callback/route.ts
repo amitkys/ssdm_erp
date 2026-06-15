@@ -1,12 +1,12 @@
+import { eq, or } from "drizzle-orm";
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import {
-  StudentFeePaymentTable,
-  EnrolledStudentTable,
   AdmittedStudentTable,
+  EnrolledStudentTable,
+  StudentFeePaymentTable,
 } from "@/lib/db/schema/student";
 import { GcmPgEncryption } from "@/lib/getepay-encrypt";
-import { eq } from "drizzle-orm";
 
 export async function POST(req: Request) {
   try {
@@ -103,12 +103,18 @@ export async function POST(req: Request) {
     const txnAmount = decrypted.txnAmount || decrypted.totalAmount || null;
 
     const existingPayment = await db.query.StudentFeePaymentTable.findFirst({
-      where: eq(StudentFeePaymentTable.id, paymentId),
+      where: or(
+        eq(StudentFeePaymentTable.id, paymentId),
+        eq(StudentFeePaymentTable.transactionId, paymentId),
+      ),
     });
 
     if (!existingPayment) {
       throw new Error(`Payment record ${paymentId} not found in database.`);
     }
+
+    // Set paymentId to the actual database CUID
+    paymentId = existingPayment.id;
 
     // Verify amount mismatch
     if (txnStatus === "SUCCESS" && txnAmount !== null) {
@@ -120,10 +126,7 @@ export async function POST(req: Request) {
         );
         await db
           .update(StudentFeePaymentTable)
-          .set({
-            status: "Failed",
-            updatedAt: new Date(),
-          })
+          .set({ status: "Failed", updatedAt: new Date() })
           .where(eq(StudentFeePaymentTable.id, paymentId));
 
         return NextResponse.json(

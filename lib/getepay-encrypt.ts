@@ -119,7 +119,7 @@ export class GcmPgEncryption {
     const salt = crypto.randomBytes(16);
     const iv = crypto.randomBytes(12);
 
-    const derivedKey = crypto.pbkdf2Sync(mKey, salt, 65535, 32, "sha512");
+    const derivedKey = crypto.pbkdf2Sync(mKey, salt, Number(process.env.CRYPTO_CODE), 32, "sha512");
 
     const cipher = crypto.createCipheriv("aes-256-gcm", derivedKey, iv);
     const encrypted = Buffer.concat([
@@ -143,7 +143,7 @@ export class GcmPgEncryption {
     const tag = data.subarray(data.length - 16);
     const encrypted = data.subarray(28, data.length - 16);
 
-    const derivedKey = crypto.pbkdf2Sync(mKey, salt, 65535, 32, "sha512");
+    const derivedKey = crypto.pbkdf2Sync(mKey, salt, Number(process.env.CRYPTO_CODE), 32, "sha512");
 
     const decipher = crypto.createDecipheriv("aes-256-gcm", derivedKey, iv);
     decipher.setAuthTag(tag);

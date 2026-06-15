@@ -1,19 +1,19 @@
 "use server";
 
+import { createId } from "@paralleldrive/cuid2";
+import { and, eq, inArray, or } from "drizzle-orm";
 import { db } from "@/lib/db";
+import {
+  admissionOpenTable,
+  batchTable,
+  subjectTable,
+} from "@/lib/db/schema/department";
 import {
   AdmittedStudentTable,
   EnrolledStudentTable,
   StudentFeePaymentTable,
 } from "@/lib/db/schema/student";
-import {
-  subjectTable,
-  batchTable,
-  admissionOpenTable,
-} from "@/lib/db/schema/department";
-import { eq, and, inArray } from "drizzle-orm";
 import { GcmPgEncryption } from "@/lib/getepay-encrypt";
-import { createId } from "@paralleldrive/cuid2";
 
 export async function getStudentPaymentDetails(params: {
   uan?: string;
@@ -160,7 +160,8 @@ export async function initiatePayment(params: {
     const getepayIv = process.env.GETEPAY_IV;
     const getepayUrl = process.env.GETEPAY_URL;
     const returnUrl =
-      process.env.GETEPAY_RETURN_URL || "http://localhost:3000/payment-success";
+      process.env.GETEPAY_RETURN_URL ||
+      "http://localhost:3000/api/payments/redirect";
     const callbackUrl =
       process.env.GETEPAY_CALLBACK_URL ||
       "http://localhost:3000/api/payments/callback";
@@ -259,13 +260,19 @@ export async function initiatePayment(params: {
     const resJson = await response.json();
     console.log("[initiatePayment] GetEpay API Raw Response:", resJson);
 
-    if (resJson && resJson.status === "success" && resJson.response) {
+    const isSuccessStatus = (status: any) =>
+      String(status || "")
+        .trim()
+        .toLowerCase() === "success";
+
+    if (resJson && isSuccessStatus(resJson.status) && resJson.response) {
       // Decrypt response
       const decryptedText = await encryptor.decrypt(resJson.response);
       const decrypted = JSON.parse(decryptedText);
       console.log("[initiatePayment] Decrypted GetEpay Response:", decrypted);
+      // console.log(decrypted)
 
-      if (decrypted.status === "success" && decrypted.paymentUrl) {
+      if (decrypted && decrypted.paymentUrl) {
         return { success: true, paymentUrl: decrypted.paymentUrl, paymentId };
       } else {
         if (!isProduction) {
@@ -332,7 +339,9 @@ export async function simulateCallback(params: {
     const getepayIv = process.env.GETEPAY_IV;
 
     if (!getepayKey || !getepayIv) {
-      throw new Error("Missing GetEpay encryption keys in system configuration.");
+      throw new Error(
+        "Missing GetEpay encryption keys in system configuration.",
+      );
     }
 
     const mockResponse = {
@@ -355,21 +364,24 @@ export async function simulateCallback(params: {
     const res = await fetch(callbackUrl, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        response: encryptedText,
-      }),
+      body: JSON.stringify({ response: encryptedText }),
     });
 
     if (!res.ok) {
       const text = await res.text();
-      throw new Error(`Callback handler failed with HTTP ${res.status}: ${text}`);
+      throw new Error(
+        `Callback handler failed with HTTP ${res.status}: ${text}`,
+      );
     }
 
     const data = await res.json();
     return { success: true, data };
   } catch (error: any) {
     console.error("[simulateCallback] Error:", error);
-    return { success: false, message: error.message || "Callback simulation failed." };
+    return {
+      success: false,
+      message: error.message || "Callback simulation failed.",
+    };
   }
 }
 
@@ -384,9 +396,13 @@ export async function processPaymentReturn(responseCiphertext: string) {
       );
     }
 
+    const cleanCiphertext = String(responseCiphertext).trim().includes(" ")
+      ? String(responseCiphertext).trim().replace(/ /g, "+")
+      : String(responseCiphertext).trim();
+
     const isProduction = process.env.NODE_ENV === "production";
     const encryptor = new GcmPgEncryption(getepayIv, getepayKey, isProduction);
-    const decryptedText = await encryptor.decrypt(responseCiphertext);
+    const decryptedText = await encryptor.decrypt(cleanCiphertext);
     const decrypted = JSON.parse(decryptedText);
 
     console.log("[processPaymentReturn] Decrypted return payload:", decrypted);
@@ -404,7 +420,7 @@ export async function processPaymentReturn(responseCiphertext: string) {
     }
 
     // Extract fields
-    const paymentId = decrypted.merchantOrderNo;
+    let paymentId = decrypted.merchantOrderNo;
     const txnStatus = String(
       decrypted.txnStatus || decrypted.paymentStatus || decrypted.status || "",
     )
@@ -425,12 +441,18 @@ export async function processPaymentReturn(responseCiphertext: string) {
     }
 
     const existingPayment = await db.query.StudentFeePaymentTable.findFirst({
-      where: eq(StudentFeePaymentTable.id, paymentId),
+      where: or(
+        eq(StudentFeePaymentTable.id, paymentId),
+        eq(StudentFeePaymentTable.transactionId, paymentId),
+      ),
     });
 
     if (!existingPayment) {
       throw new Error("Payment record not found in system.");
     }
+
+    // Set paymentId to the actual database CUID
+    paymentId = existingPayment.id;
 
     const isSuccess = txnStatus === "SUCCESS";
     const status = isSuccess ? "Success" : "Failed";
