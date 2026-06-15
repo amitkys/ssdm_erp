@@ -1,6 +1,7 @@
 "use client";
 
 import { Controller, type UseFormReturn } from "react-hook-form";
+import type { SigninSchema } from "../lib/zod-type/signin-type";
 import {
   Field,
   FieldContent,
@@ -9,39 +10,25 @@ import {
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
-import type { SignupSchema } from "../lib/zod-type/signup-type";
 
-export function InputForSignup({
+export function InputForSignin({
   form,
 }: {
-  form: UseFormReturn<SignupSchema>;
+  form: UseFormReturn<SigninSchema>;
 }) {
   return (
     <>
       <Controller
         control={form.control}
-        name="name"
+        name="identifier"
         render={({ field, fieldState }) => (
           <Field>
-            <FieldLabel required>Name</FieldLabel>
-            <FieldContent>
-              <Input {...field} aria-invalid={fieldState.invalid} />
-              <FieldError errors={[fieldState.error]} />
-            </FieldContent>
-          </Field>
-        )}
-      />
-      <Controller
-        control={form.control}
-        name="email"
-        render={({ field, fieldState }) => (
-          <Field>
-            <FieldLabel required>Email</FieldLabel>
+            <FieldLabel required>Email or UAN</FieldLabel>
             <FieldContent>
               <Input
                 {...field}
                 aria-invalid={fieldState.invalid}
-                type="email"
+                placeholder="Enter your Email or UAN number"
               />
               <FieldError errors={[fieldState.error]} />
             </FieldContent>
@@ -54,19 +41,6 @@ export function InputForSignup({
         render={({ field, fieldState }) => (
           <Field>
             <FieldLabel required>Password</FieldLabel>
-            <FieldContent>
-              <PasswordInput {...field} aria-invalid={fieldState.invalid} />
-              <FieldError errors={[fieldState.error]} />
-            </FieldContent>
-          </Field>
-        )}
-      />
-      <Controller
-        control={form.control}
-        name="confirmPassword"
-        render={({ field, fieldState }) => (
-          <Field>
-            <FieldLabel required>Confirm password</FieldLabel>
             <FieldContent>
               <PasswordInput {...field} aria-invalid={fieldState.invalid} />
               <FieldError errors={[fieldState.error]} />

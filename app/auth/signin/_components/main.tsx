@@ -4,7 +4,7 @@ import { useForm } from "react-hook-form";
 import { signIn } from "@/lib/auth-client";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { type SigninSchema, signinSchema } from "../lib/zod-type/signin-type";
-import { InputForSingin } from "./Input-for-signin";
+import { InputForSignin } from "./Input-for-signin";
 import { Button } from "@/components/ui/button";
 import { LoadingSwap } from "@/components/ui/loading-swap";
 import {
@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/card";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import Link from "next/link";
+import { getStudentRedirectInfo } from "@/app/auth/signin/lib/action";
 
 export function MainSigninForm() {
   const router = useRouter();
@@ -24,24 +24,47 @@ export function MainSigninForm() {
 
   const form = useForm<SigninSchema>({
     resolver: zodResolver(signinSchema),
-    defaultValues: { email: "", password: "" },
+    defaultValues: { identifier: "", password: "" },
   });
 
   const onSubmit = async (data: SigninSchema) => {
     setErrorMsg("");
 
-    await signIn.email(
-      { email: data.email, password: data.password },
-      {
-        onSuccess: () => {
-          router.push("/department");
-        },
-        onError: (ctx) => {
-          setErrorMsg(ctx.error.message || "Invalid credentials");
-          form.reset();
-        },
-      },
-    );
+    const rawIdentifier = data.identifier.trim();
+    // We format UAN into a fake email so better-auth accepts the input format.
+    const isEmail = rawIdentifier.includes("@");
+    const email = isEmail
+      ? rawIdentifier
+      : `${rawIdentifier.toLowerCase()}@student.ssdm.local`;
+
+    const { data: authData, error } = await signIn.email({
+      email,
+      password: data.password,
+    });
+
+    if (error) {
+      setErrorMsg(error.message || "Invalid credentials");
+      form.reset();
+      return;
+    }
+
+    // Now we check their EXACT role from the database to route them!
+    const userRole = authData?.user?.role;
+
+    if (userRole === "student") {
+      const info = await getStudentRedirectInfo(rawIdentifier);
+      if (info.success && info.data) {
+        router.push(
+          `/admission/register?batch=${info.data.batchId}&uan=${info.data.uan}&mjc=${info.data.mjc}`,
+        );
+      } else {
+        router.push("/");
+      }
+    } else if (userRole === "admin" || userRole === "superAdmin") {
+      router.push("/department");
+    } else {
+      router.push("/");
+    }
   };
 
   return (
@@ -49,9 +72,9 @@ export function MainSigninForm() {
       <div className="w-full max-w-sm">
         <Card>
           <CardHeader>
-            <CardTitle className="text-2xl">Admin Sign In</CardTitle>
+            <CardTitle className="text-2xl">Sign In</CardTitle>
             <CardDescription>
-              Enter your email below to login to your account
+              Enter your Email or UAN number to sign in
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -60,7 +83,7 @@ export function MainSigninForm() {
               className="flex flex-col gap-6"
             >
               <div className="flex flex-col gap-4">
-                <InputForSingin form={form} />
+                <InputForSignin form={form} />
               </div>
 
               {errorMsg && (
@@ -72,16 +95,6 @@ export function MainSigninForm() {
                   Sign in
                 </LoadingSwap>
               </Button>
-
-              <p className="text-sm text-center text-muted-foreground">
-                Don't have an account?{" "}
-                <Link
-                  href="/auth/admin/signup"
-                  className="text-primary hover:underline font-medium"
-                >
-                  Sign up
-                </Link>
-              </p>
             </form>
           </CardContent>
         </Card>
