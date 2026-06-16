@@ -292,7 +292,7 @@ export default async function PrintableReceiptPage({
             Computer Generated
           </div>
           <p className="text-slate-500 text-[10px] font-bold uppercase tracking-wider text-right">
-            Authorised Registrar Seal
+            Authorized Signature
           </p>
         </div>
       </div>
