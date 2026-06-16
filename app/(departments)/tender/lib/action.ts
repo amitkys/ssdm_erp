@@ -39,10 +39,10 @@ export async function getTenders() {
 
     return { success: true, data };
   } catch (error) {
+    console.error("[getTenders] Error:", error);
     return {
       success: false,
-      message:
-        error instanceof Error ? error.message : "Failed to fetch tenders",
+      message: "Something went wrong while fetching tenders.",
     };
   }
 }
@@ -72,10 +72,10 @@ export async function addTender(input: AddTenderSchema) {
 
     return { success: true, data: record };
   } catch (error) {
+    console.error("[addTender] Error:", error);
     return {
       success: false,
-      message:
-        error instanceof Error ? error.message : "Failed to add tender",
+      message: "Something went wrong while adding tender.",
     };
   }
 }
@@ -114,10 +114,10 @@ export async function updateTender(input: UpdateTenderSchema) {
 
     return { success: true, data: record };
   } catch (error) {
+    console.error("[updateTender] Error:", error);
     return {
       success: false,
-      message:
-        error instanceof Error ? error.message : "Failed to update tender",
+      message: "Something went wrong while updating tender.",
     };
   }
 }
@@ -140,10 +140,10 @@ export async function deleteTender(id: string) {
 
     return { success: true, data: record };
   } catch (error) {
+    console.error("[deleteTender] Error:", error);
     return {
       success: false,
-      message:
-        error instanceof Error ? error.message : "Failed to delete tender",
+      message: "Something went wrong while deleting tender.",
     };
   }
 }

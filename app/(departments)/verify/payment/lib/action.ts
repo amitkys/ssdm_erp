@@ -48,10 +48,7 @@ export async function verifyPayment(transactionId: string) {
     console.error("[verifyPayment] Error:", error);
     return {
       success: false,
-      message:
-        error instanceof Error
-          ? error.message
-          : "An unexpected error occurred.",
+      message: "Something went wrong while verifying payment.",
     };
   }
 }

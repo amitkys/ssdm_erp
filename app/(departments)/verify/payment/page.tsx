@@ -58,9 +58,7 @@ export default function VerifyPaymentPage() {
 
         {isError && (
           <div className="p-4 mb-6 bg-red-50 border border-red-200 text-red-600 rounded-xl text-sm font-semibold">
-            {error instanceof Error
-              ? error.message
-              : "An error occurred while fetching details."}
+            Something went wrong while fetching payment details.
           </div>
         )}
 

@@ -27,10 +27,10 @@ export async function getStudentRedirectInfo(uan: string) {
       },
     };
   } catch (error) {
+    console.error("[getStudentRedirectInfo] Error:", error);
     return {
       success: false,
-      message:
-        error instanceof Error ? error.message : "Failed to fetch student info",
+      message: "Something went wrong while fetching student info.",
     };
   }
 }

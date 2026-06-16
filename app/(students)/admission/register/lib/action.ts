@@ -185,7 +185,7 @@ export async function registerStudent(payload: RegisterStudentPayload) {
   if (!parsed.success) {
     return {
       success: false as const,
-      message: "Invalid payload: " + parsed.error.message,
+      message: "Invalid registration details.",
     };
   }
 
@@ -381,7 +381,7 @@ export async function registerStudent(payload: RegisterStudentPayload) {
 
     return {
       success: false as const,
-      message: error?.message || "Failed to register student",
+      message: "Something went wrong while registering student.",
     };
   }
 }

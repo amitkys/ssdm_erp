@@ -43,12 +43,10 @@ export async function getAdmissionOpens() {
 
     return { success: true, data };
   } catch (error) {
+    console.error("[getAdmissionOpens] Error:", error);
     return {
       success: false,
-      message:
-        error instanceof Error
-          ? error.message
-          : "Failed to fetch admission open records",
+      message: "Something went wrong while fetching admission records.",
     };
   }
 }
@@ -80,12 +78,10 @@ export async function addAdmissionOpen(input: AddAdmissionOpenSchema) {
 
     return { success: true, data: record };
   } catch (error) {
+    console.error("[addAdmissionOpen] Error:", error);
     return {
       success: false,
-      message:
-        error instanceof Error
-          ? error.message
-          : "Failed to add admission open record",
+      message: "Something went wrong while adding admission record.",
     };
   }
 }
@@ -134,12 +130,10 @@ export async function updateAdmissionOpen(input: UpdateAdmissionOpenSchema) {
 
     return { success: true, data: record };
   } catch (error) {
+    console.error("[updateAdmissionOpen] Error:", error);
     return {
       success: false,
-      message:
-        error instanceof Error
-          ? error.message
-          : "Failed to update admission open record",
+      message: "Something went wrong while updating admission record.",
     };
   }
 }
@@ -162,12 +156,10 @@ export async function deleteAdmissionOpen(id: string) {
 
     return { success: true, data: record };
   } catch (error) {
+    console.error("[deleteAdmissionOpen] Error:", error);
     return {
       success: false,
-      message:
-        error instanceof Error
-          ? error.message
-          : "Failed to delete admission open record",
+      message: "Something went wrong while deleting admission record.",
     };
   }
 }
@@ -186,10 +178,10 @@ export async function getBatches() {
 
     return { success: true, data: batches };
   } catch (error) {
+    console.error("[getBatches] Error:", error);
     return {
       success: false,
-      message:
-        error instanceof Error ? error.message : "Failed to fetch batches",
+      message: "Something went wrong while fetching batches.",
     };
   }
 }
