@@ -160,7 +160,7 @@ export default async function PrintableApplicationPage({
             {photoUrl ? (
               <img
                 src={photoUrl}
-                alt="Student Passport Photo"
+                alt="Student Passport"
                 className="h-full w-full object-cover"
               />
             ) : (
@@ -482,11 +482,11 @@ export default async function PrintableApplicationPage({
               <p className="font-semibold text-slate-700 mt-1 text-[11px] leading-relaxed">
                 Your password is:{" "}
                 <span className="font-black text-slate-900">
-                  First 3 letters of your name (lowercase)
+                  First 4 letters of your name (lowercase, no spaces)
                 </span>{" "}
                 +{" "}
                 <span className="font-black text-slate-900">
-                  Last 5 digits of your Aadhar number
+                  Last 4 digits of your Aadhar number
                 </span>
               </p>
               <p className="text-[10px] text-slate-500 mt-1.5 italic">
@@ -498,7 +498,7 @@ export default async function PrintableApplicationPage({
                 </span>
                 , then password ={" "}
                 <span className="font-mono font-bold not-italic bg-slate-100 px-1.5 py-0.5 rounded text-slate-800">
-                  rah21098
+                  rahu1098
                 </span>
               </p>
             </div>
