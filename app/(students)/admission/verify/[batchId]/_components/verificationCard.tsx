@@ -3,6 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -24,15 +25,6 @@ export const VerificationCard = ({ batchId }: { batchId: string }) => {
   const [mjc, setMjc] = useState("");
   const { mutate, isPending, isSuccess, isError, error, data } = useMutation({
     ...verifyEnrolledStudentMutationOptions(batchId),
-    onSuccess: (data) => {
-      // Verification successful — redirect to registration form
-      if (!data.student) {
-        return;
-      }
-      const uan = data.student.UAN;
-      const mjc = data.student.MJC;
-      router.push(`/admission/register?batch=${batchId}&uan=${uan}&mjc=${mjc}`);
-    },
   });
 
   const onSubmit = (formData: VerifyStudentUANType) => {
@@ -71,7 +63,7 @@ export const VerificationCard = ({ batchId }: { batchId: string }) => {
 
           {isSuccess && (
             <p className="text-sm text-green-600 mt-2">
-              Student verified successfully! Redirecting...
+              Student verified successfully!
             </p>
           )}
           {isError && (
@@ -83,7 +75,7 @@ export const VerificationCard = ({ batchId }: { batchId: string }) => {
               Reset
             </Button>
             <Button type="submit" disabled={isPending}>
-              {isPending ? "Verifying..." : "Verify"}
+              Verify
             </Button>
           </div>
         </form>

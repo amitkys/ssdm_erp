@@ -1,6 +1,6 @@
+import { headers } from "next/headers";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-import { headers } from "next/headers";
 import { auth } from "@/lib/auth";
 
 // Admin-only route prefixes (route groups are transparent in the URL)
@@ -17,17 +17,13 @@ const adminRoutes = [
 ];
 
 // Student-only route prefixes
-const studentRoutes = [
-  "/student",
-];
+const studentRoutes = ["/student"];
 
 // Public routes that never need auth
-const publicRoutes = ["/auth", "/api/auth"];
+const publicRoutes = ["/", "/auth", "/api/auth"];
 
 function isMatch(pathname: string, prefixes: string[]) {
-  return prefixes.some(
-    (p) => pathname === p || pathname.startsWith(`${p}/`),
-  );
+  return prefixes.some((p) => pathname === p || pathname.startsWith(`${p}/`));
 }
 
 export async function proxy(request: NextRequest) {
@@ -39,9 +35,7 @@ export async function proxy(request: NextRequest) {
   }
 
   // Get the full session (Next.js 16 proxy runs in Node.js runtime)
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
+  const session = await auth.api.getSession({ headers: await headers() });
 
   // ── Unauthenticated → signin ──────────────────────────────────
   if (!session) {
