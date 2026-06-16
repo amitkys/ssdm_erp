@@ -1,12 +1,12 @@
 import {
-  IconSchool,
-  IconHierarchy2,
   IconBook,
   IconBook2,
   IconCalendarEvent,
-  IconUserCheck,
   IconClipboardCheck,
   IconFileText,
+  IconHierarchy2,
+  IconSchool,
+  IconUserCheck,
 } from "@tabler/icons-react";
 import type { ComponentType } from "react";
 
@@ -62,6 +62,12 @@ export function getMenuList(pathname: string): Group[] {
           label: "Admission Opens",
           icon: IconUserCheck,
           active: pathname.startsWith("/admission-open"),
+        },
+        {
+          href: "/verify/payment",
+          label: "Verify Payment",
+          icon: IconUserCheck,
+          active: pathname.startsWith("/verify/payment"),
         },
         {
           href: "/tender",
