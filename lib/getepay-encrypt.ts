@@ -36,19 +36,14 @@ export class GcmPgEncryption {
   }
 
   async encrypt(plainText: string): Promise<string> {
-    if (this.isProduction) {
-      return this._encryptCBC(plainText);
-    } else {
-      return this._encryptGCM(plainText);
-    }
+    // Both Sandbox and Production v2 API endpoints use AES-256-GCM (GcmPgEncryption).
+    // The key derivation iterations are dynamically set by process.env.CRYPTO_CODE (e.g. 10 for Sandbox, 65535 for Production).
+    return this._encryptGCM(plainText);
   }
 
   async decrypt(cipherText: string): Promise<string> {
-    if (this.isProduction) {
-      return this._decryptCBC(cipherText);
-    } else {
-      return this._decryptGCM(cipherText);
-    }
+    // Both Sandbox and Production v2 API endpoints use AES-256-GCM decryption.
+    return this._decryptGCM(cipherText);
   }
 
   private _encryptCBC(plainText: string): string {
@@ -130,7 +125,7 @@ export class GcmPgEncryption {
     const derivedKey = crypto.pbkdf2Sync(
       mKey,
       salt,
-      Number(process.env.CRYPTO_CODE),
+      Number(process.env.CRYPTO_CODE || (this.isProduction ? "65535" : "10")),
       32,
       "sha512",
     );
@@ -160,7 +155,7 @@ export class GcmPgEncryption {
     const derivedKey = crypto.pbkdf2Sync(
       mKey,
       salt,
-      Number(process.env.CRYPTO_CODE),
+      Number(process.env.CRYPTO_CODE || (this.isProduction ? "65535" : "10")),
       32,
       "sha512",
     );
