@@ -2,8 +2,9 @@ import { NextResponse } from "next/server";
 import { processPaymentReturn } from "@/app/(students)/admission/payment/lib/action";
 
 async function handleRedirect(req: Request) {
+  const url = new URL(req.url);
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || url.origin;
   try {
-    const url = new URL(req.url);
     const paymentId = url.searchParams.get("paymentId");
 
     let body: Record<string, unknown> = {};
@@ -49,12 +50,12 @@ async function handleRedirect(req: Request) {
       console.warn("[Redirect API] Missing response ciphertext");
       if (paymentId) {
         return NextResponse.redirect(
-          new URL(`/payment-success?paymentId=${paymentId}`, req.url),
+          new URL(`/payment-success?paymentId=${paymentId}`, appUrl),
           303,
         );
       }
       return NextResponse.redirect(
-        new URL("/payment-success?error=missing_payload", req.url),
+        new URL("/payment-success?error=missing_payload", appUrl),
         303,
       );
     }
@@ -70,19 +71,18 @@ async function handleRedirect(req: Request) {
     const targetPaymentId = paymentId || result.paymentId;
     if (targetPaymentId) {
       return NextResponse.redirect(
-        new URL(`/payment-success?paymentId=${targetPaymentId}`, req.url),
+        new URL(`/payment-success?paymentId=${targetPaymentId}`, appUrl),
         303,
       );
     }
 
     return NextResponse.redirect(
-      new URL("/payment-success?error=invalid_payload", req.url),
+      new URL("/payment-success?error=invalid_payload", appUrl),
       303,
     );
   } catch (error) {
     const err = error as Error;
     console.error("[Redirect API] Error processing return:", err);
-    const url = new URL(req.url);
     const paymentId = url.searchParams.get("paymentId");
     if (paymentId) {
       return NextResponse.redirect(
@@ -90,7 +90,7 @@ async function handleRedirect(req: Request) {
           `/payment-success?paymentId=${paymentId}&error=${encodeURIComponent(
             err.message || "processing_error",
           )}`,
-          req.url,
+          appUrl,
         ),
         303,
       );
@@ -98,7 +98,7 @@ async function handleRedirect(req: Request) {
     return NextResponse.redirect(
       new URL(
         `/payment-success?error=${encodeURIComponent(err.message || "unknown_error")}`,
-        req.url,
+        appUrl,
       ),
       303,
     );
