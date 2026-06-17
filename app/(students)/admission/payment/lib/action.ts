@@ -205,38 +205,80 @@ export async function initiatePayment(params: {
     const finalReturnUrl = buildUrlWithPaymentId(returnUrl, paymentId);
     const finalCallbackUrl = buildUrlWithPaymentId(callbackUrl, paymentId);
 
-    // 3. Prepare payload for GetEpay
-    const payloadJson = {
-      mid: String(mid).trim(),
-      terminalId: String(terminalId).trim(),
-      amount: String(totalAmount.toFixed(2)),
-      merchantTransactionId: txnId,
-      merchantOrderNo: paymentId,
-      transactionDate: new Date().toISOString(),
-      ru: finalReturnUrl,
-      callbackUrl: finalCallbackUrl,
-      currency: "INR",
-      paymentMode: "ALL",
-      bankId: "455",
-      txnType: "single",
-      productType: "IPG",
-      txnNote: `Payment for ${student.name || "Student"} - ${paymentId}`,
-      udf1: student.phone || "",
-      udf2: student.email || "",
-      udf3: student.name || "",
-      udf4: "",
-      udf5: "",
-      udf6: "",
-      udf7: "",
-      udf8: "",
-      udf9: "",
-      udf10: "",
-    };
+    // 3. Prepare payload for GetEpay depending on the environment
+    const isProduction = process.env.NODE_ENV === "production";
+    let payloadJson: Record<string, any>;
+
+    if (isProduction) {
+      // Format transactionDate to "DD-MM-YYYY HH:mm:ss"
+      const formatDate = (date: Date): string => {
+        const pad = (num: number) => String(num).padStart(2, "0");
+        const dd = pad(date.getDate());
+        const mm = pad(date.getMonth() + 1);
+        const yyyy = date.getFullYear();
+        const hh = pad(date.getHours());
+        const min = pad(date.getMinutes());
+        const ss = pad(date.getSeconds());
+        return `${dd}-${mm}-${yyyy} ${hh}:${min}:${ss}`;
+      };
+
+      payloadJson = {
+        mid: String(mid).trim(),
+        terminalId: String(terminalId).trim(),
+        amount: String(totalAmount.toFixed(2)),
+        merchantTransactionId: txnId,
+        transactionDate: formatDate(new Date()),
+        ru: finalReturnUrl,
+        callbackUrl: finalCallbackUrl,
+        currency: "INR",
+        paymentMode: "ALL",
+        txnType: "single",
+        productType: "PAYMENT",
+        vpa: String(terminalId).trim(),
+        txnNote: `Payment for ${student.name || "Student"} - ${paymentId}`,
+        udf1: student.phone || "",
+        udf2: student.email || "",
+        udf3: student.name || "",
+        udf4: "",
+        udf5: "",
+        udf6: "",
+        udf7: "",
+        udf8: "",
+        udf9: "",
+        udf10: "",
+      };
+    } else {
+      payloadJson = {
+        mid: String(mid).trim(),
+        terminalId: String(terminalId).trim(),
+        amount: String(totalAmount.toFixed(2)),
+        merchantTransactionId: txnId,
+        merchantOrderNo: paymentId,
+        transactionDate: new Date().toISOString(),
+        ru: finalReturnUrl,
+        callbackUrl: finalCallbackUrl,
+        currency: "INR",
+        paymentMode: "ALL",
+        bankId: "455",
+        txnType: "single",
+        productType: "IPG",
+        txnNote: `Payment for ${student.name || "Student"} - ${paymentId}`,
+        udf1: student.phone || "",
+        udf2: student.email || "",
+        udf3: student.name || "",
+        udf4: "",
+        udf5: "",
+        udf6: "",
+        udf7: "",
+        udf8: "",
+        udf9: "",
+        udf10: "",
+      };
+    }
 
     console.log("[initiatePayment] GetEpay Payload:", payloadJson);
 
     // 4. Encrypt payload
-    const isProduction = process.env.NODE_ENV === "production";
     const encryptor = new GcmPgEncryption(getepayIv, getepayKey, isProduction);
     const ciphertext = await encryptor.encrypt(JSON.stringify(payloadJson));
 
@@ -420,7 +462,11 @@ export async function processPaymentReturn(responseCiphertext: string) {
     }
 
     // Extract fields
-    let paymentId = decrypted.merchantOrderNo;
+    let paymentId =
+      decrypted.merchantOrderNo ||
+      decrypted.merchantTransactionId ||
+      decrypted.merchantTxnId;
+
     const txnStatus = String(
       decrypted.txnStatus || decrypted.paymentStatus || decrypted.status || "",
     )
@@ -436,7 +482,7 @@ export async function processPaymentReturn(responseCiphertext: string) {
 
     if (!paymentId) {
       throw new Error(
-        "Missing merchantOrderNo (paymentId) in response payload.",
+        "Missing payment identifier (merchantOrderNo or merchantTransactionId) in response payload.",
       );
     }
 

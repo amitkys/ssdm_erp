@@ -76,7 +76,11 @@ export async function POST(req: Request) {
     }
 
     // Extract fields
-    const responsePaymentId = decrypted.merchantOrderNo;
+    const responsePaymentId =
+      decrypted.merchantOrderNo ||
+      decrypted.merchantTransactionId ||
+      decrypted.merchantTxnId;
+
     if (!paymentId && responsePaymentId) {
       paymentId = responsePaymentId;
     }

@@ -36,13 +36,16 @@ export class GcmPgEncryption {
   }
 
   async encrypt(plainText: string): Promise<string> {
-    // Both Sandbox and Production v2 API endpoints use AES-256-GCM (GcmPgEncryption).
-    // The key derivation iterations are dynamically set by process.env.CRYPTO_CODE (e.g. 10 for Sandbox, 65535 for Production).
+    if (this.isProduction) {
+      return this._encryptCBC(plainText);
+    }
     return this._encryptGCM(plainText);
   }
 
   async decrypt(cipherText: string): Promise<string> {
-    // Both Sandbox and Production v2 API endpoints use AES-256-GCM decryption.
+    if (this.isProduction) {
+      return this._decryptCBC(cipherText);
+    }
     return this._decryptGCM(cipherText);
   }
 
