@@ -205,12 +205,45 @@ export async function initiatePayment(params: {
     const finalReturnUrl = buildUrlWithPaymentId(returnUrl, paymentId);
     const finalCallbackUrl = buildUrlWithPaymentId(callbackUrl, paymentId);
 
-    // 3. Prepare payload for GetEpay depending on the environment
-    const isProduction = process.env.NODE_ENV === "production";
+    // 3. Prepare payload for GetEpay depending on the API version (V2 GCM vs V1 CBC)
+    const isSandboxUrl =
+      getepayUrl.includes("pay1.getepay.in") ||
+      getepayUrl.includes("uat") ||
+      getepayUrl.includes("sandbox");
+    const isProduction =
+      process.env.NODE_ENV === "production" ||
+      (getepayUrl !== "" && !isSandboxUrl);
+    const isV2 = getepayUrl.includes("/v2/");
     let payloadJson: Record<string, any>;
 
-    if (isProduction) {
-      // Format transactionDate to "DD-MM-YYYY HH:mm:ss"
+    if (isV2) {
+      payloadJson = {
+        mid: String(mid).trim(),
+        terminalId: String(terminalId).trim(),
+        amount: String(totalAmount),
+        merchantTransactionId: txnId,
+        transactionDate: new Date().toISOString(),
+        ru: finalReturnUrl,
+        callbackUrl: finalCallbackUrl,
+        currency: "INR",
+        paymentMode: "ALL",
+        bankId: "455",
+        txnType: "single",
+        productType: "IPG",
+        txnNote: `Payment for ${student.name || "Student"} - ${paymentId}`,
+        udf1: student.phone || "",
+        udf2: student.email || "",
+        udf3: student.name || "",
+        udf4: "",
+        udf5: "",
+        udf6: "",
+        udf7: "",
+        udf8: "",
+        udf9: "",
+        udf10: "",
+      };
+    } else {
+      // Format transactionDate to "DD-MM-YYYY HH:mm:ss" for V1 API
       const formatDate = (date: Date): string => {
         const pad = (num: number) => String(num).padStart(2, "0");
         const dd = pad(date.getDate());
@@ -247,33 +280,6 @@ export async function initiatePayment(params: {
         udf9: "",
         udf10: "",
       };
-    } else {
-      payloadJson = {
-        mid: String(mid).trim(),
-        terminalId: String(terminalId).trim(),
-        amount: String(totalAmount.toFixed(2)),
-        merchantTransactionId: txnId,
-        merchantOrderNo: paymentId,
-        transactionDate: new Date().toISOString(),
-        ru: finalReturnUrl,
-        callbackUrl: finalCallbackUrl,
-        currency: "INR",
-        paymentMode: "ALL",
-        bankId: "455",
-        txnType: "single",
-        productType: "IPG",
-        txnNote: `Payment for ${student.name || "Student"} - ${paymentId}`,
-        udf1: student.phone || "",
-        udf2: student.email || "",
-        udf3: student.name || "",
-        udf4: "",
-        udf5: "",
-        udf6: "",
-        udf7: "",
-        udf8: "",
-        udf9: "",
-        udf10: "",
-      };
     }
 
     console.log("[initiatePayment] GetEpay Payload:", payloadJson);
@@ -281,6 +287,21 @@ export async function initiatePayment(params: {
     // 4. Encrypt payload
     const encryptor = new GcmPgEncryption(getepayIv, getepayKey, isProduction);
     const ciphertext = await encryptor.encrypt(JSON.stringify(payloadJson));
+
+    // If it's V1 (CBC mode), we don't perform a server-side fetch.
+    // Instead, we return the details for the client to perform a form POST redirect.
+    if (!isV2) {
+      console.log("[initiatePayment] V1 CBC Mode detected. Returning form parameters to client.");
+      return {
+        success: true,
+        isHtmlForm: true,
+        getepayUrl,
+        mid: String(mid).trim(),
+        terminalId: String(terminalId).trim(),
+        req: ciphertext,
+        paymentId,
+      };
+    }
 
     // 5. POST to GetEpay generateInvoice
     const response = await fetch(getepayUrl, {
@@ -395,7 +416,14 @@ export async function simulateCallback(params: {
       txnAmount: String(Number(payment.amount).toFixed(2)),
     };
 
-    const isProduction = process.env.NODE_ENV === "production";
+    const testUrl = process.env.GETEPAY_URL || "";
+    const isSandboxUrl =
+      testUrl.includes("pay1.getepay.in") ||
+      testUrl.includes("uat") ||
+      testUrl.includes("sandbox");
+    const isProduction =
+      process.env.NODE_ENV === "production" ||
+      (testUrl !== "" && !isSandboxUrl);
     const encryptor = new GcmPgEncryption(getepayIv, getepayKey, isProduction);
     const encryptedText = await encryptor.encrypt(JSON.stringify(mockResponse));
 
@@ -442,7 +470,14 @@ export async function processPaymentReturn(responseCiphertext: string) {
       ? String(responseCiphertext).trim().replace(/ /g, "+")
       : String(responseCiphertext).trim();
 
-    const isProduction = process.env.NODE_ENV === "production";
+    const testUrl = process.env.GETEPAY_URL || "";
+    const isSandboxUrl =
+      testUrl.includes("pay1.getepay.in") ||
+      testUrl.includes("uat") ||
+      testUrl.includes("sandbox");
+    const isProduction =
+      process.env.NODE_ENV === "production" ||
+      (testUrl !== "" && !isSandboxUrl);
     const encryptor = new GcmPgEncryption(getepayIv, getepayKey, isProduction);
     const decryptedText = await encryptor.decrypt(cleanCiphertext);
     const decrypted = JSON.parse(decryptedText);

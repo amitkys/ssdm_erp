@@ -55,7 +55,14 @@ export async function POST(req: Request) {
       );
     }
 
-    const isProduction = process.env.NODE_ENV === "production";
+    const testUrl = process.env.GETEPAY_URL || "";
+    const isSandboxUrl =
+      testUrl.includes("pay1.getepay.in") ||
+      testUrl.includes("uat") ||
+      testUrl.includes("sandbox");
+    const isProduction =
+      process.env.NODE_ENV === "production" ||
+      (testUrl !== "" && !isSandboxUrl);
     const encryptor = new GcmPgEncryption(getepayIv, getepayKey, isProduction);
     const decryptedText = await encryptor.decrypt(responseCiphertext);
     const decrypted = JSON.parse(decryptedText);

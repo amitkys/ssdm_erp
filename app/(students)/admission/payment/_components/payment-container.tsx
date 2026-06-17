@@ -75,11 +75,40 @@ export const PaymentContainer = ({
         lateFee: fees.lateFee,
       });
 
-      if (res.success && res.paymentUrl) {
+      if (res.success) {
         setLoadingText("Redirecting to GetEpay Secure Gateway...");
         toast.success("Checkout initialized! Redirecting...");
-        // Redirect browser to GetEpay payment portal
-        window.location.href = res.paymentUrl;
+
+        if (res.isHtmlForm) {
+          // Render a dynamic form and submit it
+          const form = document.createElement("form");
+          form.method = "POST";
+          form.action = res.getepayUrl;
+
+          const inputs = {
+            mid: res.mid,
+            terminalId: res.terminalId,
+            req: res.req,
+          };
+
+          for (const [key, value] of Object.entries(inputs)) {
+            const input = document.createElement("input");
+            input.type = "hidden";
+            input.name = key;
+            input.value = value || "";
+            form.appendChild(input);
+          }
+
+          document.body.appendChild(form);
+          form.submit();
+        } else if (res.paymentUrl) {
+          // Redirect browser to GetEpay payment portal
+          window.location.href = res.paymentUrl;
+        } else {
+          setErrorMessage("Failed to locate redirect details.");
+          toast.error("Checkout Failed");
+          setIsPending(false);
+        }
       } else {
         setErrorMessage(
           res.message || "Failed to initiate payment gateway request.",

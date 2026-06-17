@@ -36,14 +36,20 @@ export class GcmPgEncryption {
   }
 
   async encrypt(plainText: string): Promise<string> {
-    if (this.isProduction) {
+    const getepayUrl = process.env.GETEPAY_URL || "";
+    const isV2 = getepayUrl.includes("/v2/");
+
+    if (this.isProduction && !isV2) {
       return this._encryptCBC(plainText);
     }
     return this._encryptGCM(plainText);
   }
 
   async decrypt(cipherText: string): Promise<string> {
-    if (this.isProduction) {
+    const getepayUrl = process.env.GETEPAY_URL || "";
+    const isV2 = getepayUrl.includes("/v2/");
+
+    if (this.isProduction && !isV2) {
       return this._decryptCBC(cipherText);
     }
     return this._decryptGCM(cipherText);
