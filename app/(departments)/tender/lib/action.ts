@@ -2,6 +2,7 @@
 
 import { desc, eq } from "drizzle-orm";
 import { headers } from "next/headers";
+import { revalidatePath } from "next/cache";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { tenderTable } from "@/lib/db/schema";
@@ -70,6 +71,7 @@ export async function addTender(input: AddTenderSchema) {
       })
       .returning();
 
+    revalidatePath("/");
     return { success: true, data: record };
   } catch (error) {
     console.error("[addTender] Error:", error);
@@ -112,6 +114,7 @@ export async function updateTender(input: UpdateTenderSchema) {
       return { success: false, message: "Tender not found" };
     }
 
+    revalidatePath("/");
     return { success: true, data: record };
   } catch (error) {
     console.error("[updateTender] Error:", error);
@@ -138,6 +141,7 @@ export async function deleteTender(id: string) {
       return { success: false, message: "Tender not found" };
     }
 
+    revalidatePath("/");
     return { success: true, data: record };
   } catch (error) {
     console.error("[deleteTender] Error:", error);

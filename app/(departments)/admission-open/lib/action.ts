@@ -2,6 +2,7 @@
 
 import { desc, eq } from "drizzle-orm";
 import { headers } from "next/headers";
+import { revalidatePath } from "next/cache";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { admissionOpenTable, batchTable } from "@/lib/db/schema";
@@ -76,6 +77,8 @@ export async function addAdmissionOpen(input: AddAdmissionOpenSchema) {
       })
       .returning();
 
+    revalidatePath("/");
+    revalidatePath("/admission");
     return { success: true, data: record };
   } catch (error) {
     console.error("[addAdmissionOpen] Error:", error);
@@ -128,6 +131,8 @@ export async function updateAdmissionOpen(input: UpdateAdmissionOpenSchema) {
       return { success: false, message: "Admission open record not found" };
     }
 
+    revalidatePath("/");
+    revalidatePath("/admission");
     return { success: true, data: record };
   } catch (error) {
     console.error("[updateAdmissionOpen] Error:", error);
@@ -154,6 +159,8 @@ export async function deleteAdmissionOpen(id: string) {
       return { success: false, message: "Admission open record not found" };
     }
 
+    revalidatePath("/");
+    revalidatePath("/admission");
     return { success: true, data: record };
   } catch (error) {
     console.error("[deleteAdmissionOpen] Error:", error);

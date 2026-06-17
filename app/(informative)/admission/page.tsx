@@ -18,6 +18,9 @@ import {
   ShieldAlert,
 } from "lucide-react";
 
+// Force dynamic rendering — data depends on current date and admin mutations
+export const dynamic = "force-dynamic";
+
 async function getOpenAdmissions() {
   try {
     const records = await db

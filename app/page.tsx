@@ -31,6 +31,9 @@ import {
   GraduationCap,
 } from "lucide-react";
 
+// Force dynamic rendering — data depends on current date and admin mutations
+export const dynamic = "force-dynamic";
+
 // Server-side data fetching
 async function getOpenAdmissions() {
   try {

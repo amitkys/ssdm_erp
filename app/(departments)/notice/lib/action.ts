@@ -2,6 +2,7 @@
 
 import { desc, eq } from "drizzle-orm";
 import { headers } from "next/headers";
+import { revalidatePath } from "next/cache";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { notice } from "@/lib/db/schema";
@@ -70,6 +71,7 @@ export async function addNotice(input: AddNoticeSchema) {
       })
       .returning();
 
+    revalidatePath("/");
     return { success: true, data: record };
   } catch (error) {
     console.error("[addNotice] Error:", error);
@@ -112,6 +114,7 @@ export async function updateNotice(input: UpdateNoticeSchema) {
       return { success: false, message: "Notice not found" };
     }
 
+    revalidatePath("/");
     return { success: true, data: record };
   } catch (error) {
     console.error("[updateNotice] Error:", error);
@@ -138,6 +141,7 @@ export async function deleteNotice(id: string) {
       return { success: false, message: "Notice not found" };
     }
 
+    revalidatePath("/");
     return { success: true, data: record };
   } catch (error) {
     console.error("[deleteNotice] Error:", error);
