@@ -1,6 +1,6 @@
 "use client";
 
-import { GraduationCap, Menu, Phone, X } from "lucide-react";
+import { ChevronDown, GraduationCap, Menu, Phone, X } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 
