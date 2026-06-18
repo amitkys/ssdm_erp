@@ -129,7 +129,7 @@ export default async function Page() {
           <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center space-y-8 animate-in fade-in duration-700">
             {/* Accreditation Badge */}
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-blue-200 text-xs font-semibold uppercase tracking-wider">
-              <Award className="h-4 w-4" /> NAAC Accredited & Affiliated to PPU
+              <Award className="h-4 w-4" /> Affiliated to Patliputra University
             </div>
 
             {/* Title */}

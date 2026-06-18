@@ -49,7 +49,7 @@ export function SiteHeader({ collegeName }: { collegeName: string }) {
       <div className="bg-gradient-to-r from-blue-950 to-indigo-950 text-white text-[11px] py-1.5 px-4">
         <div className="max-w-7xl mx-auto flex justify-between items-center gap-2">
           <span className="hidden sm:inline font-light tracking-wide">
-            Affiliated to Patliputra University&ensp;|&ensp;NAAC Accredited
+            Affiliated to Patliputra University
           </span>
           <span className="sm:hidden font-light tracking-wide">
             PPU Affiliated
