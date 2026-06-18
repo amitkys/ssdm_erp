@@ -30,6 +30,9 @@ const publicRoutes = [
   "/admission",
   "/examination",
   "/payment-success",
+  "/gallery",
+  "/infrastructure",
+  "/student-zone",
 ];
 
 function isMatch(pathname: string, prefixes: string[]) {
@@ -40,7 +43,11 @@ export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Allow public routes & static assets through
-  if (isMatch(pathname, publicRoutes) || pathname.startsWith("/_next")) {
+  if (
+    isMatch(pathname, publicRoutes) ||
+    pathname.startsWith("/_next") ||
+    pathname.includes(".")
+  ) {
     return NextResponse.next();
   }
 
@@ -85,6 +92,6 @@ export const config = {
      * Match all routes except static files & images.
      * Next.js 16 proxy convention.
      */
-    "/((?!_next/static|_next/image|favicon.ico).*)",
+    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
   ],
 };
