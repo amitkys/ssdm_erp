@@ -60,9 +60,9 @@ export default async function PrintableApplicationPage({
   const subjects =
     allSubjectIds.length > 0
       ? await db
-        .select()
-        .from(subjectTable)
-        .where(inArray(subjectTable.id, allSubjectIds))
+          .select()
+          .from(subjectTable)
+          .where(inArray(subjectTable.id, allSubjectIds))
       : [];
 
   const getSubjectText = (id: string | null | undefined) => {

@@ -67,12 +67,7 @@ async function backgroundSignupStudent({
 
     if (!existingUser) {
       await auth.api.signUpEmail({
-        body: {
-          name,
-          email,
-          password,
-          role: "student",
-        },
+        body: { name, email, password, role: "student" },
       });
     }
   } catch (error) {
@@ -236,7 +231,9 @@ export async function registerStudent(payload: RegisterStudentPayload) {
 
       let nextSequence = 1;
       if (lastStudent) {
-        const lastSequenceStr = lastStudent.collegeRoll.substring(prefix.length);
+        const lastSequenceStr = lastStudent.collegeRoll.substring(
+          prefix.length,
+        );
         const lastSequence = parseInt(lastSequenceStr, 10);
         if (!isNaN(lastSequence)) {
           nextSequence = lastSequence + 1;
@@ -410,4 +407,3 @@ export const fetchActiveSubjects = async () => {
     return { success: false as const, message: "Failed to fetch subjects" };
   }
 };
-

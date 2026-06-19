@@ -1,4 +1,5 @@
 import {
+  IconBell,
   IconBook,
   IconBook2,
   IconCalendarEvent,
@@ -7,7 +8,6 @@ import {
   IconHierarchy2,
   IconSchool,
   IconUserCheck,
-  IconBell,
 } from "@tabler/icons-react";
 import type { ComponentType } from "react";
 
@@ -91,7 +91,15 @@ export function getMenuList(pathname: string): Group[] {
           href: "/admission",
           label: "Admission",
           icon: IconUserCheck,
-          active: pathname.startsWith("/admission"),
+          active:
+            pathname.startsWith("/admission") &&
+            !pathname.startsWith("/admission-dcr"),
+        },
+        {
+          href: "/admission-dcr",
+          label: "Admission DCR",
+          icon: IconFileText,
+          active: pathname.startsWith("/admission-dcr"),
         },
         {
           href: "/examination",

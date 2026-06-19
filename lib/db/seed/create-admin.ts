@@ -5,7 +5,9 @@ async function createSuperAdmin() {
   const password = process.env.SUPERADMIN_PASSWORD;
 
   if (!email || !password) {
-    console.error("❌ SUPERADMIN_EMAIL or SUPERADMIN_PASSWORD is not set in .env");
+    console.error(
+      "❌ SUPERADMIN_EMAIL or SUPERADMIN_PASSWORD is not set in .env",
+    );
     process.exit(1);
   }
 
@@ -22,10 +24,15 @@ async function createSuperAdmin() {
     if (response) {
       console.log(`✅ SuperAdmin account created successfully for: ${email}`);
     } else {
-      console.log("⚠️ Could not create SuperAdmin (perhaps it already exists?).");
+      console.log(
+        "⚠️ Could not create SuperAdmin (perhaps it already exists?).",
+      );
     }
   } catch (error: any) {
-    if (error?.message?.includes("already exists") || error?.body?.message?.includes("already exists")) {
+    if (
+      error?.message?.includes("already exists") ||
+      error?.body?.message?.includes("already exists")
+    ) {
       console.log(`⚠️ SuperAdmin account with email ${email} already exists.`);
     } else {
       console.error("❌ Error creating SuperAdmin:", error);

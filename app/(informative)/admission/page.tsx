@@ -171,8 +171,6 @@ export default async function AdmissionPortalPage() {
                               {formatDate(displayEndDate)}
                             </span>
                           </div>
-
-
                         </div>
                       </div>
 

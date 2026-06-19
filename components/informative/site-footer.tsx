@@ -1,5 +1,5 @@
+import { GraduationCap, Mail, MapPin, Phone } from "lucide-react";
 import Link from "next/link";
-import { GraduationCap, MapPin, Phone, Mail } from "lucide-react";
 import type { CollegeConfig } from "@/lib/college-config";
 
 export function SiteFooter({ config }: { config: CollegeConfig }) {
@@ -105,7 +105,29 @@ export function SiteFooter({ config }: { config: CollegeConfig }) {
           </div>
         </div>
 
-        <div className="border-t border-slate-800 mt-10 pt-6 text-center text-[10px] text-slate-500 space-y-1.5">
+        <div className="border-t border-slate-800 mt-10 pt-6 text-center text-[10px] text-slate-500 space-y-2">
+          <div className="flex flex-wrap justify-center gap-x-4 gap-y-2 text-slate-400 font-semibold mb-1">
+            <Link
+              href="/privacy-policy"
+              className="hover:text-blue-400 transition-colors"
+            >
+              Privacy Policy
+            </Link>
+            <span className="text-slate-700 hidden sm:inline">•</span>
+            <Link
+              href="/terms-and-conditions"
+              className="hover:text-blue-400 transition-colors"
+            >
+              Terms & Conditions
+            </Link>
+            <span className="text-slate-700 hidden sm:inline">•</span>
+            <Link
+              href="/refund-policy"
+              className="hover:text-blue-400 transition-colors"
+            >
+              Refund Policy
+            </Link>
+          </div>
           <p>
             © {new Date().getFullYear()} {config.name}. All Rights Reserved.
           </p>
@@ -118,7 +140,7 @@ export function SiteFooter({ config }: { config: CollegeConfig }) {
               rel="noopener noreferrer"
               className="text-slate-400 font-medium hover:underline hover:text-blue-400 transition-colors"
             >
-              Vastaman Solutions
+              {config.developer}
             </a>
           </p>
         </div>

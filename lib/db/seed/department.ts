@@ -170,22 +170,26 @@ async function main() {
     // 7. Seed Notices
     const notices = [
       {
-        title: "Registration for Semester I (Session 2026-30) Regular & Vocational Courses",
-        description: "All students are directed to register and submit their documents online before the deadline.",
+        title:
+          "Registration for Semester I (Session 2026-30) Regular & Vocational Courses",
+        description:
+          "All students are directed to register and submit their documents online before the deadline.",
         startDate: `${currentYear}-06-10`,
         endDate: `${currentYear}-07-20`,
         file: "https://res.cloudinary.com/demo/image/upload/v1624103197/sample.pdf",
       },
       {
         title: "Holiday Notice: Summer Vacation 2026",
-        description: "The college will remain closed for summer vacation from 1st June to 30th June 2026.",
+        description:
+          "The college will remain closed for summer vacation from 1st June to 30th June 2026.",
         startDate: `${currentYear}-05-25`,
         endDate: `${currentYear}-06-30`,
         file: "https://res.cloudinary.com/demo/image/upload/v1624103197/sample.pdf",
       },
       {
         title: "B.Sc Physics Practical Examination Schedule - Semester II",
-        description: "Detailed schedule for the practical examinations for B.Sc Physics Semester II students.",
+        description:
+          "Detailed schedule for the practical examinations for B.Sc Physics Semester II students.",
         startDate: `${currentYear}-06-12`,
         endDate: `${currentYear}-06-25`,
         file: "https://res.cloudinary.com/demo/image/upload/v1624103197/sample.pdf",

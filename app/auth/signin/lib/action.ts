@@ -20,11 +20,7 @@ export async function getStudentRedirectInfo(uan: string) {
 
     return {
       success: true,
-      data: {
-        batchId: student.batchId,
-        uan: student.UAN,
-        mjc: student.subMJC,
-      },
+      data: { batchId: student.batchId, uan: student.UAN, mjc: student.subMJC },
     };
   } catch (error) {
     console.error("[getStudentRedirectInfo] Error:", error);
