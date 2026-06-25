@@ -34,6 +34,7 @@ export function SiteFooter({ config }: { config: CollegeConfig }) {
                 { label: "About College", href: "/#about" },
                 { label: "Departments", href: "/#academics" },
                 { label: "Online Admission", href: "/admission" },
+                { label: "Miscellaneous Payment", href: "/miscellaneous-payment" },
                 { label: "Contact Us", href: "/#contact" },
               ].map((l) => (
                 <li key={l.href}>
