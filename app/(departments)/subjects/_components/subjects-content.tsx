@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useGetSubjects } from "../query/get-subjects";
+import { AddSubjectSheet } from "./add-subject-sheet";
 import { columns } from "./columns";
 import { DataTable } from "./data-table";
-import { AddSubjectSheet } from "./add-subject-sheet";
 
 export function SubjectsContent() {
   const [search, setSearch] = useState("");

@@ -3,24 +3,40 @@ import { inArray } from "drizzle-orm";
 import { NextResponse } from "next/server";
 import * as z from "zod";
 import { db } from "@/lib/db";
-import { batchTable, courseTable, academicSessionTable } from "@/lib/db/schema";
+import { academicSessionTable, batchTable, courseTable } from "@/lib/db/schema";
 
-const dateTransform = z.any().optional().nullable().transform((val) => {
-  if (!val || String(val).trim() === "") return undefined;
-  try {
-    const d = new Date(val);
-    return isNaN(d.getTime()) ? undefined : d;
-  } catch {
-    return undefined;
-  }
-});
+const dateTransform = z
+  .any()
+  .optional()
+  .nullable()
+  .transform((val) => {
+    if (!val || String(val).trim() === "") {
+      return undefined;
+    }
+    try {
+      const d = new Date(val);
+      return isNaN(d.getTime()) ? undefined : d;
+    } catch {
+      return undefined;
+    }
+  });
 
 const batchItemSchema = z.object({
-  id: z.string().optional().nullable().transform((val) => val || createId()),
+  id: z
+    .string()
+    .optional()
+    .nullable()
+    .transform((val) => val || createId()),
   courseId: z.string().min(1, "Course ID is required"),
   academicSessionId: z.string().min(1, "Academic Session ID is required"),
-  perSemesterFee: z.number().nonnegative("perSemesterFee must be a non-negative number"),
-  isActive: z.boolean().optional().nullable().transform((val) => (val === null ? true : val)),
+  perSemesterFee: z
+    .number()
+    .nonnegative("perSemesterFee must be a non-negative number"),
+  isActive: z
+    .boolean()
+    .optional()
+    .nullable()
+    .transform((val) => (val === null ? true : val)),
   createdAt: dateTransform,
   updatedAt: dateTransform,
 });
@@ -42,7 +58,8 @@ export async function POST(req: Request) {
       return NextResponse.json(
         {
           success: false,
-          message: "Invalid onConflict parameter. Supported values: 'fail', 'ignore'",
+          message:
+            "Invalid onConflict parameter. Supported values: 'fail', 'ignore'",
         },
         { status: 400 },
       );
@@ -98,7 +115,9 @@ export async function POST(req: Request) {
 
     // 2. Referenced Data Existence Validation (courseId & academicSessionId)
     const uniqueCourseIds = Array.from(new Set(batches.map((b) => b.courseId)));
-    const uniqueSessionIds = Array.from(new Set(batches.map((b) => b.academicSessionId)));
+    const uniqueSessionIds = Array.from(
+      new Set(batches.map((b) => b.academicSessionId)),
+    );
 
     // Fetch existing courses
     const existingCourses = await db
@@ -106,7 +125,9 @@ export async function POST(req: Request) {
       .from(courseTable)
       .where(inArray(courseTable.id, uniqueCourseIds));
     const existingCourseIdsSet = new Set(existingCourses.map((c) => c.id));
-    const missingCourseIds = uniqueCourseIds.filter((id) => !existingCourseIdsSet.has(id));
+    const missingCourseIds = uniqueCourseIds.filter(
+      (id) => !existingCourseIdsSet.has(id),
+    );
 
     // Fetch existing academic sessions
     const existingSessions = await db
@@ -114,7 +135,9 @@ export async function POST(req: Request) {
       .from(academicSessionTable)
       .where(inArray(academicSessionTable.id, uniqueSessionIds));
     const existingSessionIdsSet = new Set(existingSessions.map((s) => s.id));
-    const missingSessionIds = uniqueSessionIds.filter((id) => !existingSessionIdsSet.has(id));
+    const missingSessionIds = uniqueSessionIds.filter(
+      (id) => !existingSessionIdsSet.has(id),
+    );
 
     if (missingCourseIds.length > 0 || missingSessionIds.length > 0) {
       return NextResponse.json(
@@ -122,8 +145,10 @@ export async function POST(req: Request) {
           success: false,
           message: "Referenced database entities do not exist.",
           errors: {
-            missingCourseIds: missingCourseIds.length > 0 ? missingCourseIds : undefined,
-            missingSessionIds: missingSessionIds.length > 0 ? missingSessionIds : undefined,
+            missingCourseIds:
+              missingCourseIds.length > 0 ? missingCourseIds : undefined,
+            missingSessionIds:
+              missingSessionIds.length > 0 ? missingSessionIds : undefined,
           },
         },
         { status: 400 },
@@ -171,8 +196,11 @@ export async function POST(req: Request) {
         return NextResponse.json(
           {
             success: false,
-            message: "Database insertion failed: A duplicate record already exists.",
-            detail: dbError.detail || "Unique constraint violation on batch parameters.",
+            message:
+              "Database insertion failed: A duplicate record already exists.",
+            detail:
+              dbError.detail ||
+              "Unique constraint violation on batch parameters.",
           },
           { status: 409 },
         );
@@ -182,8 +210,11 @@ export async function POST(req: Request) {
         return NextResponse.json(
           {
             success: false,
-            message: "Database insertion failed: A foreign key constraint was violated.",
-            detail: dbError.detail || "courseId or academicSessionId references a non-existent record.",
+            message:
+              "Database insertion failed: A foreign key constraint was violated.",
+            detail:
+              dbError.detail ||
+              "courseId or academicSessionId references a non-existent record.",
           },
           { status: 400 },
         );

@@ -1,13 +1,13 @@
 import { faker } from "@faker-js/faker";
+import { eq } from "drizzle-orm";
 import { db } from "@/lib/db";
 import {
+  academicSessionTable,
   batchTable,
   courseTable,
-  academicSessionTable,
   subjectTable,
 } from "@/lib/db/schema";
 import { AdmittedStudentTable } from "@/lib/db/schema/student";
-import { eq } from "drizzle-orm";
 
 // --- Helpers ---
 
@@ -37,10 +37,7 @@ export async function seedAdmittedStudents() {
 
     // 2. Fetch batches with their course and session info
     const batches = await db.query.batchTable.findMany({
-      with: {
-        course: true,
-        academicSession: true,
-      },
+      with: { course: true, academicSession: true },
     });
 
     if (batches.length === 0) {
@@ -69,7 +66,14 @@ export async function seedAdmittedStudents() {
       "MANAGEMENT QUOTA",
       "OTHER",
     ] as const;
-    const RELIGIONS = ["Hindu", "Muslim", "Christian", "Sikh", "Buddhist", "Jain"] as const;
+    const RELIGIONS = [
+      "Hindu",
+      "Muslim",
+      "Christian",
+      "Sikh",
+      "Buddhist",
+      "Jain",
+    ] as const;
 
     let globalIndex = 0;
     const studentsToInsert = [];
@@ -108,7 +112,8 @@ export async function seedAdmittedStudents() {
 
         // Assign varying semester counts (1-8 for 4-year courses)
         // If the session is 2026-2030, all students are in the same semester (Semester 1)
-        const semesterCount = session.name === "2026-2030" ? 1 : ((i % maxSemester) + 1);
+        const semesterCount =
+          session.name === "2026-2030" ? 1 : (i % maxSemester) + 1;
 
         // Some students in later semesters may be passed
         const isPassed = semesterCount >= maxSemester && Math.random() > 0.5;

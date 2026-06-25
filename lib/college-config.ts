@@ -24,7 +24,9 @@ export function getCollegeConfig(): CollegeConfig {
       const content = fs.readFileSync(envPath, "utf-8");
       for (const line of content.split("\n")) {
         const trimmed = line.trim();
-        if (!trimmed || trimmed.startsWith("#")) continue;
+        if (!trimmed || trimmed.startsWith("#")) {
+          continue;
+        }
 
         // Match KEY=VALUE or KEY:"VALUE" or KEY:VALUE
         const match = trimmed.match(/^([A-Z_]+)[=:](.*)$/);

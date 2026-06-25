@@ -1,5 +1,5 @@
+import { GraduationCap, Mail, MapPin, Phone } from "lucide-react";
 import Link from "next/link";
-import { GraduationCap, MapPin, Phone, Mail } from "lucide-react";
 import type { CollegeConfig } from "@/lib/college-config";
 
 export function SiteFooter({ config }: { config: CollegeConfig }) {

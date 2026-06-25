@@ -6,16 +6,38 @@ import { db } from "@/lib/db";
 import { session, user } from "@/lib/db/schema";
 
 const sessionItemSchema = z.object({
-  id: z.string().optional().nullable().transform((val) => val || createId()),
+  id: z
+    .string()
+    .optional()
+    .nullable()
+    .transform((val) => val || createId()),
   expiresAt: z.any().transform((val) => {
-    if (!val) throw new Error("expires_at/expiresAt is required");
+    if (!val) {
+      throw new Error("expires_at/expiresAt is required");
+    }
     return new Date(val);
   }),
   token: z.string().min(1, "token is required"),
-  createdAt: z.any().optional().nullable().transform((val) => (val ? new Date(val) : new Date())),
-  updatedAt: z.any().optional().nullable().transform((val) => (val ? new Date(val) : new Date())),
-  ipAddress: z.string().optional().nullable().transform((val) => val || null),
-  userAgent: z.string().optional().nullable().transform((val) => val || null),
+  createdAt: z
+    .any()
+    .optional()
+    .nullable()
+    .transform((val) => (val ? new Date(val) : new Date())),
+  updatedAt: z
+    .any()
+    .optional()
+    .nullable()
+    .transform((val) => (val ? new Date(val) : new Date())),
+  ipAddress: z
+    .string()
+    .optional()
+    .nullable()
+    .transform((val) => val || null),
+  userAgent: z
+    .string()
+    .optional()
+    .nullable()
+    .transform((val) => val || null),
   userId: z.string().min(1, "user_id/userId is required"),
 });
 
@@ -52,7 +74,8 @@ export async function POST(req: Request) {
       return NextResponse.json(
         {
           success: false,
-          message: "Invalid onConflict parameter. Supported values: 'fail', 'ignore'",
+          message:
+            "Invalid onConflict parameter. Supported values: 'fail', 'ignore'",
         },
         { status: 400 },
       );
@@ -107,15 +130,19 @@ export async function POST(req: Request) {
     const sessionsData = parsed.data;
 
     // 2. Referenced Data Existence Validation & Auto-creation of Placeholder Users
-    const uniqueUserIds = Array.from(new Set(sessionsData.map((s) => s.userId)));
-    
+    const uniqueUserIds = Array.from(
+      new Set(sessionsData.map((s) => s.userId)),
+    );
+
     // Fetch existing users
     const existingUsers = await db
       .select({ id: user.id })
       .from(user)
       .where(inArray(user.id, uniqueUserIds));
     const existingUserIdsSet = new Set(existingUsers.map((u) => u.id));
-    const missingUserIds = uniqueUserIds.filter((id) => !existingUserIdsSet.has(id));
+    const missingUserIds = uniqueUserIds.filter(
+      (id) => !existingUserIdsSet.has(id),
+    );
 
     // Create placeholder users for any missing user IDs to satisfy foreign keys
     if (missingUserIds.length > 0) {
@@ -170,7 +197,8 @@ export async function POST(req: Request) {
         return NextResponse.json(
           {
             success: false,
-            message: "Database insertion failed: A duplicate record already exists.",
+            message:
+              "Database insertion failed: A duplicate record already exists.",
             detail: dbError.detail || "Unique constraint violation on token.",
           },
           { status: 409 },
@@ -181,7 +209,8 @@ export async function POST(req: Request) {
         return NextResponse.json(
           {
             success: false,
-            message: "Database insertion failed: A foreign key constraint was violated.",
+            message:
+              "Database insertion failed: A foreign key constraint was violated.",
             detail: dbError.detail || "userId references a non-existent user.",
           },
           { status: 400 },

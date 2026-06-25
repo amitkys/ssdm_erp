@@ -1,22 +1,22 @@
+import { eq } from "drizzle-orm";
+import {
+  ArrowRight,
+  Calendar,
+  Clock,
+  IndianRupee,
+  ShieldAlert,
+} from "lucide-react";
+import Link from "next/link";
+import { SiteFooter } from "@/components/informative/site-footer";
+import { SiteHeader } from "@/components/informative/site-header";
+import { getCollegeConfig } from "@/lib/college-config";
 import { db } from "@/lib/db";
 import {
+  academicSessionTable,
   admissionOpenTable,
   batchTable,
   courseTable,
-  academicSessionTable,
 } from "@/lib/db/schema";
-import { eq } from "drizzle-orm";
-import { getCollegeConfig } from "@/lib/college-config";
-import { SiteHeader } from "@/components/informative/site-header";
-import { SiteFooter } from "@/components/informative/site-footer";
-import Link from "next/link";
-import {
-  Calendar,
-  IndianRupee,
-  ArrowRight,
-  Clock,
-  ShieldAlert,
-} from "lucide-react";
 
 // Force dynamic rendering — data depends on current date and admin mutations
 export const dynamic = "force-dynamic";
@@ -171,8 +171,6 @@ export default async function AdmissionPortalPage() {
                               {formatDate(displayEndDate)}
                             </span>
                           </div>
-
-
                         </div>
                       </div>
 

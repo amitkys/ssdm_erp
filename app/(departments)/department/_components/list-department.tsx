@@ -1,6 +1,6 @@
 "use client";
-import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useMemo } from "react";
 import { getDepartment } from "../query/get-all-department";
 import { DetailsCard } from "./details-carad";
 

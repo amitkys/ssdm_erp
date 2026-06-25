@@ -1,3 +1,4 @@
+import { createId } from "@paralleldrive/cuid2";
 import { relations, sql } from "drizzle-orm";
 import {
   boolean,
@@ -9,7 +10,6 @@ import {
   timestamp,
   varchar,
 } from "drizzle-orm/pg-core";
-import { createId } from "@paralleldrive/cuid2";
 import { AdmittedStudentTable } from "./student";
 
 // Independent master table
@@ -134,6 +134,21 @@ export const admissionOpenTable = pgTable("admission_open", {
   updatedAt: timestamp().defaultNow().notNull(),
 });
 
+export const semesterAdmissionOpenTable = pgTable("semester_admission_open", {
+  id: varchar({ length: 128 })
+    .primaryKey()
+    .$defaultFn(() => createId()),
+  academicSessionId: varchar({ length: 128 })
+    .references(() => academicSessionTable.id, { onDelete: "cascade" })
+    .notNull(),
+  semesterCount: integer().notNull(),
+  startDate: date().notNull(),
+  endDate: date().notNull(),
+  lateFee: integer().default(0),
+  createdAt: timestamp().defaultNow().notNull(),
+  updatedAt: timestamp().defaultNow().notNull(),
+});
+
 // This table is for tender
 export const tenderTable = pgTable("tender", {
   id: varchar({ length: 128 })
@@ -148,9 +163,10 @@ export const tenderTable = pgTable("tender", {
   updatedAt: timestamp().defaultNow().notNull(),
 });
 
-
-export const notice = pgTable('notice', {
-  id: varchar({ length: 128 }).primaryKey().$defaultFn(() => createId()),
+export const notice = pgTable("notice", {
+  id: varchar({ length: 128 })
+    .primaryKey()
+    .$defaultFn(() => createId()),
   title: varchar({ length: 255 }).notNull(),
   description: text(),
   file: text(), // pdf path
@@ -158,7 +174,7 @@ export const notice = pgTable('notice', {
   endDate: date().notNull(),
   createdAt: timestamp().defaultNow().notNull(),
   updatedAt: timestamp().defaultNow().notNull(),
-})
+});
 
 // export const batchTable = pgTable("batch", {
 //   id: varchar({ length: 128 })
@@ -254,7 +270,20 @@ export const courseRelations = relations(courseTable, ({ one, many }) => ({
 
 export const academicSessionRelations = relations(
   academicSessionTable,
-  ({ many }) => ({ batches: many(batchTable) }),
+  ({ many }) => ({
+    batches: many(batchTable),
+    semesterAdmissions: many(semesterAdmissionOpenTable),
+  }),
+);
+
+export const semesterAdmissionOpenRelations = relations(
+  semesterAdmissionOpenTable,
+  ({ one }) => ({
+    academicSession: one(academicSessionTable, {
+      fields: [semesterAdmissionOpenTable.academicSessionId],
+      references: [academicSessionTable.id],
+    }),
+  }),
 );
 
 // COURSE SESSION (batch table) RELATIONS

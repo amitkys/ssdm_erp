@@ -1,23 +1,20 @@
 "use server";
 
+import { and, count, eq, inArray } from "drizzle-orm";
+import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { user } from "@/lib/db/schema/auth-schema";
+import { batchTable, subjectTable } from "@/lib/db/schema/department";
 import {
   AdmittedStudentTable,
   EnrolledStudentTable,
-  StudentPreviousAcademicRecordTable,
   StudentDocumentsTable,
+  StudentPreviousAcademicRecordTable,
 } from "@/lib/db/schema/student";
 import {
-  subjectTable,
-  batchTable,
-} from "@/lib/db/schema/department";
-import { user } from "@/lib/db/schema/auth-schema";
-import { and, eq, inArray, count } from "drizzle-orm";
-import {
-  registerStudentSchema,
   type RegisterStudentPayload,
+  registerStudentSchema,
 } from "./zod-type/register-student-type";
-import { auth } from "@/lib/auth";
 
 /**
  * Generate student password from their name and Aadhar number.
@@ -66,12 +63,7 @@ async function backgroundSignupStudent({
 
     if (!existingUser) {
       await auth.api.signUpEmail({
-        body: {
-          name,
-          email,
-          password,
-          role: "student",
-        },
+        body: { name, email, password, role: "student" },
       });
     }
   } catch (error) {
@@ -395,4 +387,3 @@ export const fetchActiveSubjects = async () => {
     return { success: false as const, message: "Failed to fetch subjects" };
   }
 };
-

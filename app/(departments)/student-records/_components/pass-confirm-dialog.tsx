@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -10,7 +11,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 
 interface PassConfirmDialogProps {
   selectedNames: string[];
@@ -46,19 +46,27 @@ export function PassConfirmDialog({
           <DialogDescription>
             {count === 1 ? (
               <span>
-                Are you sure you want to promote <strong>{selectedNames[0]}</strong> to Passed status?
+                Are you sure you want to promote{" "}
+                <strong>{selectedNames[0]}</strong> to Passed status?
               </span>
             ) : (
               <span>
-                Are you sure you want to promote <strong>{count}</strong> selected students to Passed status?
+                Are you sure you want to promote <strong>{count}</strong>{" "}
+                selected students to Passed status?
               </span>
-            )}
-            {" "}Once marked as Passed, these students are considered graduated. Their active status will be disabled, and they can no longer be promoted to further semesters.
+            )}{" "}
+            Once marked as Passed, these students are considered graduated.
+            Their active status will be disabled, and they can no longer be
+            promoted to further semesters.
           </DialogDescription>
         </DialogHeader>
 
         <DialogFooter>
-          <Button variant="outline" onClick={() => setOpen(false)} disabled={isPending}>
+          <Button
+            variant="outline"
+            onClick={() => setOpen(false)}
+            disabled={isPending}
+          >
             Cancel
           </Button>
           <Button

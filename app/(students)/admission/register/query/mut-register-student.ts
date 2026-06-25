@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { registerStudent } from "../lib/action";
 import { toast } from "sonner";
+import { registerStudent } from "../lib/action";
 import type { RegisterStudentPayload } from "../lib/zod-type/register-student-type";
 
 export function useMutRegisterStudent() {
@@ -9,7 +9,9 @@ export function useMutRegisterStudent() {
   return useMutation({
     mutationFn: async (payload: RegisterStudentPayload) => {
       const res = await registerStudent(payload);
-      if (!res.success) throw new Error(res.message);
+      if (!res.success) {
+        throw new Error(res.message);
+      }
       return res.data;
     },
     onSuccess: () => {

@@ -4,21 +4,39 @@ import * as z from "zod";
 import { db } from "@/lib/db";
 import { departmentTable } from "@/lib/db/schema";
 
-const dateTransform = z.any().optional().nullable().transform((val) => {
-  if (!val || String(val).trim() === "") return undefined;
-  try {
-    const d = new Date(val);
-    return isNaN(d.getTime()) ? undefined : d;
-  } catch {
-    return undefined;
-  }
-});
+const dateTransform = z
+  .any()
+  .optional()
+  .nullable()
+  .transform((val) => {
+    if (!val || String(val).trim() === "") {
+      return undefined;
+    }
+    try {
+      const d = new Date(val);
+      return isNaN(d.getTime()) ? undefined : d;
+    } catch {
+      return undefined;
+    }
+  });
 
 const departmentItemSchema = z.object({
-  id: z.string().optional().nullable().transform((val) => val || createId()),
-  code: z.string().optional().nullable().transform((val) => val || ""),
+  id: z
+    .string()
+    .optional()
+    .nullable()
+    .transform((val) => val || createId()),
+  code: z
+    .string()
+    .optional()
+    .nullable()
+    .transform((val) => val || ""),
   name: z.string().min(1, "Department name is required"),
-  description: z.string().optional().nullable().transform((val) => val || null),
+  description: z
+    .string()
+    .optional()
+    .nullable()
+    .transform((val) => val || null),
   createdAt: dateTransform,
   updatedAt: dateTransform,
 });
@@ -40,7 +58,8 @@ export async function POST(req: Request) {
       return NextResponse.json(
         {
           success: false,
-          message: "Invalid onConflict parameter. Supported values: 'fail', 'ignore'",
+          message:
+            "Invalid onConflict parameter. Supported values: 'fail', 'ignore'",
         },
         { status: 400 },
       );
@@ -135,8 +154,10 @@ export async function POST(req: Request) {
         return NextResponse.json(
           {
             success: false,
-            message: "Database insertion failed: A duplicate record already exists.",
-            detail: dbError.detail || "Unique constraint violation on code or name.",
+            message:
+              "Database insertion failed: A duplicate record already exists.",
+            detail:
+              dbError.detail || "Unique constraint violation on code or name.",
           },
           { status: 409 },
         );

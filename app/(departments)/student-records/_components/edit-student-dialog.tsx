@@ -5,7 +5,6 @@ import { PencilIcon } from "lucide-react";
 import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import {
   Dialog,
   DialogClose,
@@ -23,13 +22,14 @@ import {
   FieldGroup,
   FieldLabel,
 } from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
 import {
   NativeSelect,
   NativeSelectOption,
 } from "@/components/ui/native-select";
 import {
-  editStudentZodSchema,
   type EditStudentSchema,
+  editStudentZodSchema,
 } from "../lib/zod-type/edit-student-type";
 import { useMutUpdateStudent } from "../query/mut-update-student";
 
@@ -110,17 +110,25 @@ export function EditStudentDialog({ student }: EditStudentDialogProps) {
       }}
     >
       <DialogTrigger asChild>
-        <Button size="sm" variant="outline" className="flex items-center gap-1.5 border-emerald-600/30 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/20">
+        <Button
+          size="sm"
+          variant="outline"
+          className="flex items-center gap-1.5 border-emerald-600/30 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/20"
+        >
           <PencilIcon className="h-3.5 w-3.5" />
           Edit Student Details
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
-        <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-6">
+        <form
+          onSubmit={form.handleSubmit(onSubmit)}
+          className="flex flex-col gap-6"
+        >
           <DialogHeader>
             <DialogTitle>Edit Student Record</DialogTitle>
             <DialogDescription>
-              Modify the student's personal, contact, and academic details. College Roll Number is read-only.
+              Modify the student's personal, contact, and academic details.
+              College Roll Number is read-only.
             </DialogDescription>
           </DialogHeader>
 
@@ -129,7 +137,11 @@ export function EditStudentDialog({ student }: EditStudentDialogProps) {
             <Field>
               <FieldLabel>College Roll Number</FieldLabel>
               <FieldContent>
-                <Input value={student.collegeRoll || ""} disabled className="bg-muted cursor-not-allowed opacity-75" />
+                <Input
+                  value={student.collegeRoll || ""}
+                  disabled
+                  className="bg-muted cursor-not-allowed opacity-75"
+                />
               </FieldContent>
             </Field>
 
@@ -141,7 +153,11 @@ export function EditStudentDialog({ student }: EditStudentDialogProps) {
                 <Field data-invalid={fieldState.invalid}>
                   <FieldLabel>Full Name</FieldLabel>
                   <FieldContent>
-                    <Input {...field} aria-invalid={fieldState.invalid} placeholder="Name" />
+                    <Input
+                      {...field}
+                      aria-invalid={fieldState.invalid}
+                      placeholder="Name"
+                    />
                     <FieldError errors={[fieldState.error]} />
                   </FieldContent>
                 </Field>
@@ -156,7 +172,12 @@ export function EditStudentDialog({ student }: EditStudentDialogProps) {
                 <Field data-invalid={fieldState.invalid}>
                   <FieldLabel>Email Address</FieldLabel>
                   <FieldContent>
-                    <Input {...field} type="email" aria-invalid={fieldState.invalid} placeholder="email@domain.com" />
+                    <Input
+                      {...field}
+                      type="email"
+                      aria-invalid={fieldState.invalid}
+                      placeholder="email@domain.com"
+                    />
                     <FieldError errors={[fieldState.error]} />
                   </FieldContent>
                 </Field>
@@ -171,7 +192,11 @@ export function EditStudentDialog({ student }: EditStudentDialogProps) {
                 <Field data-invalid={fieldState.invalid}>
                   <FieldLabel>Phone Number</FieldLabel>
                   <FieldContent>
-                    <Input {...field} aria-invalid={fieldState.invalid} placeholder="10-digit number" />
+                    <Input
+                      {...field}
+                      aria-invalid={fieldState.invalid}
+                      placeholder="10-digit number"
+                    />
                     <FieldError errors={[fieldState.error]} />
                   </FieldContent>
                 </Field>
@@ -186,10 +211,18 @@ export function EditStudentDialog({ student }: EditStudentDialogProps) {
                 <Field data-invalid={fieldState.invalid}>
                   <FieldLabel>Gender</FieldLabel>
                   <FieldContent>
-                    <NativeSelect {...field} aria-invalid={fieldState.invalid} className="w-full">
+                    <NativeSelect
+                      {...field}
+                      aria-invalid={fieldState.invalid}
+                      className="w-full"
+                    >
                       <NativeSelectOption value="Male">Male</NativeSelectOption>
-                      <NativeSelectOption value="Female">Female</NativeSelectOption>
-                      <NativeSelectOption value="Transgender">Transgender</NativeSelectOption>
+                      <NativeSelectOption value="Female">
+                        Female
+                      </NativeSelectOption>
+                      <NativeSelectOption value="Transgender">
+                        Transgender
+                      </NativeSelectOption>
                     </NativeSelect>
                     <FieldError errors={[fieldState.error]} />
                   </FieldContent>
@@ -205,7 +238,11 @@ export function EditStudentDialog({ student }: EditStudentDialogProps) {
                 <Field data-invalid={fieldState.invalid}>
                   <FieldLabel>Date of Birth</FieldLabel>
                   <FieldContent>
-                    <Input {...field} type="date" aria-invalid={fieldState.invalid} />
+                    <Input
+                      {...field}
+                      type="date"
+                      aria-invalid={fieldState.invalid}
+                    />
                     <FieldError errors={[fieldState.error]} />
                   </FieldContent>
                 </Field>
@@ -220,7 +257,11 @@ export function EditStudentDialog({ student }: EditStudentDialogProps) {
                 <Field data-invalid={fieldState.invalid}>
                   <FieldLabel>Aadhar Number</FieldLabel>
                   <FieldContent>
-                    <Input {...field} aria-invalid={fieldState.invalid} placeholder="12-digit number" />
+                    <Input
+                      {...field}
+                      aria-invalid={fieldState.invalid}
+                      placeholder="12-digit number"
+                    />
                     <FieldError errors={[fieldState.error]} />
                   </FieldContent>
                 </Field>
@@ -235,7 +276,12 @@ export function EditStudentDialog({ student }: EditStudentDialogProps) {
                 <Field data-invalid={fieldState.invalid}>
                   <FieldLabel>ABC ID</FieldLabel>
                   <FieldContent>
-                    <Input {...field} value={field.value || ""} aria-invalid={fieldState.invalid} placeholder="Academic Bank of Credits ID" />
+                    <Input
+                      {...field}
+                      value={field.value || ""}
+                      aria-invalid={fieldState.invalid}
+                      placeholder="Academic Bank of Credits ID"
+                    />
                     <FieldError errors={[fieldState.error]} />
                   </FieldContent>
                 </Field>
@@ -250,7 +296,11 @@ export function EditStudentDialog({ student }: EditStudentDialogProps) {
                 <Field data-invalid={fieldState.invalid}>
                   <FieldLabel>Father's Name</FieldLabel>
                   <FieldContent>
-                    <Input {...field} aria-invalid={fieldState.invalid} placeholder="Father's Name" />
+                    <Input
+                      {...field}
+                      aria-invalid={fieldState.invalid}
+                      placeholder="Father's Name"
+                    />
                     <FieldError errors={[fieldState.error]} />
                   </FieldContent>
                 </Field>
@@ -265,7 +315,11 @@ export function EditStudentDialog({ student }: EditStudentDialogProps) {
                 <Field data-invalid={fieldState.invalid}>
                   <FieldLabel>Mother's Name</FieldLabel>
                   <FieldContent>
-                    <Input {...field} aria-invalid={fieldState.invalid} placeholder="Mother's Name" />
+                    <Input
+                      {...field}
+                      aria-invalid={fieldState.invalid}
+                      placeholder="Mother's Name"
+                    />
                     <FieldError errors={[fieldState.error]} />
                   </FieldContent>
                 </Field>
@@ -280,7 +334,11 @@ export function EditStudentDialog({ student }: EditStudentDialogProps) {
                 <Field data-invalid={fieldState.invalid}>
                   <FieldLabel>Religion</FieldLabel>
                   <FieldContent>
-                    <Input {...field} aria-invalid={fieldState.invalid} placeholder="e.g. Hindu, Muslim, Christian" />
+                    <Input
+                      {...field}
+                      aria-invalid={fieldState.invalid}
+                      placeholder="e.g. Hindu, Muslim, Christian"
+                    />
                     <FieldError errors={[fieldState.error]} />
                   </FieldContent>
                 </Field>
@@ -295,13 +353,29 @@ export function EditStudentDialog({ student }: EditStudentDialogProps) {
                 <Field data-invalid={fieldState.invalid}>
                   <FieldLabel>Caste / Category</FieldLabel>
                   <FieldContent>
-                    <NativeSelect {...field} aria-invalid={fieldState.invalid} className="w-full">
-                      <NativeSelectOption value="GEN">General (GEN)</NativeSelectOption>
-                      <NativeSelectOption value="BC">Backward Class (BC)</NativeSelectOption>
-                      <NativeSelectOption value="EBC">Extremely Backward Class (EBC)</NativeSelectOption>
-                      <NativeSelectOption value="SC">Scheduled Caste (SC)</NativeSelectOption>
-                      <NativeSelectOption value="ST">Scheduled Tribe (ST)</NativeSelectOption>
-                      <NativeSelectOption value="OTHER">Other</NativeSelectOption>
+                    <NativeSelect
+                      {...field}
+                      aria-invalid={fieldState.invalid}
+                      className="w-full"
+                    >
+                      <NativeSelectOption value="GEN">
+                        General (GEN)
+                      </NativeSelectOption>
+                      <NativeSelectOption value="BC">
+                        Backward Class (BC)
+                      </NativeSelectOption>
+                      <NativeSelectOption value="EBC">
+                        Extremely Backward Class (EBC)
+                      </NativeSelectOption>
+                      <NativeSelectOption value="SC">
+                        Scheduled Caste (SC)
+                      </NativeSelectOption>
+                      <NativeSelectOption value="ST">
+                        Scheduled Tribe (ST)
+                      </NativeSelectOption>
+                      <NativeSelectOption value="OTHER">
+                        Other
+                      </NativeSelectOption>
                     </NativeSelect>
                     <FieldError errors={[fieldState.error]} />
                   </FieldContent>
@@ -317,11 +391,23 @@ export function EditStudentDialog({ student }: EditStudentDialogProps) {
                 <Field data-invalid={fieldState.invalid}>
                   <FieldLabel>Admission Type</FieldLabel>
                   <FieldContent>
-                    <NativeSelect {...field} aria-invalid={fieldState.invalid} className="w-full">
-                      <NativeSelectOption value="MERIT">Merit</NativeSelectOption>
-                      <NativeSelectOption value="SPORT">Sport</NativeSelectOption>
-                      <NativeSelectOption value="MANAGEMENT QUOTA">Management Quota</NativeSelectOption>
-                      <NativeSelectOption value="OTHER">Other</NativeSelectOption>
+                    <NativeSelect
+                      {...field}
+                      aria-invalid={fieldState.invalid}
+                      className="w-full"
+                    >
+                      <NativeSelectOption value="MERIT">
+                        Merit
+                      </NativeSelectOption>
+                      <NativeSelectOption value="SPORT">
+                        Sport
+                      </NativeSelectOption>
+                      <NativeSelectOption value="MANAGEMENT QUOTA">
+                        Management Quota
+                      </NativeSelectOption>
+                      <NativeSelectOption value="OTHER">
+                        Other
+                      </NativeSelectOption>
                     </NativeSelect>
                     <FieldError errors={[fieldState.error]} />
                   </FieldContent>
@@ -337,7 +423,12 @@ export function EditStudentDialog({ student }: EditStudentDialogProps) {
                 <Field data-invalid={fieldState.invalid}>
                   <FieldLabel>Registration Number</FieldLabel>
                   <FieldContent>
-                    <Input {...field} value={field.value || ""} aria-invalid={fieldState.invalid} placeholder="Reg Number" />
+                    <Input
+                      {...field}
+                      value={field.value || ""}
+                      aria-invalid={fieldState.invalid}
+                      placeholder="Reg Number"
+                    />
                     <FieldError errors={[fieldState.error]} />
                   </FieldContent>
                 </Field>
@@ -352,7 +443,12 @@ export function EditStudentDialog({ student }: EditStudentDialogProps) {
                 <Field data-invalid={fieldState.invalid}>
                   <FieldLabel>University Roll Number</FieldLabel>
                   <FieldContent>
-                    <Input {...field} value={field.value || ""} aria-invalid={fieldState.invalid} placeholder="Univ Roll Number" />
+                    <Input
+                      {...field}
+                      value={field.value || ""}
+                      aria-invalid={fieldState.invalid}
+                      placeholder="Univ Roll Number"
+                    />
                     <FieldError errors={[fieldState.error]} />
                   </FieldContent>
                 </Field>
@@ -367,7 +463,11 @@ export function EditStudentDialog({ student }: EditStudentDialogProps) {
                 <Field data-invalid={fieldState.invalid}>
                   <FieldLabel>City</FieldLabel>
                   <FieldContent>
-                    <Input {...field} aria-invalid={fieldState.invalid} placeholder="City" />
+                    <Input
+                      {...field}
+                      aria-invalid={fieldState.invalid}
+                      placeholder="City"
+                    />
                     <FieldError errors={[fieldState.error]} />
                   </FieldContent>
                 </Field>
@@ -382,7 +482,11 @@ export function EditStudentDialog({ student }: EditStudentDialogProps) {
                 <Field data-invalid={fieldState.invalid}>
                   <FieldLabel>District</FieldLabel>
                   <FieldContent>
-                    <Input {...field} aria-invalid={fieldState.invalid} placeholder="District" />
+                    <Input
+                      {...field}
+                      aria-invalid={fieldState.invalid}
+                      placeholder="District"
+                    />
                     <FieldError errors={[fieldState.error]} />
                   </FieldContent>
                 </Field>
@@ -397,7 +501,11 @@ export function EditStudentDialog({ student }: EditStudentDialogProps) {
                 <Field data-invalid={fieldState.invalid}>
                   <FieldLabel>State</FieldLabel>
                   <FieldContent>
-                    <Input {...field} aria-invalid={fieldState.invalid} placeholder="State" />
+                    <Input
+                      {...field}
+                      aria-invalid={fieldState.invalid}
+                      placeholder="State"
+                    />
                     <FieldError errors={[fieldState.error]} />
                   </FieldContent>
                 </Field>
@@ -415,7 +523,11 @@ export function EditStudentDialog({ student }: EditStudentDialogProps) {
                     <Input
                       type="number"
                       value={field.value === undefined ? "" : field.value}
-                      onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : undefined)}
+                      onChange={(e) =>
+                        field.onChange(
+                          e.target.value ? Number(e.target.value) : undefined,
+                        )
+                      }
                       aria-invalid={fieldState.invalid}
                       placeholder="6-digit PIN"
                     />
@@ -432,8 +544,14 @@ export function EditStudentDialog({ student }: EditStudentDialogProps) {
                 Cancel
               </Button>
             </DialogClose>
-            <Button type="submit" disabled={form.formState.isSubmitting || updateStudent.isPending} className="bg-emerald-600 hover:bg-emerald-700 text-white font-medium">
-              {form.formState.isSubmitting || updateStudent.isPending ? "Saving..." : "Save Changes"}
+            <Button
+              type="submit"
+              disabled={form.formState.isSubmitting || updateStudent.isPending}
+              className="bg-emerald-600 hover:bg-emerald-700 text-white font-medium"
+            >
+              {form.formState.isSubmitting || updateStudent.isPending
+                ? "Saving..."
+                : "Save Changes"}
             </Button>
           </DialogFooter>
         </form>

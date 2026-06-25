@@ -1,10 +1,10 @@
 import {
-  IconDashboard,
-  IconClipboardCheck,
-  IconCertificate,
   IconCalendarEvent,
-  IconUser,
+  IconCertificate,
+  IconClipboardCheck,
+  IconDashboard,
   IconFileText,
+  IconUser,
 } from "@tabler/icons-react";
 import type { ComponentType } from "react";
 

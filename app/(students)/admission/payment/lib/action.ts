@@ -4,23 +4,24 @@ import { createId } from "@paralleldrive/cuid2";
 import { and, eq, inArray, or } from "drizzle-orm";
 import { db } from "@/lib/db";
 import {
+  AdmittedStudentTable,
   admissionOpenTable,
   batchTable,
-  subjectTable,
-} from "@/lib/db/schema/department";
-import {
-  AdmittedStudentTable,
   EnrolledStudentTable,
   StudentFeePaymentTable,
-} from "@/lib/db/schema/student";
+  semesterAdmissionOpenTable,
+  subjectTable,
+} from "@/lib/db/schema";
 import { GcmPgEncryption } from "@/lib/getepay-encrypt";
 
 export async function getStudentPaymentDetails(params: {
   uan?: string;
   studentId?: string;
+  semesterCount?: number;
 }) {
   try {
-    const { uan, studentId } = params;
+    const { uan, studentId, semesterCount } = params;
+    const targetSemesterCount = semesterCount ?? 1;
     if (!uan && !studentId) {
       return { success: false, message: "Missing student identifier." };
     }
@@ -36,12 +37,12 @@ export async function getStudentPaymentDetails(params: {
       return { success: false, message: "Student record not found." };
     }
 
-    // Check if successful payment exists for semesterCount = 1
+    // Check if successful payment exists for semesterCount = targetSemesterCount
     const existingSuccessfulPayment =
       await db.query.StudentFeePaymentTable.findFirst({
         where: and(
           eq(StudentFeePaymentTable.studentId, student.id),
-          eq(StudentFeePaymentTable.semesterCount, 1),
+          eq(StudentFeePaymentTable.semesterCount, targetSemesterCount),
           eq(StudentFeePaymentTable.status, "Success"),
         ),
       });
@@ -86,7 +87,7 @@ export async function getStudentPaymentDetails(params: {
       hasPractical = subjects.some((s) => s.hasPractical === true);
     }
 
-    // Fetch admission window details for late fee and practical fee check
+    // Fetch admission window details for practical fee check
     const admissionOpen = await db.query.admissionOpenTable.findFirst({
       where: eq(admissionOpenTable.batchId, student.batchId),
     });
@@ -96,12 +97,47 @@ export async function getStudentPaymentDetails(params: {
       : 0;
 
     let lateFee = 0;
-    if (admissionOpen) {
+    if (targetSemesterCount > 1) {
+      // Fetch semester admission open details
+      const semesterAdmission =
+        await db.query.semesterAdmissionOpenTable.findFirst({
+          where: and(
+            eq(
+              semesterAdmissionOpenTable.academicSessionId,
+              batch.academicSessionId,
+            ),
+            eq(semesterAdmissionOpenTable.semesterCount, targetSemesterCount),
+          ),
+        });
+
+      if (!semesterAdmission) {
+        return {
+          success: false,
+          message: `Semester ${targetSemesterCount} admission is not open yet.`,
+        };
+      }
+
       const currentDate = new Date();
-      const standardEndDate = new Date(admissionOpen.endDate);
-      // If current date is past standard end date, charge late fee
-      if (currentDate > standardEndDate && admissionOpen.lateFee) {
-        lateFee = admissionOpen.lateFee;
+      currentDate.setHours(0, 0, 0, 0);
+      const [endYear, endMonth, endDay] = semesterAdmission.endDate
+        .split("-")
+        .map(Number);
+      const standardEndDate = new Date(endYear, endMonth - 1, endDay);
+      if (currentDate > standardEndDate) {
+        lateFee = semesterAdmission.lateFee ?? 0;
+      }
+    } else {
+      if (admissionOpen) {
+        const currentDate = new Date();
+        currentDate.setHours(0, 0, 0, 0);
+        const [endYear, endMonth, endDay] = admissionOpen.endDate
+          .split("-")
+          .map(Number);
+        const standardEndDate = new Date(endYear, endMonth - 1, endDay);
+        // If current date is past standard end date, charge late fee
+        if (currentDate > standardEndDate && admissionOpen.lateFee) {
+          lateFee = admissionOpen.lateFee;
+        }
       }
     }
 
@@ -112,7 +148,7 @@ export async function getStudentPaymentDetails(params: {
       await db.query.StudentFeePaymentTable.findFirst({
         where: and(
           eq(StudentFeePaymentTable.studentId, student.id),
-          eq(StudentFeePaymentTable.semesterCount, 1),
+          eq(StudentFeePaymentTable.semesterCount, targetSemesterCount),
           eq(StudentFeePaymentTable.status, "Pending"),
         ),
         orderBy: (table, { desc }) => [desc(table.createdAt)],
@@ -139,9 +175,12 @@ export async function initiatePayment(params: {
   tuitionFee: number;
   practicalFee: number;
   lateFee: number;
+  semesterCount?: number;
 }) {
   try {
-    const { studentId, tuitionFee, practicalFee, lateFee } = params;
+    const { studentId, tuitionFee, practicalFee, lateFee, semesterCount } =
+      params;
+    const targetSemesterCount = semesterCount ?? 1;
 
     const student = await db.query.AdmittedStudentTable.findFirst({
       where: eq(AdmittedStudentTable.id, studentId),
@@ -184,7 +223,7 @@ export async function initiatePayment(params: {
       .values({
         id: paymentId,
         studentId: student.id,
-        semesterCount: 1,
+        semesterCount: targetSemesterCount,
         amount: totalAmount,
         paymentMode: "Online",
         transactionId: txnId,
@@ -475,6 +514,20 @@ export async function processPaymentReturn(responseCiphertext: string) {
       });
 
       if (student) {
+        // Promote currentSemesterCount by 1 if payment is for student's next semester
+        if (
+          existingPayment.semesterCount ===
+          student.currentSemesterCount + 1
+        ) {
+          await db
+            .update(AdmittedStudentTable)
+            .set({
+              currentSemesterCount: existingPayment.semesterCount,
+              updatedAt: new Date(),
+            })
+            .where(eq(AdmittedStudentTable.id, student.id));
+        }
+
         await db
           .update(EnrolledStudentTable)
           .set({ isFeePaid: true, updatedAt: new Date() })

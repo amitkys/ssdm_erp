@@ -3,9 +3,9 @@ import {
   HydrationBoundary,
   QueryClient,
 } from "@tanstack/react-query";
+import { ContentLayout } from "@/components/content-layout";
 import { SubjectsContent } from "./_components/subjects-content";
 import { getSubjectsQuery } from "./query/get-subjects";
-import { ContentLayout } from "@/components/content-layout";
 
 export default async function SubjectsPage() {
   const queryClient = new QueryClient();

@@ -1,7 +1,6 @@
 "use client";
 
 import { Controller, type UseFormReturn } from "react-hook-form";
-import type { NewCourseType } from "../lib/zod-type/new-course-type";
 import {
   Field,
   FieldContent,
@@ -16,6 +15,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import type { NewCourseType } from "../lib/zod-type/new-course-type";
 
 export const InputForCourse = ({
   form,

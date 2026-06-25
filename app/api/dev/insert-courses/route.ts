@@ -5,18 +5,28 @@ import * as z from "zod";
 import { db } from "@/lib/db";
 import { courseTable, departmentTable } from "@/lib/db/schema";
 
-const dateTransform = z.any().optional().nullable().transform((val) => {
-  if (!val || String(val).trim() === "") return undefined;
-  try {
-    const d = new Date(val);
-    return isNaN(d.getTime()) ? undefined : d;
-  } catch {
-    return undefined;
-  }
-});
+const dateTransform = z
+  .any()
+  .optional()
+  .nullable()
+  .transform((val) => {
+    if (!val || String(val).trim() === "") {
+      return undefined;
+    }
+    try {
+      const d = new Date(val);
+      return isNaN(d.getTime()) ? undefined : d;
+    } catch {
+      return undefined;
+    }
+  });
 
 const courseItemSchema = z.object({
-  id: z.string().optional().nullable().transform((val) => val || createId()),
+  id: z
+    .string()
+    .optional()
+    .nullable()
+    .transform((val) => val || createId()),
   name: z.string().min(1, "Course name is required"),
   code: z.string().min(1, "Course code is required"),
   type: z
@@ -31,7 +41,11 @@ const courseItemSchema = z.object({
     .optional()
     .nullable()
     .transform((val) => val || "UG Regular"),
-  description: z.string().optional().nullable().transform((val) => val || null),
+  description: z
+    .string()
+    .optional()
+    .nullable()
+    .transform((val) => val || null),
   departmentId: z.string().min(1, "Department ID is required"),
   duration: z
     .number()
@@ -40,7 +54,11 @@ const courseItemSchema = z.object({
     .optional()
     .nullable()
     .transform((val) => (val === null ? 4 : val)),
-  isActive: z.boolean().optional().nullable().transform((val) => (val === null ? true : val)),
+  isActive: z
+    .boolean()
+    .optional()
+    .nullable()
+    .transform((val) => (val === null ? true : val)),
   createdAt: dateTransform,
   updatedAt: dateTransform,
 });
@@ -62,7 +80,8 @@ export async function POST(req: Request) {
       return NextResponse.json(
         {
           success: false,
-          message: "Invalid onConflict parameter. Supported values: 'fail', 'ignore'",
+          message:
+            "Invalid onConflict parameter. Supported values: 'fail', 'ignore'",
         },
         { status: 400 },
       );
@@ -117,13 +136,17 @@ export async function POST(req: Request) {
     const courses = parsed.data;
 
     // 2. Referenced Data Existence Validation (departmentId)
-    const uniqueDeptIds = Array.from(new Set(courses.map((c) => c.departmentId)));
+    const uniqueDeptIds = Array.from(
+      new Set(courses.map((c) => c.departmentId)),
+    );
     const existingDepts = await db
       .select({ id: departmentTable.id })
       .from(departmentTable)
       .where(inArray(departmentTable.id, uniqueDeptIds));
     const existingDeptIdsSet = new Set(existingDepts.map((d) => d.id));
-    const missingDeptIds = uniqueDeptIds.filter((id) => !existingDeptIdsSet.has(id));
+    const missingDeptIds = uniqueDeptIds.filter(
+      (id) => !existingDeptIdsSet.has(id),
+    );
 
     if (missingDeptIds.length > 0) {
       return NextResponse.json(
@@ -177,8 +200,10 @@ export async function POST(req: Request) {
         return NextResponse.json(
           {
             success: false,
-            message: "Database insertion failed: A duplicate record already exists.",
-            detail: dbError.detail || "Unique constraint violation on name or code.",
+            message:
+              "Database insertion failed: A duplicate record already exists.",
+            detail:
+              dbError.detail || "Unique constraint violation on name or code.",
           },
           { status: 409 },
         );
@@ -188,8 +213,11 @@ export async function POST(req: Request) {
         return NextResponse.json(
           {
             success: false,
-            message: "Database insertion failed: A foreign key constraint was violated.",
-            detail: dbError.detail || "departmentId references a non-existent department.",
+            message:
+              "Database insertion failed: A foreign key constraint was violated.",
+            detail:
+              dbError.detail ||
+              "departmentId references a non-existent department.",
           },
           { status: 400 },
         );

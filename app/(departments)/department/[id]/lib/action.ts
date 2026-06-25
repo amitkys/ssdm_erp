@@ -1,9 +1,9 @@
 "use server";
+import { and, eq } from "drizzle-orm";
+import { headers } from "next/headers";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { courseTable, departmentTable } from "@/lib/db/schema";
-import { and, eq } from "drizzle-orm";
-import { headers } from "next/headers";
 
 // All courses by Department ID
 export async function fetchCoursesByDepartment(departmentId: string) {

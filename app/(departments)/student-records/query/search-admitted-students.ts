@@ -23,9 +23,9 @@ export const searchAdmittedStudentsQuery = (filters: SearchFilters) =>
     retry: false,
   });
 
-export const useSearchAdmittedStudents = (filters: SearchFilters, enabled = true) => {
-  return useQuery({
-    ...searchAdmittedStudentsQuery(filters),
-    enabled,
-  });
+export const useSearchAdmittedStudents = (
+  filters: SearchFilters,
+  enabled = true,
+) => {
+  return useQuery({ ...searchAdmittedStudentsQuery(filters), enabled });
 };

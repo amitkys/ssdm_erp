@@ -7,12 +7,12 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import { Search, X } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   NativeSelect,
   NativeSelectOption,
 } from "@/components/ui/native-select";
-import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -78,7 +78,12 @@ export function DataTable<TData, TValue>({
             <NativeSelectOption value="Expired">Expired</NativeSelectOption>
           </NativeSelect>
           {filterStatus && (
-            <Button variant="ghost" size="sm" onClick={() => onFilterStatus("")} className="h-9">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => onFilterStatus("")}
+              className="h-9"
+            >
               <X className="size-4" />
             </Button>
           )}
@@ -91,7 +96,12 @@ export function DataTable<TData, TValue>({
               <TableRow key={headerGroup.id} className="hover:bg-transparent">
                 {headerGroup.headers.map((header) => (
                   <TableHead key={header.id}>
-                    {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
+                    {header.isPlaceholder
+                      ? null
+                      : flexRender(
+                          header.column.columnDef.header,
+                          header.getContext(),
+                        )}
                   </TableHead>
                 ))}
               </TableRow>
@@ -100,17 +110,27 @@ export function DataTable<TData, TValue>({
           <TableBody>
             {table.getRowModel().rows.length ? (
               table.getRowModel().rows.map((row) => (
-                <TableRow key={row.id} data-state={row.getIsSelected() && "selected"} className="even:bg-muted/20">
+                <TableRow
+                  key={row.id}
+                  data-state={row.getIsSelected() && "selected"}
+                  className="even:bg-muted/20"
+                >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext(),
+                      )}
                     </TableCell>
                   ))}
                 </TableRow>
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={columns.length} className="h-24 text-center text-muted-foreground">
+                <TableCell
+                  colSpan={columns.length}
+                  className="h-24 text-center text-muted-foreground"
+                >
                   No notices found.
                 </TableCell>
               </TableRow>

@@ -3,22 +3,35 @@ import { inArray } from "drizzle-orm";
 import { NextResponse } from "next/server";
 import * as z from "zod";
 import { db } from "@/lib/db";
-import { StudentFeePaymentTable, AdmittedStudentTable } from "@/lib/db/schema";
+import { AdmittedStudentTable, StudentFeePaymentTable } from "@/lib/db/schema";
 
-const dateTransform = z.any().optional().nullable().transform((val) => {
-  if (!val || String(val).trim() === "") return undefined;
-  try {
-    const d = new Date(val);
-    return isNaN(d.getTime()) ? undefined : d;
-  } catch {
-    return undefined;
-  }
-});
+const dateTransform = z
+  .any()
+  .optional()
+  .nullable()
+  .transform((val) => {
+    if (!val || String(val).trim() === "") {
+      return undefined;
+    }
+    try {
+      const d = new Date(val);
+      return isNaN(d.getTime()) ? undefined : d;
+    } catch {
+      return undefined;
+    }
+  });
 
 const studentFeePaymentItemSchema = z.object({
-  id: z.string().optional().nullable().transform((val) => val || createId()),
+  id: z
+    .string()
+    .optional()
+    .nullable()
+    .transform((val) => val || createId()),
   studentId: z.string().min(1, "Student ID is required"),
-  semesterCount: z.number().int().min(1, "semesterCount must be a positive integer"),
+  semesterCount: z
+    .number()
+    .int()
+    .min(1, "semesterCount must be a positive integer"),
   amount: z.number().nonnegative("amount must be a non-negative number"),
   paymentMode: z.string().min(1, "paymentMode is required"),
   transactionId: z.string().min(1, "transactionId is required"),
@@ -44,7 +57,8 @@ export async function POST(req: Request) {
       return NextResponse.json(
         {
           success: false,
-          message: "Invalid onConflict parameter. Supported values: 'fail', 'ignore'",
+          message:
+            "Invalid onConflict parameter. Supported values: 'fail', 'ignore'",
         },
         { status: 400 },
       );
@@ -64,7 +78,8 @@ export async function POST(req: Request) {
       return NextResponse.json(
         {
           success: false,
-          message: "Request body must be a JSON array of student fee payment objects",
+          message:
+            "Request body must be a JSON array of student fee payment objects",
         },
         { status: 400 },
       );
@@ -99,19 +114,24 @@ export async function POST(req: Request) {
     const records = parsed.data;
 
     // 2. Referenced Data Existence Validation (studentId)
-    const uniqueStudentIds = Array.from(new Set(records.map((r) => r.studentId)));
+    const uniqueStudentIds = Array.from(
+      new Set(records.map((r) => r.studentId)),
+    );
     const existingStudents = await db
       .select({ id: AdmittedStudentTable.id })
       .from(AdmittedStudentTable)
       .where(inArray(AdmittedStudentTable.id, uniqueStudentIds));
     const existingStudentIdsSet = new Set(existingStudents.map((s) => s.id));
-    const missingStudentIds = uniqueStudentIds.filter((id) => !existingStudentIdsSet.has(id));
+    const missingStudentIds = uniqueStudentIds.filter(
+      (id) => !existingStudentIdsSet.has(id),
+    );
 
     if (missingStudentIds.length > 0) {
       return NextResponse.json(
         {
           success: false,
-          message: "Referenced student entities do not exist in admitted_students.",
+          message:
+            "Referenced student entities do not exist in admitted_students.",
           errors: { missingStudentIds },
         },
         { status: 400 },
@@ -159,8 +179,10 @@ export async function POST(req: Request) {
         return NextResponse.json(
           {
             success: false,
-            message: "Database insertion failed: A duplicate record already exists.",
-            detail: dbError.detail || "Unique constraint violation on fee payments.",
+            message:
+              "Database insertion failed: A duplicate record already exists.",
+            detail:
+              dbError.detail || "Unique constraint violation on fee payments.",
           },
           { status: 409 },
         );
@@ -170,8 +192,10 @@ export async function POST(req: Request) {
         return NextResponse.json(
           {
             success: false,
-            message: "Database insertion failed: A foreign key constraint was violated.",
-            detail: dbError.detail || "studentId references a non-existent student.",
+            message:
+              "Database insertion failed: A foreign key constraint was violated.",
+            detail:
+              dbError.detail || "studentId references a non-existent student.",
           },
           { status: 400 },
         );

@@ -1,43 +1,108 @@
 "use client";
 
-import { SiteHeader } from "@/components/informative/site-header";
-import { SiteFooter } from "@/components/informative/site-footer";
-import Link from "next/link";
 import {
-  Calendar,
   BookOpen,
+  Calendar,
   ChevronRight,
-  Download,
   Clock,
+  Download,
 } from "lucide-react";
+import Link from "next/link";
+import { SiteFooter } from "@/components/informative/site-footer";
+import { SiteHeader } from "@/components/informative/site-header";
 import type { CollegeConfig } from "@/lib/college-config";
 
 // Holiday Data
 const holidays = [
   { sNo: 1, occasion: "New Year's Day", date: "Jan 01, 2026", day: "Thursday" },
-  { sNo: 2, occasion: "Makar Sankranti", date: "Jan 14, 2026", day: "Wednesday" },
+  {
+    sNo: 2,
+    occasion: "Makar Sankranti",
+    date: "Jan 14, 2026",
+    day: "Wednesday",
+  },
   { sNo: 3, occasion: "Republic Day", date: "Jan 26, 2026", day: "Monday" },
-  { sNo: 4, occasion: "Vasant Panchami", date: "Jan 28, 2026", day: "Wednesday" },
+  {
+    sNo: 4,
+    occasion: "Vasant Panchami",
+    date: "Jan 28, 2026",
+    day: "Wednesday",
+  },
   { sNo: 5, occasion: "Maha Shivratri", date: "Feb 15, 2026", day: "Sunday" },
   { sNo: 6, occasion: "Holi Festival", date: "Mar 05, 2026", day: "Thursday" },
   { sNo: 7, occasion: "Eid-ul-Fitr", date: "Mar 20, 2026", day: "Friday" },
   { sNo: 8, occasion: "Ram Navami", date: "Apr 05, 2026", day: "Sunday" },
-  { sNo: 9, occasion: "Ambedkar Jayanti", date: "Apr 14, 2026", day: "Tuesday" },
-  { sNo: 10, occasion: "Summer Vacation", date: "Jun 01 - Jun 20", day: "Mon - Sat" },
-  { sNo: 11, occasion: "Independence Day", date: "Aug 15, 2026", day: "Saturday" },
-  { sNo: 12, occasion: "Durga Puja", date: "Oct 18 - Oct 22", day: "Sun - Thu" },
-  { sNo: 13, occasion: "Diwali & Chhath Puja", date: "Nov 08 - Nov 14", day: "Sun - Sat" },
+  {
+    sNo: 9,
+    occasion: "Ambedkar Jayanti",
+    date: "Apr 14, 2026",
+    day: "Tuesday",
+  },
+  {
+    sNo: 10,
+    occasion: "Summer Vacation",
+    date: "Jun 01 - Jun 20",
+    day: "Mon - Sat",
+  },
+  {
+    sNo: 11,
+    occasion: "Independence Day",
+    date: "Aug 15, 2026",
+    day: "Saturday",
+  },
+  {
+    sNo: 12,
+    occasion: "Durga Puja",
+    date: "Oct 18 - Oct 22",
+    day: "Sun - Thu",
+  },
+  {
+    sNo: 13,
+    occasion: "Diwali & Chhath Puja",
+    date: "Nov 08 - Nov 14",
+    day: "Sun - Sat",
+  },
   { sNo: 14, occasion: "Christmas Day", date: "Dec 25, 2026", day: "Friday" },
 ];
 
 // Syllabus Data
 const syllabiList = [
-  { stream: "Science", name: "B.Sc Physics Honours Syllabus (CBCS)", updated: "2026-27", file: "PPU_BSc_Physics_Syllabus.pdf" },
-  { stream: "Science", name: "B.Sc Chemistry Honours Syllabus (CBCS)", updated: "2026-27", file: "PPU_BSc_Chemistry_Syllabus.pdf" },
-  { stream: "Science", name: "B.Sc Mathematics Honours Syllabus (CBCS)", updated: "2026-27", file: "PPU_BSc_Mathematics_Syllabus.pdf" },
-  { stream: "Arts", name: "B.A English Honours Syllabus (CBCS)", updated: "2026-27", file: "PPU_BA_English_Syllabus.pdf" },
-  { stream: "Arts", name: "B.A Economics Honours Syllabus (CBCS)", updated: "2026-27", file: "PPU_BA_Economics_Syllabus.pdf" },
-  { stream: "Arts", name: "B.A History Honours Syllabus (CBCS)", updated: "2026-27", file: "PPU_BA_History_Syllabus.pdf" },
+  {
+    stream: "Science",
+    name: "B.Sc Physics Honours Syllabus (CBCS)",
+    updated: "2026-27",
+    file: "PPU_BSc_Physics_Syllabus.pdf",
+  },
+  {
+    stream: "Science",
+    name: "B.Sc Chemistry Honours Syllabus (CBCS)",
+    updated: "2026-27",
+    file: "PPU_BSc_Chemistry_Syllabus.pdf",
+  },
+  {
+    stream: "Science",
+    name: "B.Sc Mathematics Honours Syllabus (CBCS)",
+    updated: "2026-27",
+    file: "PPU_BSc_Mathematics_Syllabus.pdf",
+  },
+  {
+    stream: "Arts",
+    name: "B.A English Honours Syllabus (CBCS)",
+    updated: "2026-27",
+    file: "PPU_BA_English_Syllabus.pdf",
+  },
+  {
+    stream: "Arts",
+    name: "B.A Economics Honours Syllabus (CBCS)",
+    updated: "2026-27",
+    file: "PPU_BA_Economics_Syllabus.pdf",
+  },
+  {
+    stream: "Arts",
+    name: "B.A History Honours Syllabus (CBCS)",
+    updated: "2026-27",
+    file: "PPU_BA_History_Syllabus.pdf",
+  },
 ];
 
 export default function StudentZoneClient({
@@ -48,8 +113,16 @@ export default function StudentZoneClient({
   config: CollegeConfig;
 }) {
   const menuItems = [
-    { label: "Holiday Calendar", slug: "holidays", icon: <Calendar className="h-4 w-4" /> },
-    { label: "Course Syllabus", slug: "syllabus", icon: <BookOpen className="h-4 w-4" /> },
+    {
+      label: "Holiday Calendar",
+      slug: "holidays",
+      icon: <Calendar className="h-4 w-4" />,
+    },
+    {
+      label: "Course Syllabus",
+      slug: "syllabus",
+      icon: <BookOpen className="h-4 w-4" />,
+    },
   ];
 
   return (
@@ -131,8 +204,8 @@ export default function StudentZoneClient({
                     </h2>
                     <p className="text-xs sm:text-sm text-slate-500">
                       Find details about course structures, semester marks
-                      distribution, major and minor syllabus guidelines for
-                      PPU CBCS.
+                      distribution, major and minor syllabus guidelines for PPU
+                      CBCS.
                     </p>
                   </div>
 
@@ -154,7 +227,9 @@ export default function StudentZoneClient({
                           </p>
                         </div>
                         <button
-                          onClick={() => alert(`Downloading Syllabus: ${item.file}`)}
+                          onClick={() =>
+                            alert(`Downloading Syllabus: ${item.file}`)
+                          }
                           className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-white border border-slate-200 text-blue-900 hover:bg-blue-900 hover:text-white transition-all cursor-pointer shadow-sm flex items-center justify-center gap-2 font-bold text-xs"
                         >
                           <Download className="h-4 w-4" /> Download PDF
@@ -196,7 +271,8 @@ export default function StudentZoneClient({
                 <Clock className="h-8 w-8 text-blue-900 mx-auto" />
                 <h4 className="font-bold text-slate-800 text-sm">Exam Forms</h4>
                 <p className="text-[10px] text-slate-500 leading-normal">
-                  Make sure to verify exam submission deadlines and clear all pending dues before exams begin.
+                  Make sure to verify exam submission deadlines and clear all
+                  pending dues before exams begin.
                 </p>
               </div>
             </div>

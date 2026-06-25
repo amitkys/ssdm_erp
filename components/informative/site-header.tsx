@@ -116,7 +116,7 @@ export function SiteHeader({ collegeName }: { collegeName: string }) {
                 >
                   {l.label}
                 </Link>
-              )
+              ),
             )}
             <Link
               href="/admission"

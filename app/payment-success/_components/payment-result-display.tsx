@@ -1,14 +1,14 @@
 "use client";
 
 import {
+  ArrowRight,
   CheckCircle2,
-  XCircle,
+  FileText,
+  Home,
   Lock,
   Printer,
-  Home,
   Receipt,
-  ArrowRight,
-  FileText,
+  XCircle,
 } from "lucide-react";
 
 interface PaymentResult {
@@ -22,11 +22,7 @@ interface PaymentResult {
 interface PaymentResultDisplayProps {
   result: PaymentResult | null;
   errorMessage: string | null;
-  student: {
-    id: string;
-    uan: string;
-    name: string;
-  } | null;
+  student: { id: string; uan: string; name: string } | null;
 }
 
 export const PaymentResultDisplay = ({
@@ -206,7 +202,9 @@ export const PaymentResultDisplay = ({
             Thank You, {student?.name || "Candidate"}!
           </h3>
           <p className="text-emerald-600 text-xs font-semibold leading-relaxed max-w-md mx-auto">
-            Your admission registration has been successfully verified and completed. Please print the payment receipt and application form below for your records.
+            Your admission registration has been successfully verified and
+            completed. Please print the payment receipt and application form
+            below for your records.
           </p>
         </div>
 

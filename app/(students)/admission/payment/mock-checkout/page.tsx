@@ -1,7 +1,10 @@
-import { db } from "@/lib/db";
-import { StudentFeePaymentTable, AdmittedStudentTable } from "@/lib/db/schema/student";
 import { eq } from "drizzle-orm";
 import { redirect } from "next/navigation";
+import { db } from "@/lib/db";
+import {
+  AdmittedStudentTable,
+  StudentFeePaymentTable,
+} from "@/lib/db/schema/student";
 import { MockCheckoutContainer } from "./_components/mock-checkout-container";
 
 interface PageProps {
@@ -24,8 +27,12 @@ export default async function MockCheckoutPage({ searchParams }: PageProps) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-slate-50 p-4">
         <div className="w-full max-w-md rounded-2xl bg-white p-8 shadow-xl text-center">
-          <h2 className="text-2xl font-bold text-slate-800">Payment Record Not Found</h2>
-          <p className="mt-2 text-slate-500">The requested transaction reference does not exist.</p>
+          <h2 className="text-2xl font-bold text-slate-800">
+            Payment Record Not Found
+          </h2>
+          <p className="mt-2 text-slate-500">
+            The requested transaction reference does not exist.
+          </p>
         </div>
       </div>
     );
@@ -40,19 +47,23 @@ export default async function MockCheckoutPage({ searchParams }: PageProps) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-slate-50 p-4">
         <div className="w-full max-w-md rounded-2xl bg-white p-8 shadow-xl text-center">
-          <h2 className="text-2xl font-bold text-slate-800">Student Record Not Found</h2>
-          <p className="mt-2 text-slate-500">The student associated with this payment was not found.</p>
+          <h2 className="text-2xl font-bold text-slate-800">
+            Student Record Not Found
+          </h2>
+          <p className="mt-2 text-slate-500">
+            The student associated with this payment was not found.
+          </p>
         </div>
       </div>
     );
   }
 
   return (
-    <MockCheckoutContainer 
-      paymentId={paymentId} 
-      studentName={student.name || "Student"} 
-      uan={student.UAN || "N/A"} 
-      amount={Number(payment.amount)} 
+    <MockCheckoutContainer
+      paymentId={paymentId}
+      studentName={student.name || "Student"}
+      uan={student.UAN || "N/A"}
+      amount={Number(payment.amount)}
     />
   );
 }

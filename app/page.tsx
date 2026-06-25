@@ -1,37 +1,37 @@
+import { desc, eq } from "drizzle-orm";
+import {
+  ArrowRight,
+  Award,
+  BookOpen,
+  Building,
+  Check,
+  ChevronRight,
+  FlaskConical,
+  GraduationCap,
+  Laptop,
+  Library,
+  Mail,
+  MapPin,
+  Phone,
+  Quote,
+  Users,
+} from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
+import { AcademicsSection } from "@/components/informative/academics-section";
+import { NoticeBoard } from "@/components/informative/notice-board";
+import { SiteFooter } from "@/components/informative/site-footer";
+import { SiteHeader } from "@/components/informative/site-header";
+import { getCollegeConfig } from "@/lib/college-config";
 import { db } from "@/lib/db";
 import {
+  academicSessionTable,
   admissionOpenTable,
   batchTable,
   courseTable,
-  academicSessionTable,
-  tenderTable,
   notice,
+  tenderTable,
 } from "@/lib/db/schema";
-import { eq, desc } from "drizzle-orm";
-import { getCollegeConfig } from "@/lib/college-config";
-import { SiteHeader } from "@/components/informative/site-header";
-import { SiteFooter } from "@/components/informative/site-footer";
-import { NoticeBoard } from "@/components/informative/notice-board";
-import { AcademicsSection } from "@/components/informative/academics-section";
-import Link from "next/link";
-import Image from "next/image";
-import {
-  BookOpen,
-  Award,
-  Users,
-  ArrowRight,
-  ChevronRight,
-  Library,
-  FlaskConical,
-  Phone,
-  Mail,
-  MapPin,
-  Laptop,
-  Building,
-  GraduationCap,
-  Check,
-  Quote,
-} from "lucide-react";
 
 // Force dynamic rendering — data depends on current date and admin mutations
 export const dynamic = "force-dynamic";
@@ -403,7 +403,9 @@ export default async function Page() {
               <div className="lg:col-span-5 bg-white border border-slate-200/80 rounded-3xl p-6 md:p-8 shadow-sm">
                 <div className="flex items-center gap-3 mb-6 pb-4 border-b border-slate-200/60">
                   <GraduationCap className="h-6 w-6 text-blue-900" />
-                  <h3 className="text-xl font-bold text-blue-900">Why Choose Us?</h3>
+                  <h3 className="text-xl font-bold text-blue-900">
+                    Why Choose Us?
+                  </h3>
                 </div>
                 <div className="space-y-5">
                   {[
@@ -486,10 +488,20 @@ export default async function Page() {
                   "Dear Students, Faculty, and Visitors,"
                 </p>
                 <p className="text-justify">
-                  It gives me immense pleasure to welcome you to {config.name}, an institution dedicated to nurturing talent, fostering innovation, and shaping responsible citizens. Education, in our view, is not merely the acquisition of knowledge but the cultivation of values, discipline, and a spirit of inquiry that prepares individuals for life's challenges.
+                  It gives me immense pleasure to welcome you to {config.name},
+                  an institution dedicated to nurturing talent, fostering
+                  innovation, and shaping responsible citizens. Education, in
+                  our view, is not merely the acquisition of knowledge but the
+                  cultivation of values, discipline, and a spirit of inquiry
+                  that prepares individuals for life's challenges.
                 </p>
                 <p className="text-justify font-light">
-                  At our college, we strive to create an environment where academic excellence goes hand in hand with holistic development. Our dedicated faculty, modern infrastructure, and student-centric approach ensure that every learner receives the guidance needed to excel and become an empowered leader of tomorrow.
+                  At our college, we strive to create an environment where
+                  academic excellence goes hand in hand with holistic
+                  development. Our dedicated faculty, modern infrastructure, and
+                  student-centric approach ensure that every learner receives
+                  the guidance needed to excel and become an empowered leader of
+                  tomorrow.
                 </p>
               </div>
 

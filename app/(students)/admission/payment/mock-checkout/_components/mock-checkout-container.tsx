@@ -1,9 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import {
+  CheckCircle2,
+  CreditCard,
+  FileText,
+  Loader2,
+  ShieldAlert,
+  XCircle,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { simulateCallback } from "../../lib/action";
-import { CheckCircle2, XCircle, Loader2, CreditCard, ShieldAlert, FileText } from "lucide-react";
 
 interface ContainerProps {
   paymentId: string;
@@ -12,7 +19,12 @@ interface ContainerProps {
   amount: number;
 }
 
-export function MockCheckoutContainer({ paymentId, studentName, uan, amount }: ContainerProps) {
+export function MockCheckoutContainer({
+  paymentId,
+  studentName,
+  uan,
+  amount,
+}: ContainerProps) {
   const [loading, setLoading] = useState<"SUCCESS" | "FAILED" | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const router = useRouter();
@@ -31,7 +43,9 @@ export function MockCheckoutContainer({ paymentId, studentName, uan, amount }: C
         // it can just query the updated status.
         router.push(`/payment-success?paymentId=${paymentId}`);
       } else {
-        setErrorMsg(result.message || "Failed to process transaction callback.");
+        setErrorMsg(
+          result.message || "Failed to process transaction callback.",
+        );
         setLoading(null);
       }
     } catch (err: any) {
@@ -46,7 +60,6 @@ export function MockCheckoutContainer({ paymentId, studentName, uan, amount }: C
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-blue-900/20 via-slate-900 to-slate-950 pointer-events-none" />
 
       <div className="relative w-full max-w-lg overflow-hidden rounded-3xl border border-slate-800 bg-slate-950/70 p-6 backdrop-blur-xl shadow-2xl md:p-8">
-        
         {/* Header Badge */}
         <div className="flex justify-center mb-6">
           <div className="inline-flex items-center gap-2 rounded-full border border-yellow-500/20 bg-yellow-500/10 px-4 py-1.5 text-xs font-semibold text-yellow-500">
@@ -61,7 +74,8 @@ export function MockCheckoutContainer({ paymentId, studentName, uan, amount }: C
             Simulate Gateway Checkout
           </h1>
           <p className="mt-2.5 text-sm text-slate-400">
-            Third-party sandbox is currently unresponsive or offline. Use this dashboard to test payment callback synchronization.
+            Third-party sandbox is currently unresponsive or offline. Use this
+            dashboard to test payment callback synchronization.
           </p>
         </div>
 
@@ -80,24 +94,34 @@ export function MockCheckoutContainer({ paymentId, studentName, uan, amount }: C
         <div className="mb-8 rounded-2xl border border-slate-800 bg-slate-900/40 p-5 md:p-6">
           <div className="flex items-center gap-2.5 border-b border-slate-800 pb-4 mb-4">
             <FileText className="h-5 w-5 text-blue-400" />
-            <span className="font-bold text-white text-lg">Transaction Summary</span>
+            <span className="font-bold text-white text-lg">
+              Transaction Summary
+            </span>
           </div>
 
           <div className="space-y-3.5 text-sm">
             <div className="flex justify-between items-center">
               <span className="text-slate-400">Candidate Name</span>
-              <span className="font-semibold text-slate-100">{studentName}</span>
+              <span className="font-semibold text-slate-100">
+                {studentName}
+              </span>
             </div>
             <div className="flex justify-between items-center">
               <span className="text-slate-400">UAN Reference</span>
-              <span className="font-mono font-medium text-slate-100">{uan}</span>
+              <span className="font-mono font-medium text-slate-100">
+                {uan}
+              </span>
             </div>
             <div className="flex justify-between items-center">
               <span className="text-slate-400">Transaction ID</span>
-              <span className="font-mono text-slate-300 text-xs truncate max-w-[200px]">{paymentId}</span>
+              <span className="font-mono text-slate-300 text-xs truncate max-w-[200px]">
+                {paymentId}
+              </span>
             </div>
             <div className="flex justify-between items-center border-t border-slate-800 pt-4 mt-2">
-              <span className="text-slate-200 font-semibold text-base">Total Amount Payable</span>
+              <span className="text-slate-200 font-semibold text-base">
+                Total Amount Payable
+              </span>
               <span className="font-black text-2xl text-blue-400">
                 ₹{amount.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
               </span>
@@ -149,7 +173,6 @@ export function MockCheckoutContainer({ paymentId, studentName, uan, amount }: C
           <CreditCard className="h-3.5 w-3.5" />
           <span>Local simulation does not debit real currency.</span>
         </div>
-
       </div>
     </div>
   );

@@ -1,4 +1,5 @@
 import {
+  IconBell,
   IconBook,
   IconBook2,
   IconCalendarEvent,
@@ -6,9 +7,8 @@ import {
   IconFileText,
   IconHierarchy2,
   IconSchool,
-  IconUserCheck,
-  IconBell,
   IconTrendingUp,
+  IconUserCheck,
 } from "@tabler/icons-react";
 import type { ComponentType } from "react";
 
@@ -66,6 +66,13 @@ export function getMenuList(pathname: string): Group[] {
           active: pathname.startsWith("/admission-open"),
         },
         {
+          href: "/semester-admission-open",
+          label: "Semester Admissions",
+          icon: IconUserCheck,
+          active: pathname.startsWith("/semester-admission-open"),
+        },
+
+        {
           href: "/verify/payment",
           label: "Verify Payment",
           icon: IconUserCheck,
@@ -92,7 +99,11 @@ export function getMenuList(pathname: string): Group[] {
           href: "/admission",
           label: "Admission",
           icon: IconUserCheck,
-          active: pathname === "/admission" || pathname.startsWith("/admission/register") || pathname.startsWith("/admission/payment") || pathname.startsWith("/admission/verify"),
+          active:
+            pathname === "/admission" ||
+            pathname.startsWith("/admission/register") ||
+            pathname.startsWith("/admission/payment") ||
+            pathname.startsWith("/admission/verify"),
         },
         {
           href: "/promote-students",

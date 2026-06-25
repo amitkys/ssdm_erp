@@ -1,3 +1,4 @@
+import { createId } from "@paralleldrive/cuid2";
 import { relations, sql } from "drizzle-orm";
 import {
   boolean,
@@ -10,12 +11,11 @@ import {
   timestamp,
   varchar,
 } from "drizzle-orm/pg-core";
-import { createId } from "@paralleldrive/cuid2";
 import {
+  academicSessionTable,
   batchTable,
   courseTable,
   departmentTable,
-  academicSessionTable,
   subjectTable,
 } from "./department";
 

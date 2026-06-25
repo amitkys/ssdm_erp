@@ -9,7 +9,9 @@ export function useMutPromoteToPass() {
     mutationFn: async (studentIds: string[]) => {
       const res = await promoteStudentsToPassed(studentIds);
       if (!res.success || !res.data) {
-        throw new Error(res.message || "Failed to promote students to Passed status");
+        throw new Error(
+          res.message || "Failed to promote students to Passed status",
+        );
       }
       return res.data as { promotedCount: number };
     },

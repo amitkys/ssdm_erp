@@ -1,6 +1,6 @@
+import { notFound } from "next/navigation";
 import { getCollegeConfig } from "@/lib/college-config";
 import GalleryClient from "./gallery-client";
-import { notFound } from "next/navigation";
 
 export default async function Page({
   params,

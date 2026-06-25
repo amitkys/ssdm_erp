@@ -1,8 +1,8 @@
 "use client";
 
 import type { ColumnDef } from "@tanstack/react-table";
-import { Badge } from "@/components/ui/badge";
 import type { useGetAdmittedStudentsBySession } from "@/app/(departments)/promote-students/query/get-admitted-students-by-session";
+import { Badge } from "@/components/ui/badge";
 
 export type AdmittedStudentRow = NonNullable<
   ReturnType<typeof useGetAdmittedStudentsBySession>["data"]
@@ -19,9 +19,7 @@ export const promoteColumns: ColumnDef<AdmittedStudentRow>[] = [
   {
     accessorKey: "name",
     header: "Name",
-    cell: ({ row }) => (
-      <div className="font-medium">{row.original.name}</div>
-    ),
+    cell: ({ row }) => <div className="font-medium">{row.original.name}</div>,
   },
   {
     id: "course",
@@ -29,7 +27,9 @@ export const promoteColumns: ColumnDef<AdmittedStudentRow>[] = [
     cell: ({ row }) => (
       <div className="text-sm">
         <div>{row.original.batch.course.name}</div>
-        <div className="text-xs text-muted-foreground">Session: {row.original.batch.academicSession.name}</div>
+        <div className="text-xs text-muted-foreground">
+          Session: {row.original.batch.academicSession.name}
+        </div>
       </div>
     ),
   },
@@ -65,7 +65,11 @@ export const promoteColumns: ColumnDef<AdmittedStudentRow>[] = [
       const atMaxSem = row.original.currentSemesterCount >= maxSem;
 
       if (isPassed) {
-        return <Badge variant="outline" className="border-blue-500 text-blue-600">Passed</Badge>;
+        return (
+          <Badge variant="outline" className="border-blue-500 text-blue-600">
+            Passed
+          </Badge>
+        );
       }
       if (isDetained) {
         return <Badge variant="destructive">Detained</Badge>;
@@ -74,9 +78,15 @@ export const promoteColumns: ColumnDef<AdmittedStudentRow>[] = [
         return <Badge variant="secondary">Inactive</Badge>;
       }
       if (atMaxSem) {
-        return <Badge variant="outline" className="border-amber-500 text-amber-600">Last Semester</Badge>;
+        return (
+          <Badge variant="outline" className="border-amber-500 text-amber-600">
+            Last Semester
+          </Badge>
+        );
       }
-      return <Badge className="bg-emerald-600 hover:bg-emerald-700">Eligible</Badge>;
+      return (
+        <Badge className="bg-emerald-600 hover:bg-emerald-700">Eligible</Badge>
+      );
     },
   },
 ];

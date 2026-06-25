@@ -3,8 +3,8 @@ import {
   HydrationBoundary,
   QueryClient,
 } from "@tanstack/react-query";
-import { ContentLayout } from "@/components/content-layout";
 import { getAcademicSessionsQuery } from "@/app/(departments)/academic-session/query/get-academic-session";
+import { ContentLayout } from "@/components/content-layout";
 import { StudentPromotionPanel } from "./_components/student-promotion-panel";
 
 export default async function PromoteStudentsPage() {

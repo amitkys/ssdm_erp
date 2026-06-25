@@ -1,16 +1,25 @@
 "use client";
 
-import { useState, useMemo, useEffect, useCallback, Fragment } from "react";
+import { useQuery } from "@tanstack/react-query";
 import {
   flexRender,
   getCoreRowModel,
-  getPaginationRowModel,
   getExpandedRowModel,
+  getPaginationRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { useQuery } from "@tanstack/react-query";
 import { ChevronDown, ChevronRight } from "lucide-react";
-import { StudentExpandedDetails } from "./student-expanded-details";
+import { Fragment, useCallback, useEffect, useMemo, useState } from "react";
+import { useGetAcademicSessions } from "@/app/(departments)/academic-session/query/get-academic-session";
+import { useGetCourses } from "@/app/(departments)/course/query/get-courses";
+import { getDepartment } from "@/app/(departments)/department/query/get-all-department";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  NativeSelect,
+  NativeSelectOption,
+} from "@/components/ui/native-select";
 import {
   Table,
   TableBody,
@@ -19,19 +28,13 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import {
-  NativeSelect,
-  NativeSelectOption,
-} from "@/components/ui/native-select";
-import { useGetAcademicSessions } from "@/app/(departments)/academic-session/query/get-academic-session";
-import { getDepartment } from "@/app/(departments)/department/query/get-all-department";
-import { useGetCourses } from "@/app/(departments)/course/query/get-courses";
-import { useSearchAdmittedStudents, type SearchFilters } from "../query/search-admitted-students";
 import { useMutPromoteToPass } from "../query/mut-promote-to-pass";
+import {
+  type SearchFilters,
+  useSearchAdmittedStudents,
+} from "../query/search-admitted-students";
 import { PassConfirmDialog } from "./pass-confirm-dialog";
+import { StudentExpandedDetails } from "./student-expanded-details";
 
 const EMPTY_ARRAY: any[] = [];
 const EMPTY_OBJECT = {};
@@ -45,7 +48,9 @@ export function StudentSearchPanel() {
   const [selectedStatus, setSelectedStatus] = useState("");
 
   const [rowSelection, setRowSelection] = useState<Record<string, boolean>>({});
-  const [appliedFilters, setAppliedFilters] = useState<SearchFilters | null>(null);
+  const [appliedFilters, setAppliedFilters] = useState<SearchFilters | null>(
+    null,
+  );
 
   // Fetch dropdown data
   const { data: sessions } = useGetAcademicSessions();
@@ -54,15 +59,24 @@ export function StudentSearchPanel() {
 
   // Filter courses based on selected department
   const filteredCourses = useMemo(() => {
-    if (!courses) return [];
-    if (!selectedDepartmentId) return courses;
+    if (!courses) {
+      return [];
+    }
+    if (!selectedDepartmentId) {
+      return courses;
+    }
     return courses.filter((c) => c.departmentId === selectedDepartmentId);
   }, [courses, selectedDepartmentId]);
 
   // Fetch matching students (only when appliedFilters is not null)
-  const { data: students, isPending, isError, error } = useSearchAdmittedStudents(
+  const {
+    data: students,
+    isPending,
+    isError,
+    error,
+  } = useSearchAdmittedStudents(
     appliedFilters ?? EMPTY_OBJECT,
-    !!appliedFilters
+    !!appliedFilters,
   );
 
   // Promote to Pass mutation
@@ -82,15 +96,25 @@ export function StudentSearchPanel() {
       semesterCount: selectedSemester ? Number(selectedSemester) : undefined,
       status: selectedStatus || undefined,
     });
-  }, [query, selectedSessionId, selectedCourseId, selectedDepartmentId, selectedSemester, selectedStatus]);
+  }, [
+    query,
+    selectedSessionId,
+    selectedCourseId,
+    selectedDepartmentId,
+    selectedSemester,
+    selectedStatus,
+  ]);
 
-  const handlePromoteSelected = useCallback((studentIds: string[]) => {
-    promoteMutation.mutate(studentIds, {
-      onSuccess: () => {
-        setRowSelection({});
-      },
-    });
-  }, [promoteMutation]);
+  const handlePromoteSelected = useCallback(
+    (studentIds: string[]) => {
+      promoteMutation.mutate(studentIds, {
+        onSuccess: () => {
+          setRowSelection({});
+        },
+      });
+    },
+    [promoteMutation],
+  );
 
   const handleResetFilters = useCallback(() => {
     setQuery("");
@@ -111,7 +135,9 @@ export function StudentSearchPanel() {
         header: ({ table }: { table: any }) => {
           const someSelected = table.getIsSomePageRowsSelected();
           const allSelected = table.getIsAllPageRowsSelected();
-          const hasSelectableRows = table.getRowModel().rows.some((row: any) => row.getCanSelect());
+          const hasSelectableRows = table
+            .getRowModel()
+            .rows.some((row: any) => row.getCanSelect());
 
           return (
             <input
@@ -158,7 +184,9 @@ export function StudentSearchPanel() {
         cell: ({ row }: { row: any }) => (
           <div className="text-xs space-y-0.5">
             <div>{row.original.batch.course.name}</div>
-            <div className="text-muted-foreground">{row.original.batch.course.department.name}</div>
+            <div className="text-muted-foreground">
+              {row.original.batch.course.department.name}
+            </div>
           </div>
         ),
       },
@@ -167,8 +195,19 @@ export function StudentSearchPanel() {
         header: "Session & Semester",
         cell: ({ row }: { row: any }) => (
           <div className="text-xs space-y-0.5">
-            <div>Session: <span className="font-medium">{row.original.batch.academicSession.name}</span></div>
-            <div>Sem: <span className="font-semibold">{row.original.currentSemesterCount}</span> / {row.original.batch.course.duration * 2}</div>
+            <div>
+              Session:{" "}
+              <span className="font-medium">
+                {row.original.batch.academicSession.name}
+              </span>
+            </div>
+            <div>
+              Sem:{" "}
+              <span className="font-semibold">
+                {row.original.currentSemesterCount}
+              </span>{" "}
+              / {row.original.batch.course.duration * 2}
+            </div>
           </div>
         ),
       },
@@ -181,7 +220,14 @@ export function StudentSearchPanel() {
           const atMaxSem = row.original.currentSemesterCount >= maxSem;
 
           if (isPassed) {
-            return <Badge variant="outline" className="border-blue-500 text-blue-600">Passed</Badge>;
+            return (
+              <Badge
+                variant="outline"
+                className="border-blue-500 text-blue-600"
+              >
+                Passed
+              </Badge>
+            );
           }
           if (isDetained) {
             return <Badge variant="destructive">Detained</Badge>;
@@ -190,16 +236,28 @@ export function StudentSearchPanel() {
             return <Badge variant="secondary">Inactive</Badge>;
           }
           if (atMaxSem) {
-            return <Badge variant="outline" className="border-amber-500 text-amber-600">Last Semester</Badge>;
+            return (
+              <Badge
+                variant="outline"
+                className="border-amber-500 text-amber-600"
+              >
+                Last Semester
+              </Badge>
+            );
           }
-          return <Badge className="bg-emerald-600 hover:bg-emerald-700">Active</Badge>;
+          return (
+            <Badge className="bg-emerald-600 hover:bg-emerald-700">
+              Active
+            </Badge>
+          );
         },
       },
       {
         id: "actions",
         header: "Action",
         cell: ({ row }: { row: any }) => {
-          const isEligible = row.original.currentSemesterCount >= 6 && !row.original.isPassed;
+          const isEligible =
+            row.original.currentSemesterCount >= 6 && !row.original.isPassed;
 
           if (!isEligible) {
             return (
@@ -260,21 +318,16 @@ export function StudentSearchPanel() {
   const table = useReactTable({
     data: students ?? EMPTY_ARRAY,
     columns,
-    state: {
-      rowSelection,
-    },
+    state: { rowSelection },
     getRowId: (row) => row.id,
-    enableRowSelection: (row) => row.original.currentSemesterCount >= 6 && !row.original.isPassed,
+    enableRowSelection: (row) =>
+      row.original.currentSemesterCount >= 6 && !row.original.isPassed,
     onRowSelectionChange: setRowSelection,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     getExpandedRowModel: getExpandedRowModel(),
     getRowCanExpand: () => true,
-    initialState: {
-      pagination: {
-        pageSize: 15,
-      },
-    },
+    initialState: { pagination: { pageSize: 15 } },
   });
 
   // Compute selected eligible students directly from rowSelection state
@@ -283,10 +336,10 @@ export function StudentSearchPanel() {
   }, [rowSelection]);
 
   const selectedEligibleNames = useMemo(() => {
-    if (!students) return [];
-    return students
-      .filter((s) => rowSelection[s.id])
-      .map((s) => s.name);
+    if (!students) {
+      return [];
+    }
+    return students.filter((s) => rowSelection[s.id]).map((s) => s.name);
   }, [rowSelection, students]);
 
   return (
@@ -309,7 +362,10 @@ export function StudentSearchPanel() {
         <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
           {/* Session select */}
           <div className="flex flex-col gap-1.5">
-            <label htmlFor="session-select" className="text-xs font-medium text-muted-foreground">
+            <label
+              htmlFor="session-select"
+              className="text-xs font-medium text-muted-foreground"
+            >
               Session
             </label>
             <NativeSelect
@@ -328,7 +384,10 @@ export function StudentSearchPanel() {
 
           {/* Department select */}
           <div className="flex flex-col gap-1.5">
-            <label htmlFor="dept-select" className="text-xs font-medium text-muted-foreground">
+            <label
+              htmlFor="dept-select"
+              className="text-xs font-medium text-muted-foreground"
+            >
               Department
             </label>
             <NativeSelect
@@ -350,7 +409,10 @@ export function StudentSearchPanel() {
 
           {/* Course select */}
           <div className="flex flex-col gap-1.5">
-            <label htmlFor="course-select" className="text-xs font-medium text-muted-foreground">
+            <label
+              htmlFor="course-select"
+              className="text-xs font-medium text-muted-foreground"
+            >
               Course
             </label>
             <NativeSelect
@@ -369,7 +431,10 @@ export function StudentSearchPanel() {
 
           {/* Semester select */}
           <div className="flex flex-col gap-1.5">
-            <label htmlFor="sem-select" className="text-xs font-medium text-muted-foreground">
+            <label
+              htmlFor="sem-select"
+              className="text-xs font-medium text-muted-foreground"
+            >
               Semester
             </label>
             <NativeSelect
@@ -388,7 +453,10 @@ export function StudentSearchPanel() {
 
           {/* Status select */}
           <div className="flex flex-col gap-1.5">
-            <label htmlFor="status-select" className="text-xs font-medium text-muted-foreground">
+            <label
+              htmlFor="status-select"
+              className="text-xs font-medium text-muted-foreground"
+            >
               Status
             </label>
             <NativeSelect
@@ -409,7 +477,7 @@ export function StudentSearchPanel() {
           <Button variant="outline" size="sm" onClick={handleResetFilters}>
             Clear Filters
           </Button>
-          <Button 
+          <Button
             className="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold flex items-center gap-1.5 px-4 shadow-sm"
             onClick={handleSearch}
           >
@@ -425,9 +493,12 @@ export function StudentSearchPanel() {
             🔍
           </div>
           <div className="space-y-1 max-w-md">
-            <h3 className="text-lg font-semibold tracking-tight">Ready to Search</h3>
+            <h3 className="text-lg font-semibold tracking-tight">
+              Ready to Search
+            </h3>
             <p className="text-sm text-muted-foreground">
-              Configure the filters above and click the <strong>Search Students</strong> button to view student records.
+              Configure the filters above and click the{" "}
+              <strong>Search Students</strong> button to view student records.
             </p>
           </div>
         </div>
@@ -448,9 +519,12 @@ export function StudentSearchPanel() {
             ⚠️
           </div>
           <div className="space-y-1 max-w-md">
-            <h3 className="text-lg font-semibold tracking-tight">No Records Found</h3>
+            <h3 className="text-lg font-semibold tracking-tight">
+              No Records Found
+            </h3>
             <p className="text-sm text-muted-foreground">
-              No students matched your search criteria. Try modifying your filters or search query and search again.
+              No students matched your search criteria. Try modifying your
+              filters or search query and search again.
             </p>
           </div>
         </div>
@@ -460,7 +534,8 @@ export function StudentSearchPanel() {
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-3 bg-muted/40 border rounded-t-lg">
             <div className="flex items-center gap-2">
               <span className="font-semibold text-sm text-foreground">
-                Search Results ({students?.length || 0} Student{students?.length !== 1 ? "s" : ""})
+                Search Results ({students?.length || 0} Student
+                {students?.length !== 1 ? "s" : ""})
               </span>
             </div>
 
@@ -468,15 +543,16 @@ export function StudentSearchPanel() {
             {selectedEligibleIds.length > 0 ? (
               <div className="flex items-center gap-3 p-1 px-3 rounded-lg bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-900/50 animate-in fade-in slide-in-from-top-1 duration-200">
                 <span className="text-xs font-medium text-emerald-800 dark:text-emerald-300">
-                  Selected <strong>{selectedEligibleIds.length}</strong> eligible student{selectedEligibleIds.length !== 1 ? "s" : ""}
+                  Selected <strong>{selectedEligibleIds.length}</strong>{" "}
+                  eligible student{selectedEligibleIds.length !== 1 ? "s" : ""}
                 </span>
                 <PassConfirmDialog
                   selectedNames={selectedEligibleNames}
                   isPending={promoteMutation.isPending}
                   onConfirm={() => handlePromoteSelected(selectedEligibleIds)}
                   trigger={
-                    <Button 
-                      size="sm" 
+                    <Button
+                      size="sm"
                       className="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs h-8 px-3"
                     >
                       🎓 Promote Selected to Pass
@@ -556,8 +632,8 @@ export function StudentSearchPanel() {
           <div className="flex items-center justify-between">
             <p className="text-sm text-muted-foreground">
               Page {table.getState().pagination.pageIndex + 1} of{" "}
-              {table.getPageCount()} — Showing{" "}
-              {table.getRowModel().rows.length} of {students.length} students
+              {table.getPageCount()} — Showing {table.getRowModel().rows.length}{" "}
+              of {students.length} students
             </p>
             <div className="flex items-center gap-2">
               <Button

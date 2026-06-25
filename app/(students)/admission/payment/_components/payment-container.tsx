@@ -1,19 +1,19 @@
 "use client";
 
-import { useState } from "react";
-import { toast } from "sonner";
 import {
-  Lock,
+  AlertTriangle,
+  BookOpen,
+  Calendar,
   CheckCircle,
   CreditCard,
-  AlertTriangle,
-  User,
-  Sparkles,
-  BookOpen,
-  Receipt,
   Loader2,
-  Calendar,
+  Lock,
+  Receipt,
+  Sparkles,
+  User,
 } from "lucide-react";
+import { useState } from "react";
+import { toast } from "sonner";
 import { initiatePayment } from "../lib/action";
 
 interface StudentDetails {
@@ -47,6 +47,7 @@ interface PaymentContainerProps {
   fees: FeeDetails | null;
   pendingPayment: PaymentDetails | null;
   initialError?: string | null;
+  semesterCount?: number;
 }
 
 export const PaymentContainer = ({
@@ -56,13 +57,16 @@ export const PaymentContainer = ({
   fees,
   pendingPayment,
   initialError = null,
+  semesterCount,
 }: PaymentContainerProps) => {
   const [isPending, setIsPending] = useState(false);
   const [loadingText, setLoadingText] = useState("");
   const [errorMessage, setErrorMessage] = useState<string | null>(initialError);
 
   const handlePay = async () => {
-    if (!fees) return;
+    if (!fees) {
+      return;
+    }
     setIsPending(true);
     setErrorMessage(null);
 
@@ -73,6 +77,7 @@ export const PaymentContainer = ({
         tuitionFee: fees.tuitionFee,
         practicalFee: fees.practicalFee,
         lateFee: fees.lateFee,
+        semesterCount,
       });
 
       if (res.success && res.paymentUrl) {

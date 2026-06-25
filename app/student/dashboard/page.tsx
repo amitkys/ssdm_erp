@@ -11,18 +11,21 @@ import {
   IconSchool,
   IconUser,
 } from "@tabler/icons-react";
-import { and, eq } from "drizzle-orm";
+import { and, eq, inArray } from "drizzle-orm";
 import { headers } from "next/headers";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ContentLayout } from "@/components/content-layout";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { batchTable } from "@/lib/db/schema/department";
 import {
   AdmittedStudentTable,
+  admissionOpenTable,
+  batchTable,
   StudentFeePaymentTable,
-} from "@/lib/db/schema/student";
+  semesterAdmissionOpenTable,
+  subjectTable,
+} from "@/lib/db/schema";
 
 export default async function StudentDashboardPage() {
   const session = await auth.api.getSession({ headers: await headers() });
@@ -93,6 +96,101 @@ export default async function StudentDashboardPage() {
   });
 
   const hasPaid = !!payment;
+
+  // Query all successful payment records for the student
+  const allPayments = await db.query.StudentFeePaymentTable.findMany({
+    where: and(
+      eq(StudentFeePaymentTable.studentId, student.id),
+      eq(StudentFeePaymentTable.status, "Success"),
+    ),
+    orderBy: (table, { desc }) => [
+      desc(table.semesterCount),
+      desc(table.createdAt),
+    ],
+  });
+
+  // Check if next semester count exists in semester_admission_open
+  const nextSemesterCount = student.currentSemesterCount + 1;
+  const nextSemesterPaid = await db.query.StudentFeePaymentTable.findFirst({
+    where: and(
+      eq(StudentFeePaymentTable.studentId, student.id),
+      eq(StudentFeePaymentTable.semesterCount, nextSemesterCount),
+      eq(StudentFeePaymentTable.status, "Success"),
+    ),
+  });
+
+  const nextSemesterAdmission =
+    nextSemesterPaid || !batch
+      ? null
+      : await db.query.semesterAdmissionOpenTable.findFirst({
+          where: and(
+            eq(
+              semesterAdmissionOpenTable.academicSessionId,
+              batch.academicSessionId,
+            ),
+            eq(semesterAdmissionOpenTable.semesterCount, nextSemesterCount),
+          ),
+        });
+
+  let nextSemesterFees = null;
+  let pendingNextSemesterPayment = null;
+
+  if (nextSemesterAdmission && batch) {
+    const allSubjectIds = [
+      student.subMJC,
+      ...(student.subMIC || []),
+      ...(student.subMDC || []),
+      ...(student.subAEC || []),
+      ...(student.subSEC || []),
+      ...(student.subVAC || []),
+    ].filter(Boolean) as string[];
+
+    let hasPractical = false;
+    if (allSubjectIds.length > 0) {
+      const subjects = await db
+        .select({ hasPractical: subjectTable.hasPractical })
+        .from(subjectTable)
+        .where(inArray(subjectTable.id, allSubjectIds));
+      hasPractical = subjects.some((s) => s.hasPractical === true);
+    }
+
+    const admissionOpen = await db.query.admissionOpenTable.findFirst({
+      where: eq(admissionOpenTable.batchId, student.batchId),
+    });
+
+    const tuitionFee = batch.perSemesterFee;
+    const practicalFee = hasPractical
+      ? (admissionOpen?.practicalFee ?? 500)
+      : 0;
+
+    let lateFee = 0;
+    const currentDate = new Date();
+    currentDate.setHours(0, 0, 0, 0);
+    const [endYear, endMonth, endDay] = nextSemesterAdmission.endDate
+      .split("-")
+      .map(Number);
+    const standardEndDate = new Date(endYear, endMonth - 1, endDay);
+    if (currentDate > standardEndDate) {
+      lateFee = nextSemesterAdmission.lateFee ?? 0;
+    }
+
+    nextSemesterFees = {
+      tuitionFee,
+      practicalFee,
+      lateFee,
+      totalAmount: tuitionFee + practicalFee + lateFee,
+    };
+
+    pendingNextSemesterPayment =
+      await db.query.StudentFeePaymentTable.findFirst({
+        where: and(
+          eq(StudentFeePaymentTable.studentId, student.id),
+          eq(StudentFeePaymentTable.semesterCount, nextSemesterCount),
+          eq(StudentFeePaymentTable.status, "Pending"),
+        ),
+        orderBy: (table, { desc }) => [desc(table.createdAt)],
+      });
+  }
 
   return (
     <ContentLayout title="Student Dashboard">
@@ -328,7 +426,173 @@ export default async function StudentDashboardPage() {
                 </div>
               )}
             </div>
+
+            {/* Next Semester Admission Card */}
+            {hasPaid && nextSemesterAdmission && nextSemesterFees && (
+              <div className="bg-white border border-slate-150 rounded-2xl p-6 sm:p-8 shadow-sm space-y-6">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4">
+                  <div className="space-y-1">
+                    <h3 className="text-base font-extrabold text-slate-800 flex items-center gap-2">
+                      <IconCreditCard className="h-5 w-5 text-indigo-600" />
+                      Admission & Fees for Semester {nextSemesterCount}
+                    </h3>
+                    <p className="text-slate-400 text-xs font-semibold">
+                      Timeline:{" "}
+                      {new Date(
+                        nextSemesterAdmission.startDate,
+                      ).toLocaleDateString("en-IN", {
+                        day: "2-digit",
+                        month: "short",
+                        year: "numeric",
+                      })}{" "}
+                      to{" "}
+                      {new Date(
+                        nextSemesterAdmission.endDate,
+                      ).toLocaleDateString("en-IN", {
+                        day: "2-digit",
+                        month: "short",
+                        year: "numeric",
+                      })}
+                    </p>
+                  </div>
+                  <div>
+                    <span className="inline-flex items-center gap-1 px-3 py-1 bg-amber-50 text-amber-700 border border-amber-200 rounded-full text-xs font-bold uppercase tracking-wider animate-pulse">
+                      <IconAlertCircle className="h-3.5 w-3.5" />
+                      Admission Open
+                    </span>
+                  </div>
+                </div>
+
+                {pendingNextSemesterPayment && (
+                  <div className="bg-amber-50/60 border border-amber-100/50 p-4 rounded-xl flex items-start gap-3">
+                    <IconAlertCircle className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
+                    <div className="text-xs text-amber-800">
+                      <span className="font-bold">Pending Payment Found:</span>{" "}
+                      You have a pending checkout initiated for Semester{" "}
+                      {nextSemesterCount} on{" "}
+                      {new Date(
+                        pendingNextSemesterPayment.createdAt,
+                      ).toLocaleDateString("en-IN", {
+                        day: "2-digit",
+                        month: "short",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                      . Click the button below to resume or retry.
+                    </div>
+                  </div>
+                )}
+
+                <div className="flex flex-col sm:flex-row items-center gap-4 bg-indigo-50/30 border border-indigo-100/50 p-5 rounded-2xl">
+                  <div className="h-10 w-10 bg-indigo-100 text-indigo-700 rounded-full flex items-center justify-center shrink-0">
+                    <IconSchool className="h-5 w-5" />
+                  </div>
+                  <div className="text-center sm:text-left space-y-0.5 flex-grow">
+                    <h4 className="text-xs font-extrabold text-slate-800">
+                      Next Semester Fee Structure
+                    </h4>
+                    <div className="text-slate-500 text-[11px] leading-relaxed space-y-0.5">
+                      <p>
+                        Admission & Tuition Fee: ₹
+                        {nextSemesterFees.tuitionFee.toLocaleString("en-IN")}
+                      </p>
+                      {nextSemesterFees.practicalFee > 0 && (
+                        <p>
+                          Practical Laboratory Surcharge: ₹
+                          {nextSemesterFees.practicalFee.toLocaleString(
+                            "en-IN",
+                          )}
+                        </p>
+                      )}
+                      {nextSemesterFees.lateFee > 0 && (
+                        <p className="text-rose-600 font-semibold">
+                          Late Fee Surcharge (Past Deadline): ₹
+                          {nextSemesterFees.lateFee.toLocaleString("en-IN")}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                  <div className="text-right pr-2 shrink-0">
+                    <span className="text-[10px] text-slate-400 font-bold block uppercase tracking-wider">
+                      Total Payable
+                    </span>
+                    <span className="text-lg font-black text-indigo-700 block">
+                      ₹{nextSemesterFees.totalAmount.toLocaleString("en-IN")}
+                    </span>
+                  </div>
+                  <Link
+                    href={`/admission/payment?studentId=${student.id}&semesterCount=${nextSemesterCount}`}
+                    className="inline-flex items-center gap-2 px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-black shadow-lg shadow-indigo-600/10 hover:shadow-indigo-600/20 active:scale-[0.98] transition-all cursor-pointer"
+                  >
+                    Pay Semester {nextSemesterCount} Fee
+                    <IconArrowRight className="h-4 w-4" />
+                  </Link>
+                </div>
+              </div>
+            )}
           </div>
+        </div>
+
+        {/* Payment History & Receipts Section */}
+        <div className="bg-white border border-slate-150 rounded-2xl p-6 sm:p-8 shadow-sm space-y-6">
+          <h2 className="text-base font-extrabold text-slate-800 flex items-center gap-2 border-b border-slate-100 pb-3">
+            <IconReceipt className="h-5 w-5 text-indigo-600" />
+            Payment History & Receipts
+          </h2>
+
+          {allPayments.length > 0 ? (
+            <div className="overflow-x-auto rounded-xl border border-slate-150">
+              <table className="w-full text-xs text-left">
+                <thead className="bg-slate-50 text-slate-500 uppercase tracking-wider text-[10px] font-bold border-b border-slate-150">
+                  <tr>
+                    <th className="px-6 py-3">Semester</th>
+                    <th className="px-6 py-3">Transaction ID</th>
+                    <th className="px-6 py-3">Mode</th>
+                    <th className="px-6 py-3">Amount</th>
+                    <th className="px-6 py-3">Date Paid</th>
+                    <th className="px-6 py-3 text-right">Receipt</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-150 font-medium text-slate-700">
+                  {allPayments.map((p) => (
+                    <tr key={p.id} className="hover:bg-slate-50/50">
+                      <td className="px-6 py-4 font-bold text-slate-800">
+                        Semester {p.semesterCount}
+                      </td>
+                      <td className="px-6 py-4 font-mono text-[11px]">
+                        {p.transactionId}
+                      </td>
+                      <td className="px-6 py-4">{p.paymentMode}</td>
+                      <td className="px-6 py-4 font-bold text-slate-900">
+                        ₹{Number(p.amount).toLocaleString("en-IN")}
+                      </td>
+                      <td className="px-6 py-4">
+                        {new Date(p.createdAt).toLocaleDateString("en-IN", {
+                          day: "2-digit",
+                          month: "short",
+                          year: "numeric",
+                        })}
+                      </td>
+                      <td className="px-6 py-4 text-right font-sans">
+                        <Link
+                          href={`/admission/print/receipt?paymentId=${p.id}`}
+                          target="_blank"
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-indigo-50 hover:text-indigo-600 text-slate-600 border border-slate-200 rounded-lg text-xs font-bold transition-all cursor-pointer"
+                        >
+                          <IconPrinter className="h-3.5 w-3.5" />
+                          Print / PDF
+                        </Link>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <p className="text-sm text-slate-400 text-center py-6 font-medium">
+              No fee payment records found.
+            </p>
+          )}
         </div>
       </div>
     </ContentLayout>

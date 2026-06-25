@@ -3,7 +3,11 @@ import { inArray } from "drizzle-orm";
 import { NextResponse } from "next/server";
 import * as z from "zod";
 import { db } from "@/lib/db";
-import { AdmittedStudentTable, batchTable, subjectTable } from "@/lib/db/schema";
+import {
+  AdmittedStudentTable,
+  batchTable,
+  subjectTable,
+} from "@/lib/db/schema";
 
 const arrayPreprocessSchema = z.preprocess((val) => {
   if (val === null || val === undefined || val === "") {
@@ -24,41 +28,83 @@ const arrayPreprocessSchema = z.preprocess((val) => {
   return [];
 }, z.array(z.string()));
 
-const dateTransform = z.any().optional().nullable().transform((val) => {
-  if (!val || String(val).trim() === "") return undefined;
-  try {
-    const d = new Date(val);
-    return isNaN(d.getTime()) ? undefined : d;
-  } catch {
-    return undefined;
-  }
-});
+const dateTransform = z
+  .any()
+  .optional()
+  .nullable()
+  .transform((val) => {
+    if (!val || String(val).trim() === "") {
+      return undefined;
+    }
+    try {
+      const d = new Date(val);
+      return isNaN(d.getTime()) ? undefined : d;
+    } catch {
+      return undefined;
+    }
+  });
 
 const dateStringTransform = z.any().transform((val) => {
-  if (!val || String(val).trim() === "") throw new Error("DOB is required");
+  if (!val || String(val).trim() === "") {
+    throw new Error("DOB is required");
+  }
   const str = String(val).trim();
   const clean = str.includes("T") ? str.split("T")[0] : str;
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(clean)) throw new Error("Invalid DOB format");
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(clean)) {
+    throw new Error("Invalid DOB format");
+  }
   return clean;
 });
 
 const admittedStudentItemSchema = z.object({
-  id: z.string().optional().nullable().transform((val) => val || createId()),
+  id: z
+    .string()
+    .optional()
+    .nullable()
+    .transform((val) => val || createId()),
   UAN: z.string().min(1, "UAN is required"),
-  registrationNumber: z.string().optional().nullable().transform((val) => val || null),
-  universityRoll: z.string().optional().nullable().transform((val) => val || null),
+  registrationNumber: z
+    .string()
+    .optional()
+    .nullable()
+    .transform((val) => val || null),
+  universityRoll: z
+    .string()
+    .optional()
+    .nullable()
+    .transform((val) => val || null),
   collegeRoll: z.string().min(1, "College roll is required"),
-  admissionNumber: z.string().optional().nullable().transform((val) => val || null),
-  confidentialNumber: z.string().optional().nullable().transform((val) => val || null),
-  profileNumber: z.string().optional().nullable().transform((val) => val || null),
+  admissionNumber: z
+    .string()
+    .optional()
+    .nullable()
+    .transform((val) => val || null),
+  confidentialNumber: z
+    .string()
+    .optional()
+    .nullable()
+    .transform((val) => val || null),
+  profileNumber: z
+    .string()
+    .optional()
+    .nullable()
+    .transform((val) => val || null),
   admissionType: z
     .enum(["MERIT", "SPORT", "MANAGEMENT QUOTA", "OTHER"])
     .optional()
     .nullable()
     .transform((val) => val || null),
-  ABCID: z.string().optional().nullable().transform((val) => val || null),
+  ABCID: z
+    .string()
+    .optional()
+    .nullable()
+    .transform((val) => val || null),
   name: z.string().min(1, "Name is required"),
-  avatar: z.string().optional().nullable().transform((val) => val || ""),
+  avatar: z
+    .string()
+    .optional()
+    .nullable()
+    .transform((val) => val || ""),
   DOB: dateStringTransform,
   AadharNumber: z
     .string()
@@ -80,10 +126,24 @@ const admittedStudentItemSchema = z.object({
   mothersName: z.string().min(1, "Mother's name is required"),
   religion: z.string().min(1, "Religion is required"),
   caste: z.enum(["GEN", "BC", "EBC", "SC", "ST", "OTHER"]),
-  reservation: z.string().optional().nullable().transform((val) => val || null),
-  isMinority: z.boolean().optional().nullable().transform((val) => (val === null ? false : val)),
+  reservation: z
+    .string()
+    .optional()
+    .nullable()
+    .transform((val) => val || null),
+  isMinority: z
+    .boolean()
+    .optional()
+    .nullable()
+    .transform((val) => (val === null ? false : val)),
   batchId: z.string().min(1, "Batch ID is required"),
-  currentSemesterCount: z.number().int().min(1).optional().nullable().transform((val) => (val === null ? 1 : val)),
+  currentSemesterCount: z
+    .number()
+    .int()
+    .min(1)
+    .optional()
+    .nullable()
+    .transform((val) => (val === null ? 1 : val)),
   subMJC: z.string().min(1, "Major Subject (subMJC) is required"),
   subMIC: arrayPreprocessSchema.optional().default([]),
   subMDC: arrayPreprocessSchema.optional().default([]),
@@ -94,12 +154,36 @@ const admittedStudentItemSchema = z.object({
   district: z.string().min(1, "District is required"),
   state: z.string().min(1, "State is required"),
   pinCode: z.number().int().min(100000).max(999999),
-  isInternshipStarted: z.boolean().optional().nullable().transform((val) => (val === null ? false : val)),
-  internshipFee: z.number().optional().nullable().transform((val) => (val === null ? 0 : val)),
-  isProfileCompleted: z.boolean().optional().nullable().transform((val) => (val === null ? false : val)),
-  isDetained: z.boolean().optional().nullable().transform((val) => (val === null ? false : val)),
-  isActive: z.boolean().optional().nullable().transform((val) => (val === null ? true : val)),
-  detainRemark: z.string().optional().nullable().transform((val) => val || ""),
+  isInternshipStarted: z
+    .boolean()
+    .optional()
+    .nullable()
+    .transform((val) => (val === null ? false : val)),
+  internshipFee: z
+    .number()
+    .optional()
+    .nullable()
+    .transform((val) => (val === null ? 0 : val)),
+  isProfileCompleted: z
+    .boolean()
+    .optional()
+    .nullable()
+    .transform((val) => (val === null ? false : val)),
+  isDetained: z
+    .boolean()
+    .optional()
+    .nullable()
+    .transform((val) => (val === null ? false : val)),
+  isActive: z
+    .boolean()
+    .optional()
+    .nullable()
+    .transform((val) => (val === null ? true : val)),
+  detainRemark: z
+    .string()
+    .optional()
+    .nullable()
+    .transform((val) => val || ""),
   createdAt: dateTransform,
   updatedAt: dateTransform,
 });
@@ -121,7 +205,8 @@ export async function POST(req: Request) {
       return NextResponse.json(
         {
           success: false,
-          message: "Invalid onConflict parameter. Supported values: 'fail', 'ignore'",
+          message:
+            "Invalid onConflict parameter. Supported values: 'fail', 'ignore'",
         },
         { status: 400 },
       );
@@ -141,7 +226,8 @@ export async function POST(req: Request) {
       return NextResponse.json(
         {
           success: false,
-          message: "Request body must be a JSON array of admitted student objects",
+          message:
+            "Request body must be a JSON array of admitted student objects",
         },
         { status: 400 },
       );
@@ -149,7 +235,10 @@ export async function POST(req: Request) {
 
     if (body.length === 0) {
       return NextResponse.json(
-        { success: false, message: "The admitted students list cannot be empty" },
+        {
+          success: false,
+          message: "The admitted students list cannot be empty",
+        },
         { status: 400 },
       );
     }
@@ -185,7 +274,9 @@ export async function POST(req: Request) {
       .from(batchTable)
       .where(inArray(batchTable.id, uniqueBatchIds));
     const existingBatchIdsSet = new Set(existingBatches.map((b) => b.id));
-    const missingBatchIds = uniqueBatchIds.filter((id) => !existingBatchIdsSet.has(id));
+    const missingBatchIds = uniqueBatchIds.filter(
+      (id) => !existingBatchIdsSet.has(id),
+    );
 
     // Fetch existing MJC subjects
     const existingSubjects = await db
@@ -193,7 +284,9 @@ export async function POST(req: Request) {
       .from(subjectTable)
       .where(inArray(subjectTable.id, uniqueMjcIds));
     const existingSubjectIdsSet = new Set(existingSubjects.map((s) => s.id));
-    const missingMjcIds = uniqueMjcIds.filter((id) => !existingSubjectIdsSet.has(id));
+    const missingMjcIds = uniqueMjcIds.filter(
+      (id) => !existingSubjectIdsSet.has(id),
+    );
 
     if (missingBatchIds.length > 0 || missingMjcIds.length > 0) {
       return NextResponse.json(
@@ -201,7 +294,8 @@ export async function POST(req: Request) {
           success: false,
           message: "Referenced database entities do not exist.",
           errors: {
-            missingBatchIds: missingBatchIds.length > 0 ? missingBatchIds : undefined,
+            missingBatchIds:
+              missingBatchIds.length > 0 ? missingBatchIds : undefined,
             missingMjcIds: missingMjcIds.length > 0 ? missingMjcIds : undefined,
           },
         },
@@ -250,8 +344,11 @@ export async function POST(req: Request) {
         return NextResponse.json(
           {
             success: false,
-            message: "Database insertion failed: A duplicate record already exists.",
-            detail: dbError.detail || "Unique constraint violation (UAN, collegeRoll, email, AadharNumber, etc.).",
+            message:
+              "Database insertion failed: A duplicate record already exists.",
+            detail:
+              dbError.detail ||
+              "Unique constraint violation (UAN, collegeRoll, email, AadharNumber, etc.).",
           },
           { status: 409 },
         );
@@ -261,8 +358,11 @@ export async function POST(req: Request) {
         return NextResponse.json(
           {
             success: false,
-            message: "Database insertion failed: A check constraint was violated.",
-            detail: dbError.message || "Invalid enum value for gender, admissionType, or caste.",
+            message:
+              "Database insertion failed: A check constraint was violated.",
+            detail:
+              dbError.message ||
+              "Invalid enum value for gender, admissionType, or caste.",
           },
           { status: 400 },
         );
@@ -272,8 +372,11 @@ export async function POST(req: Request) {
         return NextResponse.json(
           {
             success: false,
-            message: "Database insertion failed: A foreign key constraint was violated.",
-            detail: dbError.detail || "batchId or subMJC references a non-existent entity.",
+            message:
+              "Database insertion failed: A foreign key constraint was violated.",
+            detail:
+              dbError.detail ||
+              "batchId or subMJC references a non-existent entity.",
           },
           { status: 400 },
         );

@@ -1,17 +1,19 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useGetCourses } from "../query/get-courses";
+import { AddCourseSheet } from "./add-course-sheet";
 import { columns } from "./columns";
 import { DataTable } from "./data-table";
-import { AddCourseSheet } from "./add-course-sheet";
 
 export function CourseContent() {
   const [search, setSearch] = useState("");
   const { data: courses = [], isPending, isError, error } = useGetCourses();
 
   const filteredCourses = useMemo(() => {
-    if (!search) return courses;
+    if (!search) {
+      return courses;
+    }
 
     const searchLower = search.toLowerCase();
     return courses.filter(

@@ -3,12 +3,11 @@ import {
   HydrationBoundary,
   QueryClient,
 } from "@tanstack/react-query";
-
-import { fetchDepartments } from "./lib/action";
-import { getCoursesByDepartment } from "./query/get-courses-by-department";
-import { getDepartment } from "./query/get-all-department";
-import { DepartmentContent } from "./_components/department-content";
 import { ContentLayout } from "@/components/content-layout";
+import { DepartmentContent } from "./_components/department-content";
+import { fetchDepartments } from "./lib/action";
+import { getDepartment } from "./query/get-all-department";
+import { getCoursesByDepartment } from "./query/get-courses-by-department";
 
 export default async function DepartmentPage() {
   const queryClient = new QueryClient();

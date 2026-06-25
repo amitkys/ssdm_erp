@@ -3,10 +3,10 @@ import {
   HydrationBoundary,
   QueryClient,
 } from "@tanstack/react-query";
-import { CourseContent } from "./_components/course-content";
-import { getCoursesQuery } from "./query/get-courses";
 import { getDepartment } from "@/app/(departments)/department/query/get-all-department";
 import { ContentLayout } from "@/components/content-layout";
+import { CourseContent } from "./_components/course-content";
+import { getCoursesQuery } from "./query/get-courses";
 
 export default async function CoursePage() {
   const queryClient = new QueryClient();

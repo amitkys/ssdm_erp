@@ -1,6 +1,5 @@
 "use client";
 
-import { useState, useMemo } from "react";
 import {
   type ColumnDef,
   flexRender,
@@ -8,6 +7,16 @@ import {
   getPaginationRowModel,
   useReactTable,
 } from "@tanstack/react-table";
+import { useMemo, useState } from "react";
+import { useGetAcademicSessions } from "@/app/(departments)/academic-session/query/get-academic-session";
+import { useGetAdmittedStudentsBySession } from "@/app/(departments)/promote-students/query/get-admitted-students-by-session";
+import { useMutPromoteStudents } from "@/app/(departments)/promote-students/query/mut-promote-students";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  NativeSelect,
+  NativeSelectOption,
+} from "@/components/ui/native-select";
 import {
   Table,
   TableBody,
@@ -16,19 +25,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import {
-  NativeSelect,
-  NativeSelectOption,
-} from "@/components/ui/native-select";
-import { useGetAcademicSessions } from "@/app/(departments)/academic-session/query/get-academic-session";
-import { useGetAdmittedStudentsBySession } from "@/app/(departments)/promote-students/query/get-admitted-students-by-session";
-import { useMutPromoteStudents } from "@/app/(departments)/promote-students/query/mut-promote-students";
-import {
-  type AdmittedStudentRow,
-  promoteColumns,
-} from "./promote-columns";
+import { type AdmittedStudentRow, promoteColumns } from "./promote-columns";
 import { PromoteConfirmDialog } from "./promote-confirm-dialog";
 
 export function StudentPromotionPanel() {
@@ -57,7 +54,9 @@ export function StudentPromotionPanel() {
 
   // Compute eligible count
   const { eligibleCount, totalCount } = useMemo(() => {
-    if (!students) return { eligibleCount: 0, totalCount: 0 };
+    if (!students) {
+      return { eligibleCount: 0, totalCount: 0 };
+    }
 
     const eligible = students.filter((s) => {
       const maxSem = s.batch.course.duration * 2;
@@ -74,7 +73,9 @@ export function StudentPromotionPanel() {
 
   // Selected session name
   const selectedSessionName = useMemo(() => {
-    if (!sessions || !selectedSessionId) return "";
+    if (!sessions || !selectedSessionId) {
+      return "";
+    }
     return sessions.find((s) => s.id === selectedSessionId)?.name ?? "";
   }, [sessions, selectedSessionId]);
 
@@ -84,11 +85,7 @@ export function StudentPromotionPanel() {
     columns: promoteColumns,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
-    initialState: {
-      pagination: {
-        pageSize: 15,
-      },
-    },
+    initialState: { pagination: { pageSize: 15 } },
   });
 
   function handlePromote() {
@@ -116,18 +113,13 @@ export function StudentPromotionPanel() {
       {/* Header with filter and promote button */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div className="flex flex-col gap-2">
-          <label
-            htmlFor="session-filter"
-            className="text-sm font-medium"
-          >
+          <label htmlFor="session-filter" className="text-sm font-medium">
             Filter by Academic Session
           </label>
           <NativeSelect
             id="session-filter"
             value={selectedSessionId ?? ""}
-            onChange={(e) =>
-              setSelectedSessionId(e.target.value || null)
-            }
+            onChange={(e) => setSelectedSessionId(e.target.value || null)}
             className="w-full sm:w-[250px]"
           >
             <NativeSelectOption value="">
@@ -241,10 +233,7 @@ export function StudentPromotionPanel() {
               <TableBody>
                 {table.getRowModel().rows.length ? (
                   table.getRowModel().rows.map((row) => (
-                    <TableRow
-                      key={row.id}
-                      className="even:bg-muted/20"
-                    >
+                    <TableRow key={row.id} className="even:bg-muted/20">
                       {row.getVisibleCells().map((cell) => (
                         <TableCell key={cell.id}>
                           {flexRender(
@@ -273,8 +262,8 @@ export function StudentPromotionPanel() {
           <div className="flex items-center justify-between">
             <p className="text-sm text-muted-foreground">
               Page {table.getState().pagination.pageIndex + 1} of{" "}
-              {table.getPageCount()} — Showing{" "}
-              {table.getRowModel().rows.length} of {students.length} students
+              {table.getPageCount()} — Showing {table.getRowModel().rows.length}{" "}
+              of {students.length} students
             </p>
             <div className="flex items-center gap-2">
               <Button

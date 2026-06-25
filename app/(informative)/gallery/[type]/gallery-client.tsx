@@ -1,11 +1,18 @@
 "use client";
 
-import { SiteHeader } from "@/components/informative/site-header";
-import { SiteFooter } from "@/components/informative/site-footer";
+import {
+  Award,
+  ChevronRight,
+  Image as ImageIcon,
+  Play,
+  Video,
+  X,
+} from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
-import { Image as ImageIcon, Video, Play, X, ChevronRight, Award } from "lucide-react";
+import { SiteFooter } from "@/components/informative/site-footer";
+import { SiteHeader } from "@/components/informative/site-header";
 import type { CollegeConfig } from "@/lib/college-config";
 
 // Photo Items
@@ -254,7 +261,9 @@ export default function GalleryClient({
 
               <div className="p-4 bg-slate-50 border border-slate-200/60 rounded-2xl text-center space-y-3">
                 <Award className="h-8 w-8 text-blue-900 mx-auto" />
-                <h4 className="font-bold text-slate-800 text-sm">SSDM Events</h4>
+                <h4 className="font-bold text-slate-800 text-sm">
+                  SSDM Events
+                </h4>
                 <p className="text-[10px] text-slate-500 leading-normal">
                   View highlights of cultural celebrations, annual meetings,
                   seminars, and student campus achievements.

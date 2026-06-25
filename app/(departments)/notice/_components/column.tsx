@@ -5,7 +5,7 @@ import { format } from "date-fns";
 import { ExternalLink } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { DeleteNoticeDialog } from "./delete-notice-dialog";
-import { type NoticeRow, EditNoticeSheet } from "./edit-notice-sheet";
+import { EditNoticeSheet, type NoticeRow } from "./edit-notice-sheet";
 
 export const columns: ColumnDef<NoticeRow>[] = [
   {

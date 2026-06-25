@@ -1,14 +1,14 @@
 "use server";
 
-import { and, eq, inArray, sql, or, ilike } from "drizzle-orm";
+import { and, eq, ilike, inArray, or, sql } from "drizzle-orm";
 import { headers } from "next/headers";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import {
   AdmittedStudentTable,
+  academicSessionTable,
   batchTable,
   courseTable,
-  academicSessionTable,
   departmentTable,
 } from "@/lib/db/schema";
 
@@ -33,7 +33,9 @@ async function getAdminSession() {
 export async function getAdmittedStudentsBySession(sessionId: string) {
   try {
     const session = await getAdminSession();
-    if (!session.success) return session;
+    if (!session.success) {
+      return session;
+    }
 
     if (!sessionId || sessionId.trim() === "") {
       return { success: false, message: "Session ID is required" };
@@ -57,11 +59,7 @@ export async function getAdmittedStudentsBySession(sessionId: string) {
       with: {
         batch: {
           with: {
-            course: {
-              with: {
-                department: true,
-              },
-            },
+            course: { with: { department: true } },
             academicSession: true,
           },
         },
@@ -100,7 +98,9 @@ export async function getAdmittedStudentsBySession(sessionId: string) {
 export async function promoteStudentsBySession(sessionId: string) {
   try {
     const session = await getAdminSession();
-    if (!session.success) return session;
+    if (!session.success) {
+      return session;
+    }
 
     if (!sessionId || sessionId.trim() === "") {
       return { success: false, message: "Session ID is required" };
@@ -109,9 +109,7 @@ export async function promoteStudentsBySession(sessionId: string) {
     // Get all batches for this session with course duration info
     const batchesInSession = await db.query.batchTable.findMany({
       where: eq(batchTable.academicSessionId, sessionId),
-      with: {
-        course: true,
-      },
+      with: { course: true },
     });
 
     if (batchesInSession.length === 0) {
@@ -144,10 +142,7 @@ export async function promoteStudentsBySession(sessionId: string) {
       totalPromoted += result.length;
     }
 
-    return {
-      success: true,
-      data: { promotedCount: totalPromoted },
-    };
+    return { success: true, data: { promotedCount: totalPromoted } };
   } catch (error) {
     console.error("[promoteStudentsBySession] Error:", error);
     return {
@@ -170,20 +165,26 @@ export async function searchAdmittedStudents(filters: {
 }) {
   try {
     const session = await getAdminSession();
-    if (!session.success) return session;
+    if (!session.success) {
+      return session;
+    }
 
     const conditions = [];
 
     if (filters.sessionId || filters.courseId || filters.departmentId) {
       const batchConditions = [];
       if (filters.sessionId && filters.sessionId !== "") {
-        batchConditions.push(eq(batchTable.academicSessionId, filters.sessionId));
+        batchConditions.push(
+          eq(batchTable.academicSessionId, filters.sessionId),
+        );
       }
       if (filters.courseId && filters.courseId !== "") {
         batchConditions.push(eq(batchTable.courseId, filters.courseId));
       }
       if (filters.departmentId && filters.departmentId !== "") {
-        batchConditions.push(eq(courseTable.departmentId, filters.departmentId));
+        batchConditions.push(
+          eq(courseTable.departmentId, filters.departmentId),
+        );
       }
 
       const batches = await db
@@ -201,7 +202,9 @@ export async function searchAdmittedStudents(filters: {
     }
 
     if (filters.semesterCount) {
-      conditions.push(eq(AdmittedStudentTable.currentSemesterCount, filters.semesterCount));
+      conditions.push(
+        eq(AdmittedStudentTable.currentSemesterCount, filters.semesterCount),
+      );
     }
 
     if (filters.status && filters.status !== "") {
@@ -225,8 +228,8 @@ export async function searchAdmittedStudents(filters: {
           ilike(AdmittedStudentTable.email, q),
           ilike(AdmittedStudentTable.phone, q),
           ilike(AdmittedStudentTable.UAN, q),
-          ilike(AdmittedStudentTable.universityRoll, q)
-        )
+          ilike(AdmittedStudentTable.universityRoll, q),
+        ),
       );
     }
 
@@ -236,11 +239,7 @@ export async function searchAdmittedStudents(filters: {
       with: {
         batch: {
           with: {
-            course: {
-              with: {
-                department: true,
-              },
-            },
+            course: { with: { department: true } },
             academicSession: true,
           },
         },
@@ -263,7 +262,9 @@ export async function searchAdmittedStudents(filters: {
 export async function promoteStudentsToPassed(studentIds: string[]) {
   try {
     const session = await getAdminSession();
-    if (!session.success) return session;
+    if (!session.success) {
+      return session;
+    }
 
     if (!studentIds || studentIds.length === 0) {
       return { success: false, message: "No student IDs provided" };
@@ -274,11 +275,9 @@ export async function promoteStudentsToPassed(studentIds: string[]) {
       where: and(
         inArray(AdmittedStudentTable.id, studentIds),
         sql`${AdmittedStudentTable.currentSemesterCount} >= 6`,
-        eq(AdmittedStudentTable.isPassed, false)
+        eq(AdmittedStudentTable.isPassed, false),
       ),
-      columns: {
-        id: true,
-      }
+      columns: { id: true },
     });
 
     const eligibleIds = eligibleStudents.map((s) => s.id);
@@ -286,18 +285,15 @@ export async function promoteStudentsToPassed(studentIds: string[]) {
     if (eligibleIds.length === 0) {
       return {
         success: false,
-        message: "None of the selected students are eligible for Passed status (must be Semester 6 or higher and not already passed).",
+        message:
+          "None of the selected students are eligible for Passed status (must be Semester 6 or higher and not already passed).",
       };
     }
 
     // Update students to passed and inactive
     await db
       .update(AdmittedStudentTable)
-      .set({
-        isPassed: true,
-        isActive: false,
-        updatedAt: new Date(),
-      })
+      .set({ isPassed: true, isActive: false, updatedAt: new Date() })
       .where(inArray(AdmittedStudentTable.id, eligibleIds));
 
     return {
@@ -317,14 +313,21 @@ export async function promoteStudentsToPassed(studentIds: string[]) {
 export async function updateStudentDetails(studentId: string, input: any) {
   try {
     const session = await getAdminSession();
-    if (!session.success) return session;
+    if (!session.success) {
+      return session;
+    }
 
     if (!studentId || studentId.trim() === "") {
       return { success: false, message: "Student ID is required" };
     }
 
-    const { editStudentZodSchema } = await import("@/app/(departments)/student-records/lib/zod-type/edit-student-type");
-    const parsedInput = editStudentZodSchema.safeParse({ ...input, id: studentId });
+    const { editStudentZodSchema } = await import(
+      "@/app/(departments)/student-records/lib/zod-type/edit-student-type"
+    );
+    const parsedInput = editStudentZodSchema.safeParse({
+      ...input,
+      id: studentId,
+    });
 
     if (!parsedInput.success) {
       const errMsgs = parsedInput.error.issues.map((e) => e.message).join(", ");
@@ -357,11 +360,14 @@ export async function updateStudentDetails(studentId: string, input: any) {
       const existingAadhar = await db.query.AdmittedStudentTable.findFirst({
         where: and(
           eq(AdmittedStudentTable.AadharNumber, AadharNumber),
-          sql`${AdmittedStudentTable.id} != ${studentId}`
+          sql`${AdmittedStudentTable.id} != ${studentId}`,
         ),
       });
       if (existingAadhar) {
-        return { success: false, message: "Aadhar number is already in use by another student." };
+        return {
+          success: false,
+          message: "Aadhar number is already in use by another student.",
+        };
       }
     }
 
@@ -370,11 +376,14 @@ export async function updateStudentDetails(studentId: string, input: any) {
       const existingEmail = await db.query.AdmittedStudentTable.findFirst({
         where: and(
           eq(AdmittedStudentTable.email, email),
-          sql`${AdmittedStudentTable.id} != ${studentId}`
+          sql`${AdmittedStudentTable.id} != ${studentId}`,
         ),
       });
       if (existingEmail) {
-        return { success: false, message: "Email is already in use by another student." };
+        return {
+          success: false,
+          message: "Email is already in use by another student.",
+        };
       }
     }
 
@@ -404,10 +413,7 @@ export async function updateStudentDetails(studentId: string, input: any) {
       })
       .where(eq(AdmittedStudentTable.id, studentId));
 
-    return {
-      success: true,
-      message: "Student details updated successfully.",
-    };
+    return { success: true, message: "Student details updated successfully." };
   } catch (error) {
     console.error("[updateStudentDetails] Error:", error);
     return {
@@ -416,5 +422,3 @@ export async function updateStudentDetails(studentId: string, input: any) {
     };
   }
 }
-
-

@@ -7,10 +7,10 @@
  * Usage: bun run lib/db/seed/migrate-college-roll.ts
  */
 
+import { asc, eq } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { AdmittedStudentTable } from "@/lib/db/schema/student";
 import { batchTable } from "@/lib/db/schema/department";
-import { eq, asc } from "drizzle-orm";
+import { AdmittedStudentTable } from "@/lib/db/schema/student";
 
 async function main() {
   console.log("🔄 Starting college roll migration...\n");
@@ -30,7 +30,9 @@ async function main() {
 
   const batchIds = [...new Set(allStudents.map((s) => s.batchId))];
 
-  console.log(`Found ${allStudents.length} students across ${batchIds.length} batches\n`);
+  console.log(
+    `Found ${allStudents.length} students across ${batchIds.length} batches\n`,
+  );
 
   let totalUpdated = 0;
 
@@ -42,7 +44,9 @@ async function main() {
     });
 
     if (!batch || !batch.course) {
-      console.warn(`⚠️  Skipping batchId=${batchId} — batch or course not found`);
+      console.warn(
+        `⚠️  Skipping batchId=${batchId} — batch or course not found`,
+      );
       continue;
     }
 
@@ -53,7 +57,9 @@ async function main() {
       .filter((s) => s.batchId === batchId)
       .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
 
-    console.log(`📚 Batch: ${batchId} | Course: ${batch.course.name} (${courseCode}) | Students: ${batchStudents.length}`);
+    console.log(
+      `📚 Batch: ${batchId} | Course: ${batch.course.name} (${courseCode}) | Students: ${batchStudents.length}`,
+    );
 
     // 4. Update each student's college roll sequentially
     for (let i = 0; i < batchStudents.length; i++) {
@@ -62,7 +68,9 @@ async function main() {
       const newCollegeRoll = `${currentYear}${courseCode}${serialNumber}`;
 
       if (student.collegeRoll === newCollegeRoll) {
-        console.log(`   ✅ ${student.id} — already ${newCollegeRoll}, skipping`);
+        console.log(
+          `   ✅ ${student.id} — already ${newCollegeRoll}, skipping`,
+        );
         continue;
       }
 
@@ -71,7 +79,9 @@ async function main() {
         .set({ collegeRoll: newCollegeRoll })
         .where(eq(AdmittedStudentTable.id, student.id));
 
-      console.log(`   🔁 ${student.id} — ${student.collegeRoll} → ${newCollegeRoll}`);
+      console.log(
+        `   🔁 ${student.id} — ${student.collegeRoll} → ${newCollegeRoll}`,
+      );
       totalUpdated++;
     }
   }

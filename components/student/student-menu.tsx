@@ -2,7 +2,7 @@
 
 import { Ellipsis, LogOut } from "lucide-react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
@@ -11,10 +11,9 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { authClient } from "@/lib/auth-client";
 import { getStudentMenuList } from "@/lib/student-menu-list";
 import { cn } from "@/lib/utils";
-import { authClient } from "@/lib/auth-client";
-import { useRouter } from "next/navigation";
 
 interface StudentMenuProps {
   isOpen: boolean | undefined;

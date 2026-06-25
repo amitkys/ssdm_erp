@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect } from "react";
 import { Printer } from "lucide-react";
+import { useEffect } from "react";
 
 export function PrintTrigger() {
   useEffect(() => {
@@ -15,7 +15,9 @@ export function PrintTrigger() {
     <div className="flex justify-between items-center bg-slate-950 text-white px-6 py-4 print:hidden shadow-md sticky top-0 z-50">
       <div className="flex items-center gap-2">
         <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-        <span className="text-xs font-semibold uppercase tracking-wider">Admission Form Print Preview</span>
+        <span className="text-xs font-semibold uppercase tracking-wider">
+          Admission Form Print Preview
+        </span>
       </div>
       <div className="flex gap-3">
         <button

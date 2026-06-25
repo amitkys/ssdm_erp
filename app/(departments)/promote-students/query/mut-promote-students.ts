@@ -8,7 +8,9 @@ export function useMutPromoteStudents() {
   return useMutation({
     mutationFn: async (sessionId: string) => {
       const res = await promoteStudentsBySession(sessionId);
-      if (!res.success || !res.data) throw new Error(res.message || "Failed to promote students");
+      if (!res.success || !res.data) {
+        throw new Error(res.message || "Failed to promote students");
+      }
       return res.data as { promotedCount: number };
     },
     onSuccess: (data) => {

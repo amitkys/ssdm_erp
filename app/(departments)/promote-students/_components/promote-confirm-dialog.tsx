@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -9,7 +10,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 
 interface PromoteConfirmDialogProps {
   sessionName: string;
@@ -35,7 +35,9 @@ export function PromoteConfirmDialog({
   }
 
   function handleClose() {
-    if (!isPending) setStep(0);
+    if (!isPending) {
+      setStep(0);
+    }
   }
 
   function handleConfirm() {
@@ -58,7 +60,9 @@ export function PromoteConfirmDialog({
       <Dialog
         open={step === 1}
         onOpenChange={(open) => {
-          if (!open) handleClose();
+          if (!open) {
+            handleClose();
+          }
         }}
       >
         <DialogContent>
@@ -68,13 +72,11 @@ export function PromoteConfirmDialog({
               Confirm Semester Promotion
             </DialogTitle>
             <DialogDescription>
-              You are about to promote{" "}
-              <strong>{eligibleCount}</strong>{" "}
+              You are about to promote <strong>{eligibleCount}</strong>{" "}
               {eligibleCount === 1 ? "student" : "students"} from session{" "}
-              <strong>{sessionName}</strong> to the next semester.
-              This action will increment the semester count for all eligible
-              students (active, non-detained, not passed, and below max
-              semester cap).
+              <strong>{sessionName}</strong> to the next semester. This action
+              will increment the semester count for all eligible students
+              (active, non-detained, not passed, and below max semester cap).
             </DialogDescription>
           </DialogHeader>
 
@@ -109,7 +111,9 @@ export function PromoteConfirmDialog({
       <Dialog
         open={step === 2}
         onOpenChange={(open) => {
-          if (!open) handleClose();
+          if (!open) {
+            handleClose();
+          }
         }}
       >
         <DialogContent>
@@ -119,13 +123,12 @@ export function PromoteConfirmDialog({
               Final Confirmation
             </DialogTitle>
             <DialogDescription>
-              This action is <strong>irreversible</strong>! Are you
-              absolutely sure you want to promote{" "}
-              <strong>{eligibleCount}</strong>{" "}
-              {eligibleCount === 1 ? "student" : "students"}?
-              Each eligible student&apos;s semester count will be incremented
-              by 1. Students who have already reached the maximum semester
-              for their course will be automatically skipped.
+              This action is <strong>irreversible</strong>! Are you absolutely
+              sure you want to promote <strong>{eligibleCount}</strong>{" "}
+              {eligibleCount === 1 ? "student" : "students"}? Each eligible
+              student&apos;s semester count will be incremented by 1. Students
+              who have already reached the maximum semester for their course
+              will be automatically skipped.
             </DialogDescription>
           </DialogHeader>
 

@@ -4,10 +4,10 @@ import {
   QueryClient,
 } from "@tanstack/react-query";
 import { getAcademicSessionsQuery } from "@/app/(departments)/academic-session/query/get-academic-session";
-import { BatchContent } from "./_components/batch-content";
-import { getCourseByIdQuery } from "./query/get-course-by-id";
-import { getBatchesByCourseQuery } from "./query/get-batches";
 import { ContentLayout } from "@/components/content-layout";
+import { BatchContent } from "./_components/batch-content";
+import { getBatchesByCourseQuery } from "./query/get-batches";
+import { getCourseByIdQuery } from "./query/get-course-by-id";
 
 export default async function CourseBatchPage({
   params,
