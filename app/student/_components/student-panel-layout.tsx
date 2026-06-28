@@ -1,7 +1,7 @@
 "use client";
 
 import { Footer } from "@/components/footer";
-import { StudentSidebar } from "@/components/student/student-sidebar";
+import { StudentSidebar } from "./student-sidebar";
 import { useSidebar } from "@/hooks/use-sidebar";
 import { useStore } from "@/hooks/use-store";
 import { cn } from "@/lib/utils";

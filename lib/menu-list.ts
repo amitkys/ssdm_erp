@@ -95,16 +95,16 @@ export function getMenuList(pathname: string): Group[] {
     {
       groupLabel: "Student Operations",
       menus: [
-        {
-          href: "/admission",
-          label: "Admission",
-          icon: IconUserCheck,
-          active:
-            pathname === "/admission" ||
-            pathname.startsWith("/admission/register") ||
-            pathname.startsWith("/admission/payment") ||
-            pathname.startsWith("/admission/verify"),
-        },
+        // {
+        //   href: "/admission",
+        //   label: "Admission",
+        //   icon: IconUserCheck,
+        //   active:
+        //     pathname === "/admission" ||
+        //     pathname.startsWith("/admission/register") ||
+        //     pathname.startsWith("/admission/payment") ||
+        //     pathname.startsWith("/admission/verify"),
+        // },
         {
           href: "/promote-students",
           label: "Promote Students",
@@ -117,12 +117,12 @@ export function getMenuList(pathname: string): Group[] {
           icon: IconSchool,
           active: pathname.startsWith("/student-records"),
         },
-        {
-          href: "/examination",
-          label: "Examination",
-          icon: IconClipboardCheck,
-          active: pathname.startsWith("/examination"),
-        },
+        // {
+        //   href: "/examination",
+        //   label: "Examination",
+        //   icon: IconClipboardCheck,
+        //   active: pathname.startsWith("/examination"),
+        // },
       ],
     },
   ];

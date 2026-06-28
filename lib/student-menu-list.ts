@@ -49,18 +49,7 @@ export function getStudentMenuList(pathname: string): Group[] {
     {
       groupLabel: "Academics",
       menus: [
-        {
-          href: "/student/exams",
-          label: "Examinations",
-          icon: IconClipboardCheck,
-          active: pathname.startsWith("/student/exams"),
-        },
-        {
-          href: "/student/results",
-          label: "Results",
-          icon: IconFileText,
-          active: pathname.startsWith("/student/results"),
-        },
+        
         {
           href: "/student/certificates",
           label: "Certificates",
