@@ -1,6 +1,6 @@
 "use server";
 
-import { and, eq, gte, lt, sql } from "drizzle-orm";
+import { and, eq, gte, lt, sql, exists } from "drizzle-orm";
 import { headers } from "next/headers";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
@@ -162,11 +162,32 @@ export async function getGlobalFeeStats(filter?: AdmissionDateFilter) {
           lt(EnrolledStudentTable.createdAt, admissionDateRange.end),
         );
 
-    const admittedDateFilter = isAllTime
-      ? undefined
+    const paidAdmissionFilter = isAllTime
+      ? exists(
+          db
+            .select({ one: sql`1` })
+            .from(StudentFeePaymentTable)
+            .where(
+              and(
+                eq(StudentFeePaymentTable.studentId, AdmittedStudentTable.id),
+                eq(StudentFeePaymentTable.status, "Success"),
+              ),
+            ),
+        )
       : and(
           gte(AdmittedStudentTable.createdAt, admissionDateRange.start),
           lt(AdmittedStudentTable.createdAt, admissionDateRange.end),
+          exists(
+            db
+              .select({ one: sql`1` })
+              .from(StudentFeePaymentTable)
+              .where(
+                and(
+                  eq(StudentFeePaymentTable.studentId, AdmittedStudentTable.id),
+                  eq(StudentFeePaymentTable.status, "Success"),
+                ),
+              ),
+          ),
         );
 
     const paymentDateFilter = isAllTime
@@ -185,7 +206,7 @@ export async function getGlobalFeeStats(filter?: AdmissionDateFilter) {
     const [{ count: periodAdmissions }] = await db
       .select({ count: sql`count(*)`.mapWith(Number) })
       .from(AdmittedStudentTable)
-      .where(admittedDateFilter);
+      .where(paidAdmissionFilter);
 
     const [{ sum: totalCollected }] = await db
       .select({

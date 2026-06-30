@@ -19,26 +19,29 @@ interface CollectionTableProps {
 }
 
 export function CollectionTable({ students }: CollectionTableProps) {
+  const paidStudents = useMemo(
+    () =>
+      students.filter((student) => {
+        const payment = student.feePayments?.[0];
+        return payment && payment.status === "Success";
+      }),
+    [students],
+  );
+
   const summary = useMemo(() => {
-    let totalStudents = students.length;
-    let paidStudents = 0;
     let totalCollected = 0;
 
-    students.forEach((student) => {
+    paidStudents.forEach((student) => {
       const payment = student.feePayments?.[0];
-      if (payment && payment.status === "Success") {
-        paidStudents++;
-        totalCollected += Number(payment.amount) || 0;
-      }
+      totalCollected += Number(payment.amount) || 0;
     });
 
     return {
-      totalStudents,
-      paidStudents,
-      unpaidStudents: totalStudents - paidStudents,
+      totalStudents: students.length,
+      paidStudents: paidStudents.length,
       totalCollected,
     };
-  }, [students]);
+  }, [students, paidStudents]);
 
   const handleExportCSV = () => {
     const headers = [
@@ -53,20 +56,19 @@ export function CollectionTable({ students }: CollectionTableProps) {
       "Payment Date",
     ];
 
-    const rows = students.map((student) => {
+    const rows = paidStudents.map((student) => {
       const payment = student.feePayments?.[0];
-      const status = payment ? payment.status : "Unpaid";
-      const amount = payment && payment.status === "Success" ? payment.amount : 0;
-      const mode = payment ? payment.paymentMode : "N/A";
-      const txnId = payment ? payment.transactionId : "N/A";
-      const date = payment ? new Date(payment.createdAt).toLocaleDateString("en-IN") : "N/A";
+      const amount = payment.amount;
+      const mode = payment.paymentMode;
+      const txnId = payment.transactionId;
+      const date = new Date(payment.createdAt).toLocaleDateString("en-IN");
 
       return [
         student.collegeRoll,
         student.UAN,
         `"${student.name}"`,
         student.phone,
-        status,
+        "Paid",
         mode,
         amount,
         txnId,
@@ -88,7 +90,7 @@ export function CollectionTable({ students }: CollectionTableProps) {
   return (
     <div className="space-y-6">
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Students</CardTitle>
@@ -105,15 +107,6 @@ export function CollectionTable({ students }: CollectionTableProps) {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-emerald-600">{summary.paidStudents}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Unpaid Students</CardTitle>
-            <IconUsers className="h-4 w-4 text-red-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-red-600">{summary.unpaidStudents}</div>
           </CardContent>
         </Card>
         <Card>
@@ -150,16 +143,15 @@ export function CollectionTable({ students }: CollectionTableProps) {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {students.length === 0 ? (
+            {paidStudents.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={7} className="text-center text-muted-foreground h-32">
-                  No students found for this selection.
+                  No paid students found for this selection.
                 </TableCell>
               </TableRow>
             ) : (
-              students.map((student) => {
-                const payment = student.feePayments?.[0];
-                const status = payment ? payment.status : "Unpaid";
+              paidStudents.map((student) => {
+                const payment = student.feePayments[0];
                 
                 return (
                   <TableRow key={student.id}>
@@ -169,23 +161,15 @@ export function CollectionTable({ students }: CollectionTableProps) {
                       <div className="text-xs text-muted-foreground">{student.UAN}</div>
                     </TableCell>
                     <TableCell>
-                      {status === "Success" ? (
-                        <Badge className="bg-emerald-100 text-emerald-800 hover:bg-emerald-100 border-none">Paid</Badge>
-                      ) : status === "Pending" ? (
-                        <Badge variant="outline" className="text-amber-600 border-amber-600">Pending</Badge>
-                      ) : status === "Failed" ? (
-                        <Badge variant="destructive">Failed</Badge>
-                      ) : (
-                        <Badge variant="secondary">Unpaid</Badge>
-                      )}
+                      <Badge className="bg-emerald-100 text-emerald-800 hover:bg-emerald-100 border-none">Paid</Badge>
                     </TableCell>
                     <TableCell>
-                      {payment && payment.status === "Success" ? `₹${Number(payment.amount).toLocaleString("en-IN")}` : "-"}
+                      {`₹${Number(payment.amount).toLocaleString("en-IN")}`}
                     </TableCell>
-                    <TableCell>{payment ? payment.paymentMode : "-"}</TableCell>
-                    <TableCell className="font-mono text-xs">{payment ? payment.transactionId : "-"}</TableCell>
+                    <TableCell>{payment.paymentMode}</TableCell>
+                    <TableCell className="font-mono text-xs">{payment.transactionId}</TableCell>
                     <TableCell className="text-sm">
-                      {payment ? new Date(payment.createdAt).toLocaleDateString("en-IN") : "-"}
+                      {new Date(payment.createdAt).toLocaleDateString("en-IN")}
                     </TableCell>
                   </TableRow>
                 );

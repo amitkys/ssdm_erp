@@ -199,10 +199,10 @@ export function FeeCollectionClient() {
               <div>
                 <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">
                   {admissionDateMode === "all"
-                    ? "Total Admissions (All Time)"
+                    ? "Paid Admissions (All Time)"
                     : admissionDateMode === "range"
-                    ? "Admissions In Range"
-                    : "Admissions On Date"}
+                    ? "Paid Admissions In Range"
+                    : "Paid Admissions On Date"}
                 </p>
                 <div className="flex h-7 items-center">
                   {isFetchingStats ? (
