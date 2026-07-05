@@ -20,6 +20,8 @@ import {
 } from "./department";
 import { json } from "zod";
 
+import { CertificateRequestTable } from "./certificate";
+
 // Enrolled Students
 export const EnrolledStudentTable = pgTable(
   "enrolled_students",
@@ -284,6 +286,8 @@ export const admittedStudentRelations = relations(
     feePayments: many(StudentFeePaymentTable),
 
     remarks: many(StudentRemarkTable),
+
+    certificateRequests: many(CertificateRequestTable),
   }),
 );
 
