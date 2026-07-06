@@ -70,6 +70,18 @@ export const columns: ColumnDef<SemesterAdmissionOpenRow>[] = [
     },
   },
   {
+    accessorKey: "practicalFee",
+    header: "Practical Fee",
+    cell: ({ row }) => {
+      const fee = row.original.practicalFee;
+      return (
+        <span className="font-mono text-muted-foreground">
+          {fee != null && fee > 0 ? `₹${fee}` : "—"}
+        </span>
+      );
+    },
+  },
+  {
     id: "paymentStatus",
     header: "Payment Status",
     cell: ({ row }) => {

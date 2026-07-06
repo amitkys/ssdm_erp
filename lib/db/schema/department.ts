@@ -127,7 +127,7 @@ export const admissionOpenTable = pgTable("admission_open", {
   startDate: date().notNull(),
   endDate: date().notNull(),
   lateFee: integer().default(0),
-  practicalFee: integer().default(500),
+  practicalFee: integer(),
   isDateExtended: boolean().default(false),
   extendedDate: date(), // This field is optional (you can also extend the endDate otherwise set the new date in it)
   createdAt: timestamp().defaultNow().notNull(),
@@ -142,6 +142,7 @@ export const semesterAdmissionOpenTable = pgTable("semester_admission_open", {
     .references(() => academicSessionTable.id, { onDelete: "cascade" })
     .notNull(),
   semesterCount: integer().notNull(),
+  practicalFee: integer(),
   startDate: date().notNull(),
   endDate: date().notNull(),
   lateFee: integer().default(0),

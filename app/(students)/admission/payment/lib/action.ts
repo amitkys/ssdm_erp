@@ -87,16 +87,14 @@ export async function getStudentPaymentDetails(params: {
       hasPractical = subjects.some((s) => s.hasPractical === true);
     }
 
-    // Fetch admission window details for practical fee check
+    // Fetch admission window details for practical fee check (semester 1)
     const admissionOpen = await db.query.admissionOpenTable.findFirst({
       where: eq(admissionOpenTable.batchId, student.batchId),
     });
 
-    const practicalFee = hasPractical
-      ? (admissionOpen?.practicalFee ?? 500)
-      : 0;
-
+    let practicalFee = 0;
     let lateFee = 0;
+
     if (targetSemesterCount > 1) {
       // Fetch semester admission open details
       const semesterAdmission =
@@ -117,6 +115,12 @@ export async function getStudentPaymentDetails(params: {
         };
       }
 
+      // Practical fee from semester admission record
+      practicalFee = hasPractical
+        ? (semesterAdmission.practicalFee ?? admissionOpen?.practicalFee ?? 500)
+        : 0;
+
+      // Late fee check
       const currentDate = new Date();
       currentDate.setHours(0, 0, 0, 0);
       const [endYear, endMonth, endDay] = semesterAdmission.endDate
@@ -127,6 +131,11 @@ export async function getStudentPaymentDetails(params: {
         lateFee = semesterAdmission.lateFee ?? 0;
       }
     } else {
+      // Semester 1: practical fee from admission open table
+      practicalFee = hasPractical
+        ? (admissionOpen?.practicalFee ?? 500)
+        : 0;
+
       if (admissionOpen) {
         const currentDate = new Date();
         currentDate.setHours(0, 0, 0, 0);
