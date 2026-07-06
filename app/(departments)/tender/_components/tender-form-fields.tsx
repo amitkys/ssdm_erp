@@ -59,9 +59,7 @@ export function TenderFormFields({ form }: TenderFormFieldsProps) {
           throw new Error(json.message || "Upload failed");
         }
 
-        form.setValue("document", json.urls.document, {
-          shouldValidate: true,
-        });
+        form.setValue("document", json.urls.document, { shouldValidate: true });
       } catch (err) {
         setUploadError(
           err instanceof Error ? err.message : "Upload failed. Try again.",

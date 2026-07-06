@@ -1,6 +1,11 @@
 import { z } from "zod";
 
-export const SUBJECT_CATEGORIES = ["SCIENCE", "COMMERCE", "ARTS", "GENERAL"] as const;
+export const SUBJECT_CATEGORIES = [
+  "SCIENCE",
+  "COMMERCE",
+  "ARTS",
+  "GENERAL",
+] as const;
 
 export const addSubjectSchema = z.object({
   name: z.string().min(1, { message: "Subject name is required" }),

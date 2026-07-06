@@ -14,10 +14,7 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: "SANT SANDHYA DAS MAHILA COLLEGE",
   description: "SANT SANDHYA DAS MAHILA COLLEGE - ERP System",
-  icons: {
-    icon: "/college.png",
-    apple: "/college.png",
-  },
+  icons: { icon: "/college.png", apple: "/college.png" },
 };
 
 export default function RootLayout({

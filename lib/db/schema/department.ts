@@ -147,9 +147,10 @@ export const tenderTable = pgTable("tender", {
   updatedAt: timestamp().defaultNow().notNull(),
 });
 
-
-export const notice = pgTable('notice', {
-  id: varchar({ length: 128 }).primaryKey().$defaultFn(() => createId()),
+export const notice = pgTable("notice", {
+  id: varchar({ length: 128 })
+    .primaryKey()
+    .$defaultFn(() => createId()),
   title: varchar({ length: 255 }).notNull(),
   description: text(),
   file: text(), // pdf path
@@ -157,7 +158,7 @@ export const notice = pgTable('notice', {
   endDate: date().notNull(),
   createdAt: timestamp().defaultNow().notNull(),
   updatedAt: timestamp().defaultNow().notNull(),
-})
+});
 
 // export const batchTable = pgTable("batch", {
 //   id: varchar({ length: 128 })

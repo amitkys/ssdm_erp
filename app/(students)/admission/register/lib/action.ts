@@ -66,12 +66,7 @@ async function backgroundSignupStudent({
 
     if (!existingUser) {
       await auth.api.signUpEmail({
-        body: {
-          name,
-          email,
-          password,
-          role: "student",
-        },
+        body: { name, email, password, role: "student" },
       });
     }
   } catch (error) {
@@ -395,4 +390,3 @@ export const fetchActiveSubjects = async () => {
     return { success: false as const, message: "Failed to fetch subjects" };
   }
 };
-

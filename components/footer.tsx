@@ -1,4 +1,6 @@
+import { getCollegeConfig } from "@/lib/college-config";
 import Link from "next/link";
+
 
 export function Footer() {
   return (
@@ -15,7 +17,7 @@ export function Footer() {
             rel="noopener noreferrer"
             className="font-semibold text-sidebar-foreground/70 hover:underline hover:text-sidebar-foreground transition-colors"
           >
-            Vastaman Solutions
+            {getCollegeConfig().developer}
           </a>
         </p>
       </div>
