@@ -1,31 +1,31 @@
 "use client";
 
-import { Input } from "@/components/ui/input";
-import { cn } from "@/lib/utils";
+import { zxcvbn, zxcvbnOptions } from "@zxcvbn-ts/core";
 import { EyeIcon, EyeOffIcon } from "lucide-react";
 import {
-  useState,
-  createContext,
-  useContext,
-  type ComponentProps,
-  type ReactNode,
   type ChangeEvent,
-  useEffect,
+  type ComponentProps,
+  createContext,
+  type ReactNode,
+  useContext,
   useDeferredValue,
+  useEffect,
   useMemo,
+  useState,
 } from "react";
-import { zxcvbn, zxcvbnOptions } from "@zxcvbn-ts/core";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import type { Input } from "@/components/ui/input";
 import {
   InputGroup,
   InputGroupAddon,
   InputGroupButton,
   InputGroupInput,
 } from "@/components/ui/input-group";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { cn } from "@/lib/utils";
 
 const PasswordInputContext = createContext<{ password: string } | null>(null);
 
@@ -108,8 +108,12 @@ export function PasswordInputStrengthChecker() {
   }, []);
 
   function getLabel() {
-    if (deferredPassword.length === 0) return "Password strength";
-    if (!optionsLoaded) return "Loading strength checker";
+    if (deferredPassword.length === 0) {
+      return "Password strength";
+    }
+    if (!optionsLoaded) {
+      return "Loading strength checker";
+    }
 
     const score = strengthResult.score;
     switch (score) {
@@ -129,7 +133,9 @@ export function PasswordInputStrengthChecker() {
 
   const label = getLabel();
 
-  if (errorLoadingOptions) return null;
+  if (errorLoadingOptions) {
+    return null;
+  }
 
   return (
     <div className="space-y-0.5">

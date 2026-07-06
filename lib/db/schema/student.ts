@@ -1,3 +1,4 @@
+import { createId } from "@paralleldrive/cuid2";
 import { relations, sql } from "drizzle-orm";
 import {
   boolean,
@@ -10,15 +11,13 @@ import {
   timestamp,
   varchar,
 } from "drizzle-orm/pg-core";
-import { createId } from "@paralleldrive/cuid2";
 import {
+  academicSessionTable,
   batchTable,
   courseTable,
   departmentTable,
-  academicSessionTable,
   subjectTable,
 } from "./department";
-import { json } from "zod";
 
 // Enrolled Students
 export const EnrolledStudentTable = pgTable(
@@ -82,12 +81,12 @@ export const AdmittedStudentTable = pgTable(
       .primaryKey()
       .$defaultFn(() => createId()),
     UAN: varchar({ length: 128 }).unique().notNull(),
-    registrationNumber: varchar({ length: 128 }),
-    universityRoll: varchar({ length: 128 }),
+    registrationNumber: varchar({ length: 128 }).unique(),
+    universityRoll: varchar({ length: 128 }).unique(),
     collegeRoll: varchar({ length: 128 }).unique().notNull(), // Ex. UG2026290001 (Course Type, Session, Unique No.)
     admissionNumber: varchar({ length: 128 }).unique(),
     confidentialNumber: varchar({ length: 128 }).unique(),
-    profileNumber: varchar({ length: 128 }),
+    profileNumber: varchar({ length: 128 }).unique(),
     admissionType: text(),
     ABCID: text().unique(),
     name: varchar({ length: 150 }).notNull(),
@@ -123,6 +122,7 @@ export const AdmittedStudentTable = pgTable(
     internshipFee: integer().default(0),
     isProfileCompleted: boolean().notNull().default(false),
     isDetained: boolean().notNull().default(false),
+    isPassed: boolean().notNull().default(false),
     isActive: boolean().notNull().default(true),
     detainRemark: text().default(""),
     createdAt: timestamp().defaultNow().notNull(),

@@ -7,6 +7,7 @@ import {
   IconFileText,
   IconHierarchy2,
   IconSchool,
+  IconTrendingUp,
   IconUserCheck,
 } from "@tabler/icons-react";
 import type { ComponentType } from "react";
@@ -59,6 +60,13 @@ export function getMenuList(pathname: string): Group[] {
           active: pathname.startsWith("/admission-open"),
         },
         {
+          href: "/semester-admission-open",
+          label: "Semester Admissions",
+          icon: IconUserCheck,
+          active: pathname.startsWith("/semester-admission-open"),
+        },
+
+        {
           href: "/verify/payment",
           label: "Verify Payment",
           icon: IconUserCheck,
@@ -87,26 +95,34 @@ export function getMenuList(pathname: string): Group[] {
     {
       groupLabel: "Student Operations",
       menus: [
+        // {
+        //   href: "/admission",
+        //   label: "Admission",
+        //   icon: IconUserCheck,
+        //   active:
+        //     pathname === "/admission" ||
+        //     pathname.startsWith("/admission/register") ||
+        //     pathname.startsWith("/admission/payment") ||
+        //     pathname.startsWith("/admission/verify"),
+        // },
+        // {
+        //   href: "/promote-students",
+        //   label: "Promote Students",
+        //   icon: IconTrendingUp,
+        //   active: pathname.startsWith("/promote-students"),
+        // },
         {
-          href: "/admission",
-          label: "Admission",
-          icon: IconUserCheck,
-          active:
-            pathname.startsWith("/admission") &&
-            !pathname.startsWith("/admission-dcr"),
+          href: "/student-records",
+          label: "Student Records",
+          icon: IconSchool,
+          active: pathname.startsWith("/student-records"),
         },
-        {
-          href: "/admission-dcr",
-          label: "Admission DCR",
-          icon: IconFileText,
-          active: pathname.startsWith("/admission-dcr"),
-        },
-        {
-          href: "/examination",
-          label: "Examination",
-          icon: IconClipboardCheck,
-          active: pathname.startsWith("/examination"),
-        },
+        // {
+        //   href: "/examination",
+        //   label: "Examination",
+        //   icon: IconClipboardCheck,
+        //   active: pathname.startsWith("/examination"),
+        // },
       ],
     },
   ];

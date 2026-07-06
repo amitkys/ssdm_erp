@@ -1,3 +1,4 @@
+import { createId } from "@paralleldrive/cuid2";
 import { relations, sql } from "drizzle-orm";
 import {
   boolean,
@@ -9,7 +10,7 @@ import {
   timestamp,
   varchar,
 } from "drizzle-orm/pg-core";
-import { createId } from "@paralleldrive/cuid2";
+import { AdmittedStudentTable } from "./student";
 
 // Independent master table
 export const academicSessionTable = pgTable("academic_session", {
@@ -129,6 +130,21 @@ export const admissionOpenTable = pgTable("admission_open", {
   practicalFee: integer().default(500),
   isDateExtended: boolean().default(false),
   extendedDate: date(), // This field is optional (you can also extend the endDate otherwise set the new date in it)
+  createdAt: timestamp().defaultNow().notNull(),
+  updatedAt: timestamp().defaultNow().notNull(),
+});
+
+export const semesterAdmissionOpenTable = pgTable("semester_admission_open", {
+  id: varchar({ length: 128 })
+    .primaryKey()
+    .$defaultFn(() => createId()),
+  academicSessionId: varchar({ length: 128 })
+    .references(() => academicSessionTable.id, { onDelete: "cascade" })
+    .notNull(),
+  semesterCount: integer().notNull(),
+  startDate: date().notNull(),
+  endDate: date().notNull(),
+  lateFee: integer().default(0),
   createdAt: timestamp().defaultNow().notNull(),
   updatedAt: timestamp().defaultNow().notNull(),
 });
@@ -254,7 +270,20 @@ export const courseRelations = relations(courseTable, ({ one, many }) => ({
 
 export const academicSessionRelations = relations(
   academicSessionTable,
-  ({ many }) => ({ batches: many(batchTable) }),
+  ({ many }) => ({
+    batches: many(batchTable),
+    semesterAdmissions: many(semesterAdmissionOpenTable),
+  }),
+);
+
+export const semesterAdmissionOpenRelations = relations(
+  semesterAdmissionOpenTable,
+  ({ one }) => ({
+    academicSession: one(academicSessionTable, {
+      fields: [semesterAdmissionOpenTable.academicSessionId],
+      references: [academicSessionTable.id],
+    }),
+  }),
 );
 
 // COURSE SESSION (batch table) RELATIONS
@@ -273,6 +302,8 @@ export const courseSessionRelations = relations(
     }),
 
     admissionOpen: many(admissionOpenTable),
+
+    admittedStudents: many(AdmittedStudentTable),
   }),
 );
 

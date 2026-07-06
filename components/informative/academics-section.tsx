@@ -1,19 +1,19 @@
 "use client";
 
-import { useState } from "react";
 import {
   Atom,
-  Palette,
   BarChart3,
-  FlaskConical,
-  Calculator,
-  Monitor,
-  Briefcase,
   BookOpen,
-  Pencil,
+  Briefcase,
+  Calculator,
+  FlaskConical,
   Globe,
+  Monitor,
+  Palette,
+  Pencil,
 } from "lucide-react";
 import type { ReactNode } from "react";
+import { useState } from "react";
 
 type StreamKey = "science" | "arts" | "commerce";
 

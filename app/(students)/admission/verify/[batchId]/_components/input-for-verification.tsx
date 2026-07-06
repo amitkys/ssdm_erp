@@ -1,5 +1,5 @@
+import { useEffect, useState } from "react";
 import { Controller, type UseFormReturn } from "react-hook-form";
-import { VerifyStudentUANType } from "../lib/zod-type/verify-student-uan";
 import {
   Field,
   FieldContent,
@@ -7,8 +7,8 @@ import {
   FieldLabel,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { useEffect, useState } from "react";
 import { fetchActiveSubjects } from "../lib/action";
+import type { VerifyStudentUANType } from "../lib/zod-type/verify-student-uan";
 
 export const InputForVerification = ({
   form,

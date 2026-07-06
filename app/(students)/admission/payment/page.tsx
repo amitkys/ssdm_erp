@@ -13,11 +13,15 @@ export default async function PaymentPage({ searchParams }: PageProps) {
   const uan = resolvedParams.uan as string | undefined;
   const studentId = resolvedParams.studentId as string | undefined;
   const errorParam = resolvedParams.error as string | undefined;
+  const semesterCountParam = resolvedParams.semesterCount as string | undefined;
+  const semesterCount = semesterCountParam
+    ? Number(semesterCountParam)
+    : undefined;
 
   const config = getCollegeConfig();
 
   // Fetch student and fee details
-  const res = await getStudentPaymentDetails({ uan, studentId });
+  const res = await getStudentPaymentDetails({ uan, studentId, semesterCount });
 
   let initialError: string | null = null;
   if (errorParam === "payment_failed") {
@@ -38,6 +42,7 @@ export default async function PaymentPage({ searchParams }: PageProps) {
               fees={res.fees || null}
               pendingPayment={res.pendingPayment || null}
               initialError={initialError}
+              semesterCount={semesterCount}
             />
           ) : (
             <div className="bg-white rounded-3xl shadow-xl border border-slate-100 p-8 text-center space-y-4 max-w-md mx-auto">

@@ -3,9 +3,9 @@ import {
   HydrationBoundary,
   QueryClient,
 } from "@tanstack/react-query";
-import { getCourses } from "./query/get-department";
-import { ListCourses } from "./_components/list-courses";
 import { ContentLayout } from "@/components/content-layout";
+import { ListCourses } from "./_components/list-courses";
+import { getCourses } from "./query/get-department";
 
 export default async function DepartmentByIdPage({
   params,

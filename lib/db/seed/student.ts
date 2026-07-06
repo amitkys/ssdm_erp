@@ -103,18 +103,26 @@ export async function seedStudents() {
     function findBatchForMJC(mjcSubject: { id: string; code: string }) {
       const subjectPrefix = mjcSubject.code.split("-")[0];
       const deptPrefix = MJC_PREFIX_TO_DEPT_PREFIX[subjectPrefix];
-      if (!deptPrefix) return null;
+      if (!deptPrefix) {
+        return null;
+      }
 
       const dept = departments.find((d) => d.code.startsWith(deptPrefix));
-      if (!dept) return null;
+      if (!dept) {
+        return null;
+      }
 
       const deptCourses = courses.filter((c) => c.departmentId === dept.id);
-      if (deptCourses.length === 0) return null;
+      if (deptCourses.length === 0) {
+        return null;
+      }
 
       const course = pickRandom(deptCourses);
 
       const courseBatches = batches.filter((b) => b.courseId === course.id);
-      if (courseBatches.length === 0) return null;
+      if (courseBatches.length === 0) {
+        return null;
+      }
 
       return { batch: pickRandom(courseBatches), course, dept };
     }
@@ -127,7 +135,9 @@ export async function seedStudents() {
     for (let i = 0; i < ENROLLED_COUNT; i++) {
       const mjcSubject = pickRandom(mjcSubjects);
       const match = findBatchForMJC(mjcSubject);
-      if (!match) continue;
+      if (!match) {
+        continue;
+      }
 
       // MIC subjects should preferably be from a different department than MJC
       const otherMicSubjects = micSubjects.filter(

@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Inter } from "next/font/google";
 import "./globals.css";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryProviders } from "@/components/query-provider";
 import { Toaster } from "sonner";
+import { QueryProviders } from "@/components/query-provider";
+import { TooltipProvider } from "@/components/ui/tooltip";
 
 const inter = Inter({
   subsets: ["latin"],

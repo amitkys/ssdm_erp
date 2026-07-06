@@ -1,10 +1,10 @@
-import { db } from "@/lib/db";
-import {
-  StudentFeePaymentTable,
-  AdmittedStudentTable,
-} from "@/lib/db/schema/student";
 import { eq } from "drizzle-orm";
 import { redirect } from "next/navigation";
+import { db } from "@/lib/db";
+import {
+  AdmittedStudentTable,
+  StudentFeePaymentTable,
+} from "@/lib/db/schema/student";
 import { MockCheckoutContainer } from "./_components/mock-checkout-container";
 
 interface PageProps {

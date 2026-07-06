@@ -157,6 +157,20 @@ export async function POST(req: Request) {
       });
 
       if (student) {
+        // Promote currentSemesterCount by 1 if payment is for student's next semester
+        if (
+          existingPayment.semesterCount ===
+          student.currentSemesterCount + 1
+        ) {
+          await db
+            .update(AdmittedStudentTable)
+            .set({
+              currentSemesterCount: existingPayment.semesterCount,
+              updatedAt: new Date(),
+            })
+            .where(eq(AdmittedStudentTable.id, student.id));
+        }
+
         await db
           .update(EnrolledStudentTable)
           .set({ isFeePaid: true, updatedAt: new Date() })

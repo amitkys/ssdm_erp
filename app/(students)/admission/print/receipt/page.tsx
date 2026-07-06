@@ -86,6 +86,11 @@ export default async function PrintableReceiptPage({
 
   const college = getCollegeConfig();
 
+  const getSemesterRoman = (num: number) => {
+    const roman = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII"];
+    return roman[num - 1] || String(num);
+  };
+
   return (
     <div className="min-h-screen bg-white text-slate-900 p-8 print:p-0 max-w-4xl mx-auto font-sans selection:bg-slate-200">
       <PrinterTrigger delayMs={500} />
@@ -105,7 +110,8 @@ export default async function PrintableReceiptPage({
 
       <div className="my-6 print:my-2 text-center">
         <span className="border-2 border-slate-900 px-6 py-1.5 text-xs font-black uppercase tracking-widest bg-slate-50">
-          Admission Fee Receipt (Semester I)
+          Admission Fee Receipt (Semester{" "}
+          {getSemesterRoman(payment.semesterCount)})
         </span>
       </div>
 

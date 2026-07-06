@@ -1,24 +1,24 @@
+import { eq } from "drizzle-orm";
+import {
+  ArrowLeft,
+  ArrowRight,
+  CheckCircle2,
+  FileText,
+  Printer,
+  ShieldAlert,
+} from "lucide-react";
+import Link from "next/link";
+import { SiteFooter } from "@/components/informative/site-footer";
+import { SiteHeader } from "@/components/informative/site-header";
+import { getCollegeConfig } from "@/lib/college-config";
 import { db } from "@/lib/db";
 import {
   AdmittedStudentTable,
+  academicSessionTable,
   batchTable,
   courseTable,
-  academicSessionTable,
   subjectTable,
 } from "@/lib/db/schema";
-import { eq } from "drizzle-orm";
-import { getCollegeConfig } from "@/lib/college-config";
-import { SiteHeader } from "@/components/informative/site-header";
-import { SiteFooter } from "@/components/informative/site-footer";
-import Link from "next/link";
-import {
-  CheckCircle2,
-  ShieldAlert,
-  ArrowLeft,
-  Printer,
-  FileText,
-  ArrowRight,
-} from "lucide-react";
 
 interface PageProps {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;

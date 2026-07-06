@@ -2,8 +2,6 @@
 
 import { Download, ShieldAlert } from "lucide-react";
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { LoadingSwap } from "@/components/ui/loading-swap";
 import {
   AlertDialog,
   AlertDialogContent,
@@ -12,6 +10,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
+import { LoadingSwap } from "@/components/ui/loading-swap";
 
 interface CredentialsDialogProps {
   open: boolean;
@@ -26,7 +26,9 @@ export function CredentialsDialog({
 }: CredentialsDialogProps) {
   const [isDownloading, setIsDownloading] = useState(false);
 
-  if (!credentials) return null;
+  if (!credentials) {
+    return null;
+  }
 
   const handleDownloadAndRedirect = async () => {
     setIsDownloading(true);

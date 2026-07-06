@@ -1,13 +1,28 @@
 "use client";
+import { useQuery } from "@tanstack/react-query";
+import {
+  BookOpen,
+  Calendar,
+  CheckCircle2,
+  CreditCard,
+  FolderHeart,
+  Info,
+  ShieldAlert,
+  Sparkles,
+  Upload,
+  User,
+  Users,
+} from "lucide-react";
+import { useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
+import { Controller, type UseFormReturn } from "react-hook-form";
 import {
   Card,
   CardContent,
+  CardDescription,
   CardHeader,
   CardTitle,
-  CardDescription,
 } from "@/components/ui/card";
-import { StudentDataType } from "../lib/zod-type/student-data";
-import { Controller, type UseFormReturn } from "react-hook-form";
 import {
   Field,
   FieldContent,
@@ -15,24 +30,9 @@ import {
   FieldLabel,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { useSearchParams } from "next/navigation";
-import { useQuery } from "@tanstack/react-query";
-import { getEnrolledStudent } from "../query/get-enrolled-student";
 import { fetchActiveSubjects } from "../lib/action";
-import { useEffect, useState } from "react";
-import {
-  User,
-  Calendar,
-  CreditCard,
-  FolderHeart,
-  ShieldAlert,
-  BookOpen,
-  Users,
-  Sparkles,
-  Info,
-  CheckCircle2,
-  Upload,
-} from "lucide-react";
+import type { StudentDataType } from "../lib/zod-type/student-data";
+import { getEnrolledStudent } from "../query/get-enrolled-student";
 
 export const PersonalDetailsForm = ({
   form,

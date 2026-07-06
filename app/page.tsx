@@ -1,37 +1,37 @@
+import { desc, eq } from "drizzle-orm";
+import {
+  ArrowRight,
+  Award,
+  BookOpen,
+  Building,
+  Check,
+  ChevronRight,
+  FlaskConical,
+  GraduationCap,
+  Laptop,
+  Library,
+  Mail,
+  MapPin,
+  Phone,
+  Quote,
+  Users,
+} from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
+import { AcademicsSection } from "@/components/informative/academics-section";
+import { NoticeBoard } from "@/components/informative/notice-board";
+import { SiteFooter } from "@/components/informative/site-footer";
+import { SiteHeader } from "@/components/informative/site-header";
+import { getCollegeConfig } from "@/lib/college-config";
 import { db } from "@/lib/db";
 import {
+  academicSessionTable,
   admissionOpenTable,
   batchTable,
   courseTable,
-  academicSessionTable,
-  tenderTable,
   notice,
+  tenderTable,
 } from "@/lib/db/schema";
-import { eq, desc } from "drizzle-orm";
-import { getCollegeConfig } from "@/lib/college-config";
-import { SiteHeader } from "@/components/informative/site-header";
-import { SiteFooter } from "@/components/informative/site-footer";
-import { NoticeBoard } from "@/components/informative/notice-board";
-import { AcademicsSection } from "@/components/informative/academics-section";
-import Link from "next/link";
-import Image from "next/image";
-import {
-  BookOpen,
-  Award,
-  Users,
-  ArrowRight,
-  ChevronRight,
-  Library,
-  FlaskConical,
-  Phone,
-  Mail,
-  MapPin,
-  Laptop,
-  Building,
-  GraduationCap,
-  Check,
-  Quote,
-} from "lucide-react";
 
 // Force dynamic rendering — data depends on current date and admin mutations
 export const dynamic = "force-dynamic";

@@ -29,18 +29,28 @@ const arrayPreprocessSchema = z.preprocess((val) => {
   return [];
 }, z.array(z.string()));
 
-const dateTransform = z.any().optional().nullable().transform((val) => {
-  if (!val || String(val).trim() === "") return undefined;
-  try {
-    const d = new Date(val);
-    return isNaN(d.getTime()) ? undefined : d;
-  } catch {
-    return undefined;
-  }
-});
+const dateTransform = z
+  .any()
+  .optional()
+  .nullable()
+  .transform((val) => {
+    if (!val || String(val).trim() === "") {
+      return undefined;
+    }
+    try {
+      const d = new Date(val);
+      return isNaN(d.getTime()) ? undefined : d;
+    } catch {
+      return undefined;
+    }
+  });
 
 const enrolledStudentItemSchema = z.object({
-  id: z.string().optional().nullable().transform((val) => val || createId()),
+  id: z
+    .string()
+    .optional()
+    .nullable()
+    .transform((val) => val || createId()),
   UAN: z.string().min(1, "UAN is required"),
   registrationNumber: z
     .string()

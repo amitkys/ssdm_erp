@@ -1,29 +1,29 @@
 "use client";
 import {
+  AlertCircle,
+  CheckCircle2,
+  FileText,
+  Image as ImageIcon,
+  PenTool,
+  ShieldCheck,
+  Upload,
+} from "lucide-react";
+import { useState } from "react";
+import { Controller, type UseFormReturn } from "react-hook-form";
+import {
   Card,
   CardContent,
+  CardDescription,
   CardHeader,
   CardTitle,
-  CardDescription,
 } from "@/components/ui/card";
-import { DocumentsUploadType } from "../lib/zod-type/student-data";
-import { Controller, type UseFormReturn } from "react-hook-form";
 import {
   Field,
   FieldContent,
   FieldError,
   FieldLabel,
 } from "@/components/ui/field";
-import { useState } from "react";
-import {
-  FileText,
-  Upload,
-  CheckCircle2,
-  AlertCircle,
-  ShieldCheck,
-  Image as ImageIcon,
-  PenTool,
-} from "lucide-react";
+import type { DocumentsUploadType } from "../lib/zod-type/student-data";
 
 export const DocumentsUploadForm = ({
   form,

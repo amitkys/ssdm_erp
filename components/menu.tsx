@@ -12,9 +12,9 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { authClient } from "@/lib/auth-client";
 import { getMenuList } from "@/lib/menu-list";
 import { cn } from "@/lib/utils";
-import { authClient } from "@/lib/auth-client";
 
 interface MenuProps {
   isOpen: boolean | undefined;

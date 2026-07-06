@@ -1,16 +1,16 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { simulateCallback } from "../../lib/action";
 import {
   CheckCircle2,
-  XCircle,
-  Loader2,
   CreditCard,
-  ShieldAlert,
   FileText,
+  Loader2,
+  ShieldAlert,
+  XCircle,
 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { simulateCallback } from "../../lib/action";
 
 interface ContainerProps {
   paymentId: string;

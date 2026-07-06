@@ -1,5 +1,7 @@
 "use client";
 
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -11,13 +13,10 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-
-import { useForm } from "react-hook-form";
 import {
   type NewCourseType,
   newCourseSchema,
 } from "../lib/zod-type/new-course-type";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { InputForCourse } from "./input-for-course";
 
 export function AddCourse() {

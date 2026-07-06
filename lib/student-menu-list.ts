@@ -1,10 +1,11 @@
 import {
-  IconDashboard,
-  IconClipboardCheck,
-  IconCertificate,
   IconCalendarEvent,
-  IconUser,
+  IconCertificate,
+  IconClipboardCheck,
+  IconDashboard,
   IconFileText,
+  IconReceipt,
+  IconUser,
 } from "@tabler/icons-react";
 import type { ComponentType } from "react";
 
@@ -37,23 +38,18 @@ export function getStudentMenuList(pathname: string): Group[] {
           icon: IconUser,
           active: pathname.startsWith("/student/profile"),
         },
+        {
+          href: "/student/fee-history",
+          label: "Fee History",
+          icon: IconReceipt,
+          active: pathname.startsWith("/student/fee-history"),
+        },
       ],
     },
     {
       groupLabel: "Academics",
       menus: [
-        {
-          href: "/student/exams",
-          label: "Examinations",
-          icon: IconClipboardCheck,
-          active: pathname.startsWith("/student/exams"),
-        },
-        {
-          href: "/student/results",
-          label: "Results",
-          icon: IconFileText,
-          active: pathname.startsWith("/student/results"),
-        },
+        
         {
           href: "/student/certificates",
           label: "Certificates",

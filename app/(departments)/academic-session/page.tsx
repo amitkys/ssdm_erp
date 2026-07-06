@@ -3,9 +3,9 @@ import {
   HydrationBoundary,
   QueryClient,
 } from "@tanstack/react-query";
+import { ContentLayout } from "@/components/content-layout";
 import { SessionTabsTable } from "./_components/session-tabs-table";
 import { getAcademicSessionsQuery } from "./query/get-academic-session";
-import { ContentLayout } from "@/components/content-layout";
 
 export default async function AcademicSessionPage() {
   const queryClient = new QueryClient();

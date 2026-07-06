@@ -1,10 +1,10 @@
-import { getCollegeConfig } from "@/lib/college-config";
-import { SiteHeader } from "@/components/informative/site-header";
-import { SiteFooter } from "@/components/informative/site-footer";
+import { Building, CheckCircle2, ChevronRight, MapPin } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { Building, CheckCircle2, ChevronRight, MapPin } from "lucide-react";
 import { notFound } from "next/navigation";
+import { SiteFooter } from "@/components/informative/site-footer";
+import { SiteHeader } from "@/components/informative/site-header";
+import { getCollegeConfig } from "@/lib/college-config";
 
 interface FacilityData {
   title: string;

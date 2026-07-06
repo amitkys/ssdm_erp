@@ -1,4 +1,4 @@
-import StudentPanelLayout from "@/components/student/student-panel-layout";
+import StudentPanelLayout from "./_components/student-panel-layout";
 
 export default function StudentLayout({
   children,

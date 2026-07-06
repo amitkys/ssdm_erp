@@ -11,6 +11,7 @@
     "db:migrate": "drizzle-kit migrate",
     "db:seed": "bun ./lib/db/seed/seed.ts",
     "db:create-admin": "bun ./lib/db/seed/create-admin.ts",
+    "db:create-student": "bun ./lib/db/seed/create-student.ts",
     "db:studio": "drizzle-kit studio",
     "lint": "biome check",
     "format": "biome format --write"

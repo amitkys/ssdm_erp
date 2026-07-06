@@ -1,8 +1,8 @@
 "use server";
 
+import { eq } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { EnrolledStudentTable } from "@/lib/db/schema";
-import { eq } from "drizzle-orm";
 
 /**
  * Look up an enrolled student's batchId and subMJC by their UAN.

@@ -1,13 +1,13 @@
 import {
-  QueryClient,
-  HydrationBoundary,
   dehydrate,
+  HydrationBoundary,
+  QueryClient,
 } from "@tanstack/react-query";
-import { getEnrolledStudent } from "./query/get-enrolled-student";
-import { StudentRegistration } from "./_components/student-registration";
-import { getCollegeConfig } from "@/lib/college-config";
-import { SiteHeader } from "@/components/informative/site-header";
 import { SiteFooter } from "@/components/informative/site-footer";
+import { SiteHeader } from "@/components/informative/site-header";
+import { getCollegeConfig } from "@/lib/college-config";
+import { StudentRegistration } from "./_components/student-registration";
+import { getEnrolledStudent } from "./query/get-enrolled-student";
 
 // Define the props interface where searchParams is a Promise
 interface PageProps {

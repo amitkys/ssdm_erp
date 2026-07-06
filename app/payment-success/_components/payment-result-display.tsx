@@ -1,14 +1,14 @@
 "use client";
 
 import {
+  ArrowRight,
   CheckCircle2,
-  XCircle,
+  FileText,
+  Home,
   Lock,
   Printer,
-  Home,
   Receipt,
-  ArrowRight,
-  FileText,
+  XCircle,
 } from "lucide-react";
 
 interface PaymentResult {

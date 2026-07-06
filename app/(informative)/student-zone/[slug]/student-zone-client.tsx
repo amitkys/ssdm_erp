@@ -1,15 +1,15 @@
 "use client";
 
-import { SiteHeader } from "@/components/informative/site-header";
-import { SiteFooter } from "@/components/informative/site-footer";
-import Link from "next/link";
 import {
-  Calendar,
   BookOpen,
+  Calendar,
   ChevronRight,
-  Download,
   Clock,
+  Download,
 } from "lucide-react";
+import Link from "next/link";
+import { SiteFooter } from "@/components/informative/site-footer";
+import { SiteHeader } from "@/components/informative/site-header";
 import type { CollegeConfig } from "@/lib/college-config";
 
 // Holiday Data

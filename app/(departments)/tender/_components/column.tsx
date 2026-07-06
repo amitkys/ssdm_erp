@@ -5,7 +5,7 @@ import { format } from "date-fns";
 import { ExternalLink } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { DeleteTenderDialog } from "./delete-tender-dialog";
-import { type TenderRow, EditTenderSheet } from "./edit-tender-sheet";
+import { EditTenderSheet, type TenderRow } from "./edit-tender-sheet";
 
 export const columns: ColumnDef<TenderRow>[] = [
   {
