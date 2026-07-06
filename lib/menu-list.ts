@@ -123,6 +123,12 @@ export function getMenuList(pathname: string): Group[] {
         //   icon: IconClipboardCheck,
         //   active: pathname.startsWith("/examination"),
         // },
+        {
+          href: "/admission-dcr",
+          label: "Admission DCR",
+          icon: IconFileText,
+          active: pathname.startsWith("/admission-dcr"),
+        },
       ],
     },
   ];
