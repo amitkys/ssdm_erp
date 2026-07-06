@@ -119,6 +119,30 @@ export function SemesterAdmissionOpenFormFields({
 
       <Controller
         control={form.control}
+        name="practicalFee"
+        render={({ field, fieldState }) => (
+          <Field data-invalid={fieldState.invalid}>
+            <FieldLabel>Practical Fee (₹)</FieldLabel>
+            <FieldContent>
+              <Input
+                type="number"
+                min={0}
+                placeholder="0"
+                value={field.value ?? ""}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  field.onChange(val === "" ? null : Number(val));
+                }}
+                aria-invalid={fieldState.invalid}
+              />
+              <FieldError errors={[fieldState.error]} />
+            </FieldContent>
+          </Field>
+        )}
+      />
+
+      <Controller
+        control={form.control}
         name="lateFee"
         render={({ field, fieldState }) => (
           <Field data-invalid={fieldState.invalid}>

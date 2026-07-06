@@ -47,6 +47,7 @@ export function EditSemesterAdmissionOpenSheet({
       semesterCount: record.semesterCount,
       startDate: record.startDate,
       endDate: record.endDate,
+      practicalFee: record.practicalFee ?? null,
       lateFee: record.lateFee ?? 0,
     },
   });
@@ -71,6 +72,7 @@ export function EditSemesterAdmissionOpenSheet({
             semesterCount: record.semesterCount,
             startDate: record.startDate,
             endDate: record.endDate,
+            practicalFee: record.practicalFee ?? null,
             lateFee: record.lateFee ?? 0,
           });
         }

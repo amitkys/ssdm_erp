@@ -35,6 +35,7 @@ export function AddSemesterAdmissionOpenSheet() {
       semesterCount: 2,
       startDate: "",
       endDate: "",
+      practicalFee: null,
       lateFee: 0,
     },
   });
@@ -47,6 +48,7 @@ export function AddSemesterAdmissionOpenSheet() {
         semesterCount: 2,
         startDate: "",
         endDate: "",
+        practicalFee: null,
         lateFee: 0,
       });
       setOpen(false);

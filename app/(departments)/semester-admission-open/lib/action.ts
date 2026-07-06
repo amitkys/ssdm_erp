@@ -147,6 +147,7 @@ export async function addSemesterAdmissionOpen(
       .values({
         academicSessionId: parsedInput.data.academicSessionId,
         semesterCount: parsedInput.data.semesterCount,
+        practicalFee: parsedInput.data.practicalFee ?? null,
         startDate: parsedInput.data.startDate,
         endDate: parsedInput.data.endDate,
         lateFee: parsedInput.data.lateFee,
@@ -183,6 +184,7 @@ export async function updateSemesterAdmissionOpen(
       id,
       academicSessionId,
       semesterCount,
+      practicalFee,
       startDate,
       endDate,
       lateFee,
@@ -193,6 +195,7 @@ export async function updateSemesterAdmissionOpen(
       .set({
         academicSessionId,
         semesterCount,
+        practicalFee: practicalFee ?? null,
         startDate,
         endDate,
         lateFee,

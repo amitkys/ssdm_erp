@@ -12,6 +12,12 @@ export const addSemesterAdmissionOpenSchema = z
       .max(8, { message: "Semester count must be at most 8" }),
     startDate: z.string().min(1, { message: "Start date is required" }),
     endDate: z.string().min(1, { message: "End date is required" }),
+    practicalFee: z
+      .number()
+      .int()
+      .min(0, { message: "Practical fee must be non-negative" })
+      .nullable()
+      .optional(),
     lateFee: z
       .number()
       .int()
@@ -41,6 +47,12 @@ export const updateSemesterAdmissionOpenSchema = z
       .max(8, { message: "Semester count must be at most 8" }),
     startDate: z.string().min(1, { message: "Start date is required" }),
     endDate: z.string().min(1, { message: "End date is required" }),
+    practicalFee: z
+      .number()
+      .int()
+      .min(0, { message: "Practical fee must be non-negative" })
+      .nullable()
+      .optional(),
     lateFee: z
       .number()
       .int()
