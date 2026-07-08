@@ -22,9 +22,10 @@ export const completeProfileSchema = z.object({
     message: "Gender is required",
   }),
   mothersName: z.string().min(1, "Mother's name is required"),
-  religion: z.enum(["Hindu", "Muslim", "Christian", "Sikh", "Buddhist", "Jain", "Other"], {
-    message: "Religion is required",
-  }),
+  religion: z.enum(
+    ["Hindu", "Muslim", "Christian", "Sikh", "Buddhist", "Jain", "Other"],
+    { message: "Religion is required" },
+  ),
   caste: z.enum(["GEN", "BC", "EBC", "SC", "ST", "OTHER"], {
     message: "Caste is required",
   }),

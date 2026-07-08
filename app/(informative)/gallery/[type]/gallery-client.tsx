@@ -142,10 +142,11 @@ export default function GalleryClient({
                       <button
                         key={cat}
                         onClick={() => setActiveFilter(cat)}
-                        className={`px-4 py-2 rounded-full text-xs font-bold transition-all cursor-pointer ${activeFilter === cat
+                        className={`px-4 py-2 rounded-full text-xs font-bold transition-all cursor-pointer ${
+                          activeFilter === cat
                             ? "bg-blue-900 text-white shadow-sm"
                             : "bg-slate-50 text-slate-600 hover:bg-slate-100"
-                          }`}
+                        }`}
                       >
                         {cat}
                       </button>
@@ -231,10 +232,11 @@ export default function GalleryClient({
                 <nav className="flex flex-col gap-1">
                   <Link
                     href="/gallery/photo"
-                    className={`flex items-center justify-between p-3 rounded-xl text-xs sm:text-sm font-semibold transition-colors ${type === "photo"
+                    className={`flex items-center justify-between p-3 rounded-xl text-xs sm:text-sm font-semibold transition-colors ${
+                      type === "photo"
                         ? "bg-blue-50 text-blue-900 border border-blue-100/50"
                         : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
-                      }`}
+                    }`}
                   >
                     <span className="flex items-center gap-2">
                       <ImageIcon className="h-4 w-4" /> Photo Gallery
@@ -243,10 +245,11 @@ export default function GalleryClient({
                   </Link>
                   <Link
                     href="/gallery/video"
-                    className={`flex items-center justify-between p-3 rounded-xl text-xs sm:text-sm font-semibold transition-colors ${type === "video"
+                    className={`flex items-center justify-between p-3 rounded-xl text-xs sm:text-sm font-semibold transition-colors ${
+                      type === "video"
                         ? "bg-blue-50 text-blue-900 border border-blue-100/50"
                         : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
-                      }`}
+                    }`}
                   >
                     <span className="flex items-center gap-2">
                       <Video className="h-4 w-4" /> Video Gallery

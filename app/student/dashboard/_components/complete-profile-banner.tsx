@@ -1,4 +1,8 @@
-import { IconAlertTriangle, IconArrowRight, IconUserEdit } from "@tabler/icons-react";
+import {
+  IconAlertTriangle,
+  IconArrowRight,
+  IconUserEdit,
+} from "@tabler/icons-react";
 import Link from "next/link";
 import type { DashboardStudent, DashboardBatch } from "../lib/types";
 
@@ -41,10 +45,10 @@ export function CompleteProfileBanner({
               Complete Your Profile
             </h2>
             <p className="text-sm text-muted-foreground leading-relaxed max-w-lg mx-auto">
-              Your account has been created with minimal details. Please complete
-              your profile with accurate personal, academic, and contact
-              information. This is a <strong>one-time action</strong> — once
-              submitted, your profile will be locked for editing.
+              Your account has been created with minimal details. Please
+              complete your profile with accurate personal, academic, and
+              contact information. This is a <strong>one-time action</strong> —
+              once submitted, your profile will be locked for editing.
             </p>
           </div>
 

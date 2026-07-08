@@ -1,4 +1,10 @@
-import { integer, pgTable, text, timestamp, varchar } from "drizzle-orm/pg-core";
+import {
+  integer,
+  pgTable,
+  text,
+  timestamp,
+  varchar,
+} from "drizzle-orm/pg-core";
 import { createId } from "@paralleldrive/cuid2";
 
 export const miscellaneousPaymentTable = pgTable("miscellaneous_payment", {

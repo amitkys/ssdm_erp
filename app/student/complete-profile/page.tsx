@@ -45,12 +45,15 @@ export default async function CompleteProfilePage() {
             Complete Your Profile
           </h1>
           <p className="text-sm text-muted-foreground font-medium">
-            Fill in your personal and address details. This is a one-time
-            action — please ensure all information is accurate.
+            Fill in your personal and address details. This is a one-time action
+            — please ensure all information is accurate.
           </p>
         </div>
 
-        <CompleteProfileForm student={result.data} subjects={result.subjects || []} />
+        <CompleteProfileForm
+          student={result.data}
+          subjects={result.subjects || []}
+        />
       </div>
     </ContentLayout>
   );

@@ -52,17 +52,9 @@ export function AddPaymentForm({ onPaymentCreated }: AddPaymentFormProps) {
     try {
       const result = await mutation.mutateAsync(values);
       if (!result) return;
-      toast.success(
-        `Payment recorded! Invoice: ${result.invoiceNumber}`,
-      );
+      toast.success(`Payment recorded! Invoice: ${result.invoiceNumber}`);
       onPaymentCreated(result);
-      form.reset({
-        reason: "",
-        name: "",
-        amount: 0,
-        address: "",
-        purpose: "",
-      });
+      form.reset({ reason: "", name: "", amount: 0, address: "", purpose: "" });
     } catch (_e) {
       toast.error("Failed to save payment");
     }

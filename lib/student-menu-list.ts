@@ -49,7 +49,6 @@ export function getStudentMenuList(pathname: string): Group[] {
     {
       groupLabel: "Academics",
       menus: [
-        
         {
           href: "/student/certificates",
           label: "Certificates",

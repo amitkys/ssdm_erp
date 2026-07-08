@@ -1,8 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import {
-  getMiscPayments,
-  searchMiscPaymentByInvoice,
-} from "../lib/actions";
+import { getMiscPayments, searchMiscPaymentByInvoice } from "../lib/actions";
 
 export function useGetMiscPayments(searchInvoice?: string) {
   return useQuery({

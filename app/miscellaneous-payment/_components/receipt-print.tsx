@@ -288,8 +288,7 @@ export function ReceiptPrint({ payment, onClose }: ReceiptPrintProps) {
               <span className="italic font-semibold">
                 {numberToWords(payment.amount)}
               </span>
-              ) from{" "}
-              <span className="font-bold">{payment.name}</span>,{" "}
+              ) from <span className="font-bold">{payment.name}</span>,{" "}
               <span className="font-semibold">{payment.address}</span> in the
               account of{" "}
               <span className="font-bold underline">{payment.reason}</span>.

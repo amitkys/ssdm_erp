@@ -1,7 +1,6 @@
 import { getCollegeConfig } from "@/lib/college-config";
 import Link from "next/link";
 
-
 export function Footer() {
   return (
     <div className="z-20 w-full bg-sidebar/95 text-sidebar-foreground shadow backdrop-blur supports-[backdrop-filter]:bg-sidebar/60">

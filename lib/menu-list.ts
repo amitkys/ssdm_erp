@@ -9,6 +9,7 @@ import {
   IconSchool,
   IconTrendingUp,
   IconUserCheck,
+  IconUserPlus,
 } from "@tabler/icons-react";
 import type { ComponentType } from "react";
 
@@ -116,6 +117,12 @@ export function getMenuList(pathname: string): Group[] {
           label: "Student Records",
           icon: IconSchool,
           active: pathname.startsWith("/student-records"),
+        },
+        {
+          href: "/enrolled-student",
+          label: "Enroll Student",
+          icon: IconUserPlus,
+          active: pathname.startsWith("/enrolled-student"),
         },
         // {
         //   href: "/examination",

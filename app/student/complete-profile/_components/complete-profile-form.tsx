@@ -65,7 +65,10 @@ interface CompleteProfileFormProps {
   subjects: { id: string; name: string; code: string }[];
 }
 
-export function CompleteProfileForm({ student, subjects }: CompleteProfileFormProps) {
+export function CompleteProfileForm({
+  student,
+  subjects,
+}: CompleteProfileFormProps) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -78,14 +81,14 @@ export function CompleteProfileForm({ student, subjects }: CompleteProfileFormPr
       personalEmail: (student as any).personalEmail || "",
       gender: (student.gender as CompleteProfileSchema["gender"]) || undefined,
       mothersName: student.mothersName || "",
-      religion: (student.religion as CompleteProfileSchema["religion"]) || undefined,
+      religion:
+        (student.religion as CompleteProfileSchema["religion"]) || undefined,
       caste: (student.caste as CompleteProfileSchema["caste"]) || undefined,
       reservation: student.reservation || "",
       isMinority: student.isMinority || false,
       ABCID: student.ABCID || "",
       admissionType:
-        (student.admissionType as CompleteProfileSchema["admissionType"]) ||
-        "",
+        (student.admissionType as CompleteProfileSchema["admissionType"]) || "",
       city: student.city || "",
       district: student.district || "",
       state: student.state || "",
@@ -155,11 +158,7 @@ export function CompleteProfileForm({ student, subjects }: CompleteProfileFormPr
             label="Date of Birth"
             error={form.formState.errors.DOB?.message}
           >
-            <Input
-              type="date"
-              {...form.register("DOB")}
-              className="w-full"
-            />
+            <Input type="date" {...form.register("DOB")} className="w-full" />
           </FormField>
 
           <FormField
@@ -204,9 +203,11 @@ export function CompleteProfileForm({ student, subjects }: CompleteProfileFormPr
             <Select
               value={form.watch("gender") || ""}
               onValueChange={(val) =>
-                form.setValue("gender", val as CompleteProfileSchema["gender"], {
-                  shouldValidate: true,
-                })
+                form.setValue(
+                  "gender",
+                  val as CompleteProfileSchema["gender"],
+                  { shouldValidate: true },
+                )
               }
             >
               <SelectTrigger className="w-full">
@@ -238,9 +239,11 @@ export function CompleteProfileForm({ student, subjects }: CompleteProfileFormPr
             <Select
               value={form.watch("religion") || ""}
               onValueChange={(val) =>
-                form.setValue("religion", val as CompleteProfileSchema["religion"], {
-                  shouldValidate: true,
-                })
+                form.setValue(
+                  "religion",
+                  val as CompleteProfileSchema["religion"],
+                  { shouldValidate: true },
+                )
               }
             >
               <SelectTrigger className="w-full">
@@ -258,10 +261,7 @@ export function CompleteProfileForm({ student, subjects }: CompleteProfileFormPr
             </Select>
           </FormField>
 
-          <FormField
-            label="Caste"
-            error={form.formState.errors.caste?.message}
-          >
+          <FormField label="Caste" error={form.formState.errors.caste?.message}>
             <Select
               value={form.watch("caste") || ""}
               onValueChange={(val) =>
@@ -484,10 +484,7 @@ export function CompleteProfileForm({ student, subjects }: CompleteProfileFormPr
         </h3>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-          <FormField
-            label="City"
-            error={form.formState.errors.city?.message}
-          >
+          <FormField label="City" error={form.formState.errors.city?.message}>
             <Input
               type="text"
               placeholder="Enter city"
@@ -506,10 +503,7 @@ export function CompleteProfileForm({ student, subjects }: CompleteProfileFormPr
             />
           </FormField>
 
-          <FormField
-            label="State"
-            error={form.formState.errors.state?.message}
-          >
+          <FormField label="State" error={form.formState.errors.state?.message}>
             <Input
               type="text"
               placeholder="Enter state"

@@ -23,7 +23,9 @@ export function InputForSignin({
         name="identifier"
         render={({ field, fieldState }) => (
           <Field>
-            <FieldLabel required>Application No. / University Roll No.</FieldLabel>
+            <FieldLabel required>
+              Application No. / University Roll No.
+            </FieldLabel>
             <FieldContent>
               <Input
                 {...field}

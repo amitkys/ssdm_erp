@@ -132,9 +132,7 @@ export async function getStudentPaymentDetails(params: {
       }
     } else {
       // Semester 1: practical fee from admission open table
-      practicalFee = hasPractical
-        ? (admissionOpen?.practicalFee ?? 500)
-        : 0;
+      practicalFee = hasPractical ? (admissionOpen?.practicalFee ?? 500) : 0;
 
       if (admissionOpen) {
         const currentDate = new Date();
