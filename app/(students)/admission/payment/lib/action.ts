@@ -117,7 +117,7 @@ export async function getStudentPaymentDetails(params: {
 
       // Practical fee from semester admission record
       practicalFee = hasPractical
-        ? (semesterAdmission.practicalFee ?? admissionOpen?.practicalFee ?? 500)
+        ? (semesterAdmission.practicalFee ?? admissionOpen?.practicalFee ?? 600)
         : 0;
 
       // Late fee check
@@ -133,7 +133,7 @@ export async function getStudentPaymentDetails(params: {
     } else {
       // Semester 1: practical fee from admission open table
       practicalFee = hasPractical
-        ? (admissionOpen?.practicalFee ?? 500)
+        ? (admissionOpen?.practicalFee ?? 600)
         : 0;
 
       if (admissionOpen) {
