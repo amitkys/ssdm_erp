@@ -60,7 +60,7 @@ export default function DCRClient({
   // Filters State
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
-  const [semester, setSemester] = useState("1"); // Default to Semester 1
+  const [semester, setSemester] = useState("all"); // Default to All Semesters
   const [departmentId, setDepartmentId] = useState("all");
   const [courseId, setCourseId] = useState("all");
   const [batchId, setBatchId] = useState("all");

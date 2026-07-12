@@ -6,7 +6,7 @@ export const dynamic = "force-dynamic";
 
 export default async function AdmissionDCRPage() {
   const statsRes = await getDCRStats();
-  const reportRes = await getDCRReport({ semester: "1" }); // Initial fetch defaults to Semester 1
+  const reportRes = await getDCRReport(); // Initial fetch — all semesters
   const filterOptionsRes = await getDCRFilterOptions();
 
   const initialStats =
