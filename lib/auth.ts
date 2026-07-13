@@ -12,6 +12,8 @@ export const auth = betterAuth({
   trustedOrigins: [
     process.env.BETTER_AUTH_URL!,
     process.env.NEXT_PUBLIC_APP_URL!,
+    "https://santsandhyadasmahilacollege.org",
+    "https://www.santsandhyadasmahilacollege.org",
     // www variant: https://domain.com → https://www.domain.com
     process.env.NEXT_PUBLIC_APP_URL
       ? process.env.NEXT_PUBLIC_APP_URL.replace("://", "://www.")
