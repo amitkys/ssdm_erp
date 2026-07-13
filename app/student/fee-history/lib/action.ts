@@ -158,7 +158,7 @@ export async function getStudentFeeData() {
 
       const tuitionFee = batch.perSemesterFee;
       const practicalFee = hasPractical
-        ? (admissionOpen?.practicalFee ?? 500)
+        ? (nextSemesterAdmission.practicalFee ?? admissionOpen?.practicalFee ?? 600)
         : 0;
 
       let lateFee = 0;

@@ -1,4 +1,4 @@
-import { eq, inArray } from "drizzle-orm";
+import { and, eq, inArray } from "drizzle-orm";
 import { redirect } from "next/navigation";
 import { getCollegeConfig } from "@/lib/college-config";
 import { db } from "@/lib/db";
@@ -6,6 +6,7 @@ import { db } from "@/lib/db";
 import {
   admissionOpenTable,
   batchTable,
+  semesterAdmissionOpenTable,
   subjectTable,
 } from "@/lib/db/schema/department";
 import { StudentFeePaymentTable } from "@/lib/db/schema/student";
@@ -81,8 +82,30 @@ export default async function PrintableReceiptPage({
     where: eq(admissionOpenTable.batchId, student.batchId),
   });
 
-  const practicalFee = hasPractical ? (admissionOpen?.practicalFee ?? 500) : 0;
+  let practicalFee = 0;
   const totalAmount = Number(payment.amount);
+
+  if (payment.semesterCount > 1) {
+    // For semester > 1, read from semesterAdmissionOpenTable
+    const semesterAdmission =
+      await db.query.semesterAdmissionOpenTable.findFirst({
+        where: and(
+          eq(
+            semesterAdmissionOpenTable.academicSessionId,
+            batch.academicSessionId,
+          ),
+          eq(semesterAdmissionOpenTable.semesterCount, payment.semesterCount),
+        ),
+      });
+
+    practicalFee = hasPractical
+      ? (semesterAdmission?.practicalFee ?? admissionOpen?.practicalFee ?? 600)
+      : 0;
+  } else {
+    // Semester 1: use admissionOpen table
+    practicalFee = hasPractical ? (admissionOpen?.practicalFee ?? 600) : 0;
+  }
+
   const lateFee = Math.max(0, totalAmount - tuitionFee - practicalFee);
 
   const college = getCollegeConfig();

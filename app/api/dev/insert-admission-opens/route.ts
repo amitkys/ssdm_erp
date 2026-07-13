@@ -64,7 +64,7 @@ const admissionOpenItemSchema = z.object({
     .number()
     .optional()
     .nullable()
-    .transform((val) => (val === null ? 500 : val)),
+    .transform((val) => (val === null ? 600 : val)),
   isDateExtended: z
     .boolean()
     .optional()

@@ -14,7 +14,7 @@ export const addAdmissionOpenSchema = z
       .number()
       .int()
       .min(0, { message: "Practical fee must be non-negative" })
-      .default(500),
+      .default(600),
     isDateExtended: z.boolean().default(false),
     extendedDate: z.string().optional().nullable(),
   })
@@ -62,7 +62,7 @@ export const updateAdmissionOpenSchema = z
       .number()
       .int()
       .min(0, { message: "Practical fee must be non-negative" })
-      .default(500),
+      .default(600),
     isDateExtended: z.boolean().default(false),
     extendedDate: z.string().optional().nullable(),
   })

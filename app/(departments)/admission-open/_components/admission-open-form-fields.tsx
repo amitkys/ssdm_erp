@@ -129,8 +129,8 @@ export function AdmissionOpenFormFields({
                 <Input
                   type="number"
                   min={0}
-                  placeholder="500"
-                  value={field.value ?? 500}
+                  placeholder="600"
+                  value={field.value ?? 600}
                   onChange={(e) => field.onChange(Number(e.target.value))}
                   aria-invalid={fieldState.invalid}
                 />
