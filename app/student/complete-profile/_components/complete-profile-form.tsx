@@ -374,7 +374,11 @@ export function CompleteProfileForm({ student, subjects }: CompleteProfileFormPr
               </SelectTrigger>
               <SelectContent>
                 {subjects.map((subj) => (
-                  <SelectItem key={subj.id} value={subj.id}>
+                  <SelectItem
+                    key={subj.id}
+                    value={subj.id}
+                    className={`${subj.name === "NOT APPLICABLE" ? "font-extrabold text-red-500" : ""}`}
+                  >
                     {subj.name} ({subj.code})
                   </SelectItem>
                 ))}
@@ -397,7 +401,7 @@ export function CompleteProfileForm({ student, subjects }: CompleteProfileFormPr
               </SelectTrigger>
               <SelectContent>
                 {subjects.map((subj) => (
-                  <SelectItem key={subj.id} value={subj.id}>
+                  <SelectItem key={subj.id} value={subj.id} className={`${subj.name === "NOT APPLICABLE" ? "font-extrabold text-red-500" : ""}`}>
                     {subj.name} ({subj.code})
                   </SelectItem>
                 ))}
@@ -420,7 +424,7 @@ export function CompleteProfileForm({ student, subjects }: CompleteProfileFormPr
               </SelectTrigger>
               <SelectContent>
                 {subjects.map((subj) => (
-                  <SelectItem key={subj.id} value={subj.id}>
+                  <SelectItem key={subj.id} value={subj.id} className={`${subj.name === "NOT APPLICABLE" ? "font-extrabold text-red-500" : ""}`}>
                     {subj.name} ({subj.code})
                   </SelectItem>
                 ))}
@@ -443,7 +447,7 @@ export function CompleteProfileForm({ student, subjects }: CompleteProfileFormPr
               </SelectTrigger>
               <SelectContent>
                 {subjects.map((subj) => (
-                  <SelectItem key={subj.id} value={subj.id}>
+                  <SelectItem key={subj.id} value={subj.id} className={`${subj.name === "NOT APPLICABLE" ? "font-extrabold text-red-500" : ""}`}>
                     {subj.name} ({subj.code})
                   </SelectItem>
                 ))}
@@ -466,7 +470,7 @@ export function CompleteProfileForm({ student, subjects }: CompleteProfileFormPr
               </SelectTrigger>
               <SelectContent>
                 {subjects.map((subj) => (
-                  <SelectItem key={subj.id} value={subj.id}>
+                  <SelectItem key={subj.id} value={subj.id} className={`${subj.name === "NOT APPLICABLE" ? "font-extrabold text-red-500" : ""}`}>
                     {subj.name} ({subj.code})
                   </SelectItem>
                 ))}
