@@ -1,5 +1,9 @@
-import { MenuIcon, PanelsTopLeft } from "lucide-react";
+"use client";
+
+import { GraduationCap, MenuIcon, PanelsTopLeft } from "lucide-react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { StudentMenu } from "@/app/student/_components/student-menu";
 import { Menu } from "@/components/menu";
 import { Button } from "@/components/ui/button";
 import {
@@ -11,6 +15,9 @@ import {
 } from "@/components/ui/sheet";
 
 export function SheetMenu() {
+  const pathname = usePathname();
+  const isStudent = pathname?.startsWith("/student");
+
   return (
     <Sheet>
       <SheetTrigger className="lg:hidden" asChild>
@@ -25,13 +32,25 @@ export function SheetMenu() {
             variant="link"
             asChild
           >
-            <Link href="/college" className="flex items-center gap-2">
-              <PanelsTopLeft className="w-6 h-6 mr-1" />
-              <SheetTitle className="font-bold text-lg">SSDM ERP</SheetTitle>
-            </Link>
+            {isStudent ? (
+              <Link
+                href="/student/dashboard"
+                className="flex items-center gap-2"
+              >
+                <GraduationCap className="w-6 h-6 mr-1" />
+                <SheetTitle className="font-bold text-lg">
+                  Student Portal
+                </SheetTitle>
+              </Link>
+            ) : (
+              <Link href="/college" className="flex items-center gap-2">
+                <PanelsTopLeft className="w-6 h-6 mr-1" />
+                <SheetTitle className="font-bold text-lg">SSDM ERP</SheetTitle>
+              </Link>
+            )}
           </Button>
         </SheetHeader>
-        <Menu isOpen />
+        {isStudent ? <StudentMenu isOpen /> : <Menu isOpen />}
       </SheetContent>
     </Sheet>
   );
