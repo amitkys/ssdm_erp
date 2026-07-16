@@ -68,7 +68,7 @@ export const EnrolledStudentTable = pgTable(
     ),
     check(
       "admissionType_check",
-      sql`${table.admissionType} IN ('MERIT', 'SPORT', 'MANAGEMENT QUOTA', 'OTHER')`,
+      sql`${table.admissionType} IN ('MERIT', 'SPOT', 'MANAGEMENT QUOTA', 'OTHER')`,
     ),
   ],
 );
@@ -135,7 +135,7 @@ export const AdmittedStudentTable = pgTable(
     ),
     check(
       "admissionType_check",
-      sql`${table.admissionType} IN ('MERIT', 'SPORT', 'MANAGEMENT QUOTA', 'OTHER')`,
+      sql`${table.admissionType} IN ('MERIT', 'SPOT', 'MANAGEMENT QUOTA', 'OTHER')`,
     ),
     check(
       "caste_check",

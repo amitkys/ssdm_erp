@@ -8,7 +8,7 @@ export const enrollStudentSchema = z.object({
 
   // Required Student Data
   UAN: z.string().min(1, "UAN is required").trim(),
-  admissionType: z.enum(["MERIT", "SPORT", "MANAGEMENT QUOTA", "OTHER"]),
+  admissionType: z.enum(["MERIT", "SPOT", "MANAGEMENT QUOTA", "OTHER"]),
   registrationNumber: z
     .string()
     .min(1, "Registration Number is required")

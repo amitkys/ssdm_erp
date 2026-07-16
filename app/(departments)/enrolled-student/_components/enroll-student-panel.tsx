@@ -374,7 +374,7 @@ export function EnrollStudentPanel() {
                           aria-invalid={fieldState.invalid}
                         >
                           <option value="MERIT">MERIT</option>
-                          <option value="SPORT">SPORT</option>
+                          <option value="SPORT">SPOT</option>
                           <option value="MANAGEMENT QUOTA">
                             MANAGEMENT QUOTA
                           </option>
