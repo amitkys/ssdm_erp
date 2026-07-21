@@ -1,6 +1,6 @@
 "use server";
 
-import { and, count, eq, inArray } from "drizzle-orm";
+import { and, eq, inArray, max } from "drizzle-orm";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { user } from "@/lib/db/schema/auth-schema";
@@ -214,13 +214,18 @@ export async function registerStudent(payload: RegisterStudentPayload) {
 
     // 3. Transaction: insert admitted student, academic record, and documents atomically
     const data = await db.transaction(async (tx) => {
-      // Count admitted students in this batch (inside tx for concurrency safety)
-      const [{ studentCount }] = await tx
-        .select({ studentCount: count() })
+      // Find the highest existing serial number in this batch (inside tx for concurrency safety)
+      const [{ maxRoll }] = await tx
+        .select({ maxRoll: max(AdmittedStudentTable.collegeRoll) })
         .from(AdmittedStudentTable)
         .where(eq(AdmittedStudentTable.batchId, personal.batch));
 
-      const serialNumber = (studentCount + 1).toString().padStart(3, "0");
+      let lastSerial = 0;
+      if (maxRoll) {
+        lastSerial = parseInt(maxRoll.slice(-3), 10) || 0;
+      }
+
+      const serialNumber = (lastSerial + 1).toString().padStart(3, "0");
       const collegeRoll = `${currentYear}${courseCode}${serialNumber}`;
 
       // 3a. Insert admitted student

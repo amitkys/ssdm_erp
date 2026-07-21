@@ -1,5 +1,5 @@
 import { createId } from "@paralleldrive/cuid2";
-import { count, eq, inArray } from "drizzle-orm";
+import { eq, inArray, max } from "drizzle-orm";
 import { NextResponse } from "next/server";
 import * as z from "zod";
 import { auth } from "@/lib/auth";
@@ -238,15 +238,20 @@ export async function POST(req: Request) {
           for (const [batchId, batchStudents] of studentsByBatch) {
             const batchInfo = batchInfoMap.get(batchId)!;
 
-            // Count existing students in this batch
-            const [{ studentCount }] = await tx
-              .select({ studentCount: count() })
+            // Find the highest existing serial number in this batch
+            const [{ maxRoll }] = await tx
+              .select({ maxRoll: max(AdmittedStudentTable.collegeRoll) })
               .from(AdmittedStudentTable)
               .where(eq(AdmittedStudentTable.batchId, batchId));
 
+            let lastSerial = 0;
+            if (maxRoll) {
+              lastSerial = parseInt(maxRoll.slice(-3), 10) || 0;
+            }
+
             for (let i = 0; i < batchStudents.length; i++) {
               const s = batchStudents[i];
-              const serialNumber = (studentCount + i + 1)
+              const serialNumber = (lastSerial + i + 1)
                 .toString()
                 .padStart(3, "0");
               const collegeRoll = `${OLD_YEAR}${batchInfo.courseCode}${serialNumber}`;
@@ -376,14 +381,20 @@ export async function POST(req: Request) {
         for (const [batchId, batchStudents] of studentsByBatch) {
           const batchInfo = batchInfoMap.get(batchId)!;
 
-          const [{ studentCount }] = await tx
-            .select({ studentCount: count() })
+          // Find the highest existing serial number in this batch
+          const [{ maxRoll }] = await tx
+            .select({ maxRoll: max(AdmittedStudentTable.collegeRoll) })
             .from(AdmittedStudentTable)
             .where(eq(AdmittedStudentTable.batchId, batchId));
 
+          let lastSerial = 0;
+          if (maxRoll) {
+            lastSerial = parseInt(maxRoll.slice(-3), 10) || 0;
+          }
+
           for (let i = 0; i < batchStudents.length; i++) {
             const s = batchStudents[i];
-            const serialNumber = (studentCount + i + 1)
+            const serialNumber = (lastSerial + i + 1)
               .toString()
               .padStart(3, "0");
             const collegeRoll = `${OLD_YEAR}${batchInfo.courseCode}${serialNumber}`;
