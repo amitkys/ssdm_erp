@@ -54,7 +54,12 @@ export async function checkPendingFee(
         const today = new Date();
         today.setHours(0, 0, 0, 0);
         const start = new Date(admissionOpen.startDate);
-        const end = new Date(admissionOpen.endDate);
+        start.setHours(0, 0, 0, 0);
+        const end =
+          admissionOpen.isDateExtended && admissionOpen.extendedDate
+            ? new Date(admissionOpen.extendedDate)
+            : new Date(admissionOpen.endDate);
+        end.setHours(0, 0, 0, 0);
         isAdmissionOpen = today >= start && today <= end;
       }
     } else {
@@ -75,8 +80,8 @@ export async function checkPendingFee(
         const today = new Date();
         today.setHours(0, 0, 0, 0);
         const start = new Date(semesterAdmission.startDate);
-        const end = new Date(semesterAdmission.endDate);
-        isAdmissionOpen = today >= start && today <= end;
+        start.setHours(0, 0, 0, 0);
+        isAdmissionOpen = today >= start;
       }
     }
   }
