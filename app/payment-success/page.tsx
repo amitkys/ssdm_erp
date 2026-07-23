@@ -23,6 +23,7 @@ export default async function PaymentSuccessPage({ searchParams }: PageProps) {
   let studentInfo = null;
 
   let lookupPaymentId: string | null = null;
+  let paymentSemesterCount = 1;
 
   if (response) {
     const res = await processPaymentReturn(response);
@@ -63,6 +64,7 @@ export default async function PaymentSuccessPage({ searchParams }: PageProps) {
     }
 
     if (payment) {
+      paymentSemesterCount = payment.semesterCount;
       paymentResult = {
         paymentId: payment.id,
         status: payment.status || "Pending",
@@ -87,8 +89,10 @@ export default async function PaymentSuccessPage({ searchParams }: PageProps) {
 
   // If the payment failed, redirect the student back to the checkout page to retry
   if (paymentResult && paymentResult.status === "Failed" && studentInfo) {
+    const semParam =
+      paymentSemesterCount > 1 ? `&semesterCount=${paymentSemesterCount}` : "";
     redirect(
-      `/admission/payment?uan=${studentInfo.uan}&studentId=${studentInfo.id}&error=payment_failed`,
+      `/admission/payment?uan=${studentInfo.uan}&studentId=${studentInfo.id}&error=payment_failed${semParam}`,
     );
   }
 

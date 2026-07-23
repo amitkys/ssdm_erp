@@ -10,7 +10,9 @@ import { cn } from "@/lib/utils";
 
 export function Sidebar() {
   const sidebar = useStore(useSidebar, (x) => x);
-  if (!sidebar) return null;
+  if (!sidebar) {
+    return null;
+  }
   const { isOpen, toggleOpen, getOpenState, setIsHover, settings } = sidebar;
   return (
     <aside

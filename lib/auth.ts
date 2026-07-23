@@ -9,6 +9,16 @@ export const auth = betterAuth({
     provider: "pg", // or "mysql", "sqlite"
     schema: authSchema,
   }),
+  trustedOrigins: [
+    process.env.BETTER_AUTH_URL!,
+    process.env.NEXT_PUBLIC_APP_URL!,
+    "https://santsandhyadasmahilacollege.org",
+    "https://www.santsandhyadasmahilacollege.org",
+    // www variant: https://domain.com → https://www.domain.com
+    process.env.NEXT_PUBLIC_APP_URL
+      ? process.env.NEXT_PUBLIC_APP_URL.replace("://", "://www.")
+      : "",
+  ].filter(Boolean),
   emailAndPassword: { enabled: true, autoSignIn: false },
   user: {
     additionalFields: { role: { type: [...userRoleValues], required: true } },

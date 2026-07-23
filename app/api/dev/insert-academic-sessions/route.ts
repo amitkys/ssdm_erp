@@ -4,31 +4,49 @@ import * as z from "zod";
 import { db } from "@/lib/db";
 import { academicSessionTable } from "@/lib/db/schema";
 
-const dateTransform = z.any().optional().nullable().transform((val) => {
-  if (!val || String(val).trim() === "") return undefined;
-  try {
-    const d = new Date(val);
-    return isNaN(d.getTime()) ? undefined : d;
-  } catch {
-    return undefined;
-  }
-});
+const dateTransform = z
+  .any()
+  .optional()
+  .nullable()
+  .transform((val) => {
+    if (!val || String(val).trim() === "") {
+      return undefined;
+    }
+    try {
+      const d = new Date(val);
+      return isNaN(d.getTime()) ? undefined : d;
+    } catch {
+      return undefined;
+    }
+  });
 
 const academicSessionItemSchema = z.object({
-  id: z.string().optional().nullable().transform((val) => val || createId()),
+  id: z
+    .string()
+    .optional()
+    .nullable()
+    .transform((val) => val || createId()),
   name: z.string().min(1, "Session name is required"),
   startDate: z.any().transform((val) => {
-    if (!val || String(val).trim() === "") throw new Error("startDate is required");
+    if (!val || String(val).trim() === "") {
+      throw new Error("startDate is required");
+    }
     const str = String(val).trim();
     const clean = str.includes("T") ? str.split("T")[0] : str;
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(clean)) throw new Error("Invalid startDate format");
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(clean)) {
+      throw new Error("Invalid startDate format");
+    }
     return clean;
   }),
   endDate: z.any().transform((val) => {
-    if (!val || String(val).trim() === "") throw new Error("endDate is required");
+    if (!val || String(val).trim() === "") {
+      throw new Error("endDate is required");
+    }
     const str = String(val).trim();
     const clean = str.includes("T") ? str.split("T")[0] : str;
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(clean)) throw new Error("Invalid endDate format");
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(clean)) {
+      throw new Error("Invalid endDate format");
+    }
     return clean;
   }),
   createdAt: dateTransform,
@@ -52,7 +70,8 @@ export async function POST(req: Request) {
       return NextResponse.json(
         {
           success: false,
-          message: "Invalid onConflict parameter. Supported values: 'fail', 'ignore'",
+          message:
+            "Invalid onConflict parameter. Supported values: 'fail', 'ignore'",
         },
         { status: 400 },
       );
@@ -72,7 +91,8 @@ export async function POST(req: Request) {
       return NextResponse.json(
         {
           success: false,
-          message: "Request body must be a JSON array of academic session objects",
+          message:
+            "Request body must be a JSON array of academic session objects",
         },
         { status: 400 },
       );
@@ -80,7 +100,10 @@ export async function POST(req: Request) {
 
     if (body.length === 0) {
       return NextResponse.json(
-        { success: false, message: "The academic sessions list cannot be empty" },
+        {
+          success: false,
+          message: "The academic sessions list cannot be empty",
+        },
         { status: 400 },
       );
     }
@@ -147,7 +170,8 @@ export async function POST(req: Request) {
         return NextResponse.json(
           {
             success: false,
-            message: "Database insertion failed: A duplicate record already exists.",
+            message:
+              "Database insertion failed: A duplicate record already exists.",
             detail: dbError.detail || "Unique constraint violation on name.",
           },
           { status: 409 },

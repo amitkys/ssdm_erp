@@ -1,13 +1,13 @@
 import { db } from "@/lib/db";
 import {
   academicSessionTable,
-  departmentTable,
-  subjectTable,
-  courseTable,
-  batchTable,
   admissionOpenTable,
-  tenderTable,
+  batchTable,
+  courseTable,
+  departmentTable,
   notice,
+  subjectTable,
+  tenderTable,
 } from "@/lib/db/schema";
 
 const NUM_RECORDS = 5;
@@ -64,8 +64,12 @@ async function main() {
       .returning();
     console.log(`✅ Seeded ${departments.length} departments.`);
 
-    // 3. Seed Courses and Batches for each department
-    const insertedBatches: Array<{ id: string; deptCode: string }> = [];
+    // 3. Seed Courses and Batches for each department × each session
+    const insertedBatches: Array<{
+      id: string;
+      deptCode: string;
+      sessionName: string;
+    }> = [];
     for (const dept of insertedDepts) {
       const course = {
         name: `B.Sc in ${dept.name}`,
@@ -80,20 +84,29 @@ async function main() {
         .values(course)
         .returning();
 
-      const batch = {
-        courseId: insertedCourse.id,
-        academicSessionId: insertedSessions[insertedSessions.length - 1].id, // Most recent session
-        perSemesterFee: 5000,
-        isActive: true,
-      };
+      // Create a batch for every session (not just the latest)
+      for (const session of insertedSessions) {
+        const batch = {
+          courseId: insertedCourse.id,
+          academicSessionId: session.id,
+          perSemesterFee: 5000,
+          isActive: true,
+        };
 
-      const [insertedBatch] = await db
-        .insert(batchTable)
-        .values(batch)
-        .returning();
-      insertedBatches.push({ ...insertedBatch, deptCode: dept.code });
+        const [insertedBatch] = await db
+          .insert(batchTable)
+          .values(batch)
+          .returning();
+        insertedBatches.push({
+          ...insertedBatch,
+          deptCode: dept.code,
+          sessionName: session.name,
+        });
+      }
     }
-    console.log(`✅ Seeded courses and batches.`);
+    console.log(
+      `✅ Seeded courses and ${insertedBatches.length} batches (all sessions × all departments).`,
+    );
 
     // 4. Seed Admission Open (only for a few batches, not all)
     const batchesForAdmission = insertedBatches.filter((b) =>
@@ -170,22 +183,26 @@ async function main() {
     // 7. Seed Notices
     const notices = [
       {
-        title: "Registration for Semester I (Session 2026-30) Regular & Vocational Courses",
-        description: "All students are directed to register and submit their documents online before the deadline.",
+        title:
+          "Registration for Semester I (Session 2026-30) Regular & Vocational Courses",
+        description:
+          "All students are directed to register and submit their documents online before the deadline.",
         startDate: `${currentYear}-06-10`,
         endDate: `${currentYear}-07-20`,
         file: "https://res.cloudinary.com/demo/image/upload/v1624103197/sample.pdf",
       },
       {
         title: "Holiday Notice: Summer Vacation 2026",
-        description: "The college will remain closed for summer vacation from 1st June to 30th June 2026.",
+        description:
+          "The college will remain closed for summer vacation from 1st June to 30th June 2026.",
         startDate: `${currentYear}-05-25`,
         endDate: `${currentYear}-06-30`,
         file: "https://res.cloudinary.com/demo/image/upload/v1624103197/sample.pdf",
       },
       {
         title: "B.Sc Physics Practical Examination Schedule - Semester II",
-        description: "Detailed schedule for the practical examinations for B.Sc Physics Semester II students.",
+        description:
+          "Detailed schedule for the practical examinations for B.Sc Physics Semester II students.",
         startDate: `${currentYear}-06-12`,
         endDate: `${currentYear}-06-25`,
         file: "https://res.cloudinary.com/demo/image/upload/v1624103197/sample.pdf",

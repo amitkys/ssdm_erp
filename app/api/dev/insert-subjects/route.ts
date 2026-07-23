@@ -4,29 +4,55 @@ import * as z from "zod";
 import { db } from "@/lib/db";
 import { subjectTable } from "@/lib/db/schema";
 
-const dateTransform = z.any().optional().nullable().transform((val) => {
-  if (!val || String(val).trim() === "") return undefined;
-  try {
-    const d = new Date(val);
-    return isNaN(d.getTime()) ? undefined : d;
-  } catch {
-    return undefined;
-  }
-});
+const dateTransform = z
+  .any()
+  .optional()
+  .nullable()
+  .transform((val) => {
+    if (!val || String(val).trim() === "") {
+      return undefined;
+    }
+    try {
+      const d = new Date(val);
+      return isNaN(d.getTime()) ? undefined : d;
+    } catch {
+      return undefined;
+    }
+  });
 
 const subjectItemSchema = z.object({
-  id: z.string().optional().nullable().transform((val) => val || createId()),
+  id: z
+    .string()
+    .optional()
+    .nullable()
+    .transform((val) => val || createId()),
   code: z.string().min(1, "Subject code is required"),
   name: z.string().min(1, "Subject name is required"),
-  description: z.string().optional().nullable().transform((val) => val || null),
+  description: z
+    .string()
+    .optional()
+    .nullable()
+    .transform((val) => val || null),
   category: z
     .enum(["SCIENCE", "COMMERCE", "ARTS", "GENERAL"])
     .optional()
     .nullable()
     .transform((val) => val || "SCIENCE"),
-  isActive: z.boolean().optional().nullable().transform((val) => val === null ? true : val),
-  hasPractical: z.boolean().optional().nullable().transform((val) => val === null ? false : val),
-  practicalFee: z.number().optional().nullable().transform((val) => val || 0),
+  isActive: z
+    .boolean()
+    .optional()
+    .nullable()
+    .transform((val) => (val === null ? true : val)),
+  hasPractical: z
+    .boolean()
+    .optional()
+    .nullable()
+    .transform((val) => (val === null ? false : val)),
+  practicalFee: z
+    .number()
+    .optional()
+    .nullable()
+    .transform((val) => val || 0),
   createdAt: dateTransform,
   updatedAt: dateTransform,
 });
@@ -48,7 +74,8 @@ export async function POST(req: Request) {
       return NextResponse.json(
         {
           success: false,
-          message: "Invalid onConflict parameter. Supported values: 'fail', 'ignore'",
+          message:
+            "Invalid onConflict parameter. Supported values: 'fail', 'ignore'",
         },
         { status: 400 },
       );
@@ -143,7 +170,8 @@ export async function POST(req: Request) {
         return NextResponse.json(
           {
             success: false,
-            message: "Database insertion failed: A duplicate record already exists.",
+            message:
+              "Database insertion failed: A duplicate record already exists.",
             detail: dbError.detail || "Unique constraint violation on code.",
           },
           { status: 409 },
@@ -154,8 +182,11 @@ export async function POST(req: Request) {
         return NextResponse.json(
           {
             success: false,
-            message: "Database insertion failed: A check constraint was violated.",
-            detail: dbError.message || "Category must be one of: SCIENCE, COMMERCE, ARTS, GENERAL.",
+            message:
+              "Database insertion failed: A check constraint was violated.",
+            detail:
+              dbError.message ||
+              "Category must be one of: SCIENCE, COMMERCE, ARTS, GENERAL.",
           },
           { status: 400 },
         );

@@ -5,39 +5,71 @@ import * as z from "zod";
 import { db } from "@/lib/db";
 import { admissionOpenTable, batchTable } from "@/lib/db/schema";
 
-const dateTransform = z.any().optional().nullable().transform((val) => {
-  if (!val || String(val).trim() === "") return undefined;
-  try {
-    const d = new Date(val);
-    return isNaN(d.getTime()) ? undefined : d;
-  } catch {
-    return undefined;
-  }
-});
+const dateTransform = z
+  .any()
+  .optional()
+  .nullable()
+  .transform((val) => {
+    if (!val || String(val).trim() === "") {
+      return undefined;
+    }
+    try {
+      const d = new Date(val);
+      return isNaN(d.getTime()) ? undefined : d;
+    } catch {
+      return undefined;
+    }
+  });
 
 const dateStringTransform = z.any().transform((val) => {
-  if (!val || String(val).trim() === "") throw new Error("date is required");
+  if (!val || String(val).trim() === "") {
+    throw new Error("date is required");
+  }
   const str = String(val).trim();
   const clean = str.includes("T") ? str.split("T")[0] : str;
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(clean)) throw new Error("Invalid date format");
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(clean)) {
+    throw new Error("Invalid date format");
+  }
   return clean;
 });
 
-const dateStringTransformOptional = z.any().optional().nullable().transform((val) => {
-  if (!val || String(val).trim() === "") return null;
-  const str = String(val).trim();
-  const clean = str.includes("T") ? str.split("T")[0] : str;
-  return /^\d{4}-\d{2}-\d{2}$/.test(clean) ? clean : null;
-});
+const dateStringTransformOptional = z
+  .any()
+  .optional()
+  .nullable()
+  .transform((val) => {
+    if (!val || String(val).trim() === "") {
+      return null;
+    }
+    const str = String(val).trim();
+    const clean = str.includes("T") ? str.split("T")[0] : str;
+    return /^\d{4}-\d{2}-\d{2}$/.test(clean) ? clean : null;
+  });
 
 const admissionOpenItemSchema = z.object({
-  id: z.string().optional().nullable().transform((val) => val || createId()),
+  id: z
+    .string()
+    .optional()
+    .nullable()
+    .transform((val) => val || createId()),
   batchId: z.string().min(1, "Batch ID is required"),
   startDate: dateStringTransform,
   endDate: dateStringTransform,
-  lateFee: z.number().optional().nullable().transform((val) => val || 0),
-  practicalFee: z.number().optional().nullable().transform((val) => (val === null ? 500 : val)),
-  isDateExtended: z.boolean().optional().nullable().transform((val) => (val === null ? false : val)),
+  lateFee: z
+    .number()
+    .optional()
+    .nullable()
+    .transform((val) => val || 0),
+  practicalFee: z
+    .number()
+    .optional()
+    .nullable()
+    .transform((val) => (val === null ? 500 : val)),
+  isDateExtended: z
+    .boolean()
+    .optional()
+    .nullable()
+    .transform((val) => (val === null ? false : val)),
   extendedDate: dateStringTransformOptional,
   createdAt: dateTransform,
   updatedAt: dateTransform,
@@ -60,7 +92,8 @@ export async function POST(req: Request) {
       return NextResponse.json(
         {
           success: false,
-          message: "Invalid onConflict parameter. Supported values: 'fail', 'ignore'",
+          message:
+            "Invalid onConflict parameter. Supported values: 'fail', 'ignore'",
         },
         { status: 400 },
       );
@@ -80,7 +113,8 @@ export async function POST(req: Request) {
       return NextResponse.json(
         {
           success: false,
-          message: "Request body must be a JSON array of admission open objects",
+          message:
+            "Request body must be a JSON array of admission open objects",
         },
         { status: 400 },
       );
@@ -115,13 +149,17 @@ export async function POST(req: Request) {
     const admissionOpens = parsed.data;
 
     // 2. Referenced Data Existence Validation (batchId)
-    const uniqueBatchIds = Array.from(new Set(admissionOpens.map((a) => a.batchId)));
+    const uniqueBatchIds = Array.from(
+      new Set(admissionOpens.map((a) => a.batchId)),
+    );
     const existingBatches = await db
       .select({ id: batchTable.id })
       .from(batchTable)
       .where(inArray(batchTable.id, uniqueBatchIds));
     const existingBatchIdsSet = new Set(existingBatches.map((b) => b.id));
-    const missingBatchIds = uniqueBatchIds.filter((id) => !existingBatchIdsSet.has(id));
+    const missingBatchIds = uniqueBatchIds.filter(
+      (id) => !existingBatchIdsSet.has(id),
+    );
 
     if (missingBatchIds.length > 0) {
       return NextResponse.json(
@@ -175,7 +213,8 @@ export async function POST(req: Request) {
         return NextResponse.json(
           {
             success: false,
-            message: "Database insertion failed: A duplicate record already exists.",
+            message:
+              "Database insertion failed: A duplicate record already exists.",
             detail: dbError.detail || "Unique constraint violation on batchId.",
           },
           { status: 409 },
@@ -186,8 +225,10 @@ export async function POST(req: Request) {
         return NextResponse.json(
           {
             success: false,
-            message: "Database insertion failed: A foreign key constraint was violated.",
-            detail: dbError.detail || "batchId references a non-existent batch.",
+            message:
+              "Database insertion failed: A foreign key constraint was violated.",
+            detail:
+              dbError.detail || "batchId references a non-existent batch.",
           },
           { status: 400 },
         );

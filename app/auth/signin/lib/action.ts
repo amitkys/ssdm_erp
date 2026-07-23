@@ -1,8 +1,8 @@
 "use server";
 
+import { eq } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { EnrolledStudentTable } from "@/lib/db/schema";
-import { eq } from "drizzle-orm";
 
 /**
  * Look up an enrolled student's batchId and subMJC by their UAN.
@@ -20,11 +20,7 @@ export async function getStudentRedirectInfo(uan: string) {
 
     return {
       success: true,
-      data: {
-        batchId: student.batchId,
-        uan: student.UAN,
-        mjc: student.subMJC,
-      },
+      data: { batchId: student.batchId, uan: student.UAN, mjc: student.subMJC },
     };
   } catch (error) {
     console.error("[getStudentRedirectInfo] Error:", error);

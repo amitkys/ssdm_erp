@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Inter } from "next/font/google";
 import "./globals.css";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryProviders } from "@/components/query-provider";
 import { Toaster } from "sonner";
+import { QueryProviders } from "@/components/query-provider";
+import { TooltipProvider } from "@/components/ui/tooltip";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -14,10 +14,7 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: "SANT SANDHYA DAS MAHILA COLLEGE",
   description: "SANT SANDHYA DAS MAHILA COLLEGE - ERP System",
-  icons: {
-    icon: "/college.png",
-    apple: "/college.png",
-  },
+  icons: { icon: "/college.png", apple: "/college.png" },
 };
 
 export default function RootLayout({

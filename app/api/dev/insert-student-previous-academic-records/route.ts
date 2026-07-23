@@ -3,37 +3,138 @@ import { inArray } from "drizzle-orm";
 import { NextResponse } from "next/server";
 import * as z from "zod";
 import { db } from "@/lib/db";
-import { StudentPreviousAcademicRecordTable, AdmittedStudentTable } from "@/lib/db/schema";
+import {
+  AdmittedStudentTable,
+  StudentPreviousAcademicRecordTable,
+} from "@/lib/db/schema";
 
 const previousAcademicRecordItemSchema = z.object({
-  id: z.string().optional().nullable().transform((val) => val || createId()),
+  id: z
+    .string()
+    .optional()
+    .nullable()
+    .transform((val) => val || createId()),
   studentId: z.string().min(1, "Student ID is required"),
-  schoolName: z.string().optional().nullable().transform((val) => val || null),
-  board: z.string().optional().nullable().transform((val) => val || null),
-  obtainedMarks: z.number().optional().nullable().transform((val) => val || null),
-  totalMarks: z.number().optional().nullable().transform((val) => val || null),
-  percentage: z.number().optional().nullable().transform((val) => val || null),
-  rollNo: z.string().optional().nullable().transform((val) => val || null),
-  rollCode: z.string().optional().nullable().transform((val) => val || null),
-  address: z.string().optional().nullable().transform((val) => val || null),
-  city: z.string().optional().nullable().transform((val) => val || null),
-  district: z.string().optional().nullable().transform((val) => val || null),
-  state: z.string().optional().nullable().transform((val) => val || null),
-  pinCode: z.string().optional().nullable().transform((val) => val || null),
-  ugInstituteName: z.string().optional().nullable().transform((val) => val || null),
-  ugUniversityName: z.string().optional().nullable().transform((val) => val || null),
-  ugObtainedMarks: z.number().optional().nullable().transform((val) => val || null),
-  ugTotalMarks: z.number().optional().nullable().transform((val) => val || null),
-  ugPercentage: z.number().optional().nullable().transform((val) => val || null),
-  ugRollNo: z.string().optional().nullable().transform((val) => val || null),
-  ugAddress: z.string().optional().nullable().transform((val) => val || null),
-  ugCity: z.string().optional().nullable().transform((val) => val || null),
-  ugDistrict: z.string().optional().nullable().transform((val) => val || null),
-  ugState: z.string().optional().nullable().transform((val) => val || null),
-  ugPinCode: z.string().optional().nullable().transform((val) => val || null),
+  schoolName: z
+    .string()
+    .optional()
+    .nullable()
+    .transform((val) => val || null),
+  board: z
+    .string()
+    .optional()
+    .nullable()
+    .transform((val) => val || null),
+  obtainedMarks: z
+    .number()
+    .optional()
+    .nullable()
+    .transform((val) => val || null),
+  totalMarks: z
+    .number()
+    .optional()
+    .nullable()
+    .transform((val) => val || null),
+  percentage: z
+    .number()
+    .optional()
+    .nullable()
+    .transform((val) => val || null),
+  rollNo: z
+    .string()
+    .optional()
+    .nullable()
+    .transform((val) => val || null),
+  rollCode: z
+    .string()
+    .optional()
+    .nullable()
+    .transform((val) => val || null),
+  address: z
+    .string()
+    .optional()
+    .nullable()
+    .transform((val) => val || null),
+  city: z
+    .string()
+    .optional()
+    .nullable()
+    .transform((val) => val || null),
+  district: z
+    .string()
+    .optional()
+    .nullable()
+    .transform((val) => val || null),
+  state: z
+    .string()
+    .optional()
+    .nullable()
+    .transform((val) => val || null),
+  pinCode: z
+    .string()
+    .optional()
+    .nullable()
+    .transform((val) => val || null),
+  ugInstituteName: z
+    .string()
+    .optional()
+    .nullable()
+    .transform((val) => val || null),
+  ugUniversityName: z
+    .string()
+    .optional()
+    .nullable()
+    .transform((val) => val || null),
+  ugObtainedMarks: z
+    .number()
+    .optional()
+    .nullable()
+    .transform((val) => val || null),
+  ugTotalMarks: z
+    .number()
+    .optional()
+    .nullable()
+    .transform((val) => val || null),
+  ugPercentage: z
+    .number()
+    .optional()
+    .nullable()
+    .transform((val) => val || null),
+  ugRollNo: z
+    .string()
+    .optional()
+    .nullable()
+    .transform((val) => val || null),
+  ugAddress: z
+    .string()
+    .optional()
+    .nullable()
+    .transform((val) => val || null),
+  ugCity: z
+    .string()
+    .optional()
+    .nullable()
+    .transform((val) => val || null),
+  ugDistrict: z
+    .string()
+    .optional()
+    .nullable()
+    .transform((val) => val || null),
+  ugState: z
+    .string()
+    .optional()
+    .nullable()
+    .transform((val) => val || null),
+  ugPinCode: z
+    .string()
+    .optional()
+    .nullable()
+    .transform((val) => val || null),
 });
 
-const bulkPreviousAcademicRecordSchema = z.array(previousAcademicRecordItemSchema);
+const bulkPreviousAcademicRecordSchema = z.array(
+  previousAcademicRecordItemSchema,
+);
 
 interface DbError {
   code?: string;
@@ -50,7 +151,8 @@ export async function POST(req: Request) {
       return NextResponse.json(
         {
           success: false,
-          message: "Invalid onConflict parameter. Supported values: 'fail', 'ignore'",
+          message:
+            "Invalid onConflict parameter. Supported values: 'fail', 'ignore'",
         },
         { status: 400 },
       );
@@ -70,7 +172,8 @@ export async function POST(req: Request) {
       return NextResponse.json(
         {
           success: false,
-          message: "Request body must be a JSON array of previous academic record objects",
+          message:
+            "Request body must be a JSON array of previous academic record objects",
         },
         { status: 400 },
       );
@@ -78,7 +181,10 @@ export async function POST(req: Request) {
 
     if (body.length === 0) {
       return NextResponse.json(
-        { success: false, message: "The previous academic records list cannot be empty" },
+        {
+          success: false,
+          message: "The previous academic records list cannot be empty",
+        },
         { status: 400 },
       );
     }
@@ -105,19 +211,24 @@ export async function POST(req: Request) {
     const records = parsed.data;
 
     // 2. Referenced Data Existence Validation (studentId)
-    const uniqueStudentIds = Array.from(new Set(records.map((r) => r.studentId)));
+    const uniqueStudentIds = Array.from(
+      new Set(records.map((r) => r.studentId)),
+    );
     const existingStudents = await db
       .select({ id: AdmittedStudentTable.id })
       .from(AdmittedStudentTable)
       .where(inArray(AdmittedStudentTable.id, uniqueStudentIds));
     const existingStudentIdsSet = new Set(existingStudents.map((s) => s.id));
-    const missingStudentIds = uniqueStudentIds.filter((id) => !existingStudentIdsSet.has(id));
+    const missingStudentIds = uniqueStudentIds.filter(
+      (id) => !existingStudentIdsSet.has(id),
+    );
 
     if (missingStudentIds.length > 0) {
       return NextResponse.json(
         {
           success: false,
-          message: "Referenced student entities do not exist in admitted_students.",
+          message:
+            "Referenced student entities do not exist in admitted_students.",
           errors: { missingStudentIds },
         },
         { status: 400 },
@@ -159,14 +270,20 @@ export async function POST(req: Request) {
       });
     } catch (dbErr) {
       const dbError = ((dbErr as any).cause || dbErr) as DbError;
-      console.error("[Bulk Insert Previous Academic Records DB Error]:", dbError);
+      console.error(
+        "[Bulk Insert Previous Academic Records DB Error]:",
+        dbError,
+      );
 
       if (dbError.code === "23505") {
         return NextResponse.json(
           {
             success: false,
-            message: "Database insertion failed: A duplicate record already exists.",
-            detail: dbError.detail || "Unique constraint violation on academic record attributes.",
+            message:
+              "Database insertion failed: A duplicate record already exists.",
+            detail:
+              dbError.detail ||
+              "Unique constraint violation on academic record attributes.",
           },
           { status: 409 },
         );
@@ -176,8 +293,10 @@ export async function POST(req: Request) {
         return NextResponse.json(
           {
             success: false,
-            message: "Database insertion failed: A foreign key constraint was violated.",
-            detail: dbError.detail || "studentId references a non-existent student.",
+            message:
+              "Database insertion failed: A foreign key constraint was violated.",
+            detail:
+              dbError.detail || "studentId references a non-existent student.",
           },
           { status: 400 },
         );
@@ -194,7 +313,10 @@ export async function POST(req: Request) {
     }
   } catch (error) {
     const err = error as Error;
-    console.error("[Bulk Insert Previous Academic Records API Route Error]:", err);
+    console.error(
+      "[Bulk Insert Previous Academic Records API Route Error]:",
+      err,
+    );
     return NextResponse.json(
       { success: false, message: err.message || "Internal Server Error" },
       { status: 500 },

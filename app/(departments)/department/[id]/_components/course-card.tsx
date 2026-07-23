@@ -1,4 +1,6 @@
-import { courseTable } from "@/lib/db/schema/department";
+import { ChevronRight } from "lucide-react";
+import Link from "next/link";
+import { Badge } from "@/components/ui/badge";
 import {
   Card,
   CardContent,
@@ -7,9 +9,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { ChevronRight } from "lucide-react";
-import Link from "next/link";
+import type { courseTable } from "@/lib/db/schema/department";
 export const CourseCard = ({
   course,
 }: {

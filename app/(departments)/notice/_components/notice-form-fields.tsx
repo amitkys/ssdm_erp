@@ -1,8 +1,8 @@
 "use client";
 
-import { Controller, type UseFormReturn } from "react-hook-form";
 import { FileUp, Loader2, X } from "lucide-react";
 import { useCallback, useState } from "react";
+import { Controller, type UseFormReturn } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import {
   Field,
@@ -59,9 +59,7 @@ export function NoticeFormFields({ form }: NoticeFormFieldsProps) {
           throw new Error(json.message || "Upload failed");
         }
 
-        form.setValue("file", json.urls.file, {
-          shouldValidate: true,
-        });
+        form.setValue("file", json.urls.file, { shouldValidate: true });
       } catch (err) {
         setUploadError(
           err instanceof Error ? err.message : "Upload failed. Try again.",

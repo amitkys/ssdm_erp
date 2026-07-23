@@ -1,37 +1,37 @@
+import { desc, eq } from "drizzle-orm";
+import {
+  ArrowRight,
+  Award,
+  BookOpen,
+  Building,
+  Check,
+  ChevronRight,
+  FlaskConical,
+  GraduationCap,
+  Laptop,
+  Library,
+  Mail,
+  MapPin,
+  Phone,
+  Quote,
+  Users,
+} from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
+import { AcademicsSection } from "@/components/informative/academics-section";
+import { NoticeBoard } from "@/components/informative/notice-board";
+import { SiteFooter } from "@/components/informative/site-footer";
+import { SiteHeader } from "@/components/informative/site-header";
+import { getCollegeConfig } from "@/lib/college-config";
 import { db } from "@/lib/db";
 import {
+  academicSessionTable,
   admissionOpenTable,
   batchTable,
   courseTable,
-  academicSessionTable,
-  tenderTable,
   notice,
+  tenderTable,
 } from "@/lib/db/schema";
-import { eq, desc } from "drizzle-orm";
-import { getCollegeConfig } from "@/lib/college-config";
-import { SiteHeader } from "@/components/informative/site-header";
-import { SiteFooter } from "@/components/informative/site-footer";
-import { NoticeBoard } from "@/components/informative/notice-board";
-import { AcademicsSection } from "@/components/informative/academics-section";
-import Link from "next/link";
-import Image from "next/image";
-import {
-  BookOpen,
-  Award,
-  Users,
-  ArrowRight,
-  ChevronRight,
-  Library,
-  FlaskConical,
-  Phone,
-  Mail,
-  MapPin,
-  Laptop,
-  Building,
-  GraduationCap,
-  Check,
-  Quote,
-} from "lucide-react";
 
 // Force dynamic rendering — data depends on current date and admin mutations
 export const dynamic = "force-dynamic";
@@ -150,6 +150,12 @@ export default async function Page() {
                 className="w-full sm:w-auto px-8 py-4 rounded-xl text-sm font-bold bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:from-blue-500 hover:to-indigo-500 shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 hover:-translate-y-0.5 transition-all text-center"
               >
                 Apply for Admission 2026-27
+              </Link>
+              <Link
+                href="/auth/signin"
+                className="w-full sm:w-auto px-8 py-4 rounded-xl text-sm font-bold bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:from-blue-500 hover:to-indigo-500 shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 hover:-translate-y-0.5 transition-all text-center"
+              >
+                Admission for semester 7th
               </Link>
               <Link
                 href="#about"
@@ -295,6 +301,26 @@ export default async function Page() {
                       <ChevronRight className="h-4 w-4 text-slate-400 group-hover:translate-x-1 transition-transform" />
                     </Link>
 
+                    <Link
+                      href="/auth/signin"
+                      className="group flex items-center justify-between p-3.5 bg-white border border-slate-200 hover:border-blue-900 rounded-xl transition-all shadow-sm"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="p-2.5 rounded-lg bg-orange-50 text-orange-700 group-hover:bg-orange-100 transition-colors">
+                          <BookOpen className="h-5 w-5" />
+                        </div>
+                        <div>
+                          <p className="text-xs font-bold text-slate-800">
+                            Admission for Sem-VII
+                          </p>
+                          <p className="text-[10px] text-slate-400">
+                            Login for semester VII admission process
+                          </p>
+                        </div>
+                      </div>
+                      <ChevronRight className="h-4 w-4 text-slate-400 group-hover:translate-x-1 transition-transform" />
+                    </Link>
+
                     <div className="group flex items-center justify-between p-3.5 bg-white border border-slate-200 hover:border-slate-300 rounded-xl transition-all shadow-sm cursor-not-allowed opacity-80">
                       <div className="flex items-center gap-3">
                         <div className="p-2.5 rounded-lg bg-indigo-50 text-indigo-700">
@@ -403,7 +429,9 @@ export default async function Page() {
               <div className="lg:col-span-5 bg-white border border-slate-200/80 rounded-3xl p-6 md:p-8 shadow-sm">
                 <div className="flex items-center gap-3 mb-6 pb-4 border-b border-slate-200/60">
                   <GraduationCap className="h-6 w-6 text-blue-900" />
-                  <h3 className="text-xl font-bold text-blue-900">Why Choose Us?</h3>
+                  <h3 className="text-xl font-bold text-blue-900">
+                    Why Choose Us?
+                  </h3>
                 </div>
                 <div className="space-y-5">
                   {[
@@ -486,10 +514,20 @@ export default async function Page() {
                   "Dear Students, Faculty, and Visitors,"
                 </p>
                 <p className="text-justify">
-                  It gives me immense pleasure to welcome you to {config.name}, an institution dedicated to nurturing talent, fostering innovation, and shaping responsible citizens. Education, in our view, is not merely the acquisition of knowledge but the cultivation of values, discipline, and a spirit of inquiry that prepares individuals for life's challenges.
+                  It gives me immense pleasure to welcome you to {config.name},
+                  an institution dedicated to nurturing talent, fostering
+                  innovation, and shaping responsible citizens. Education, in
+                  our view, is not merely the acquisition of knowledge but the
+                  cultivation of values, discipline, and a spirit of inquiry
+                  that prepares individuals for life's challenges.
                 </p>
                 <p className="text-justify font-light">
-                  At our college, we strive to create an environment where academic excellence goes hand in hand with holistic development. Our dedicated faculty, modern infrastructure, and student-centric approach ensure that every learner receives the guidance needed to excel and become an empowered leader of tomorrow.
+                  At our college, we strive to create an environment where
+                  academic excellence goes hand in hand with holistic
+                  development. Our dedicated faculty, modern infrastructure, and
+                  student-centric approach ensure that every learner receives
+                  the guidance needed to excel and become an empowered leader of
+                  tomorrow.
                 </p>
               </div>
 

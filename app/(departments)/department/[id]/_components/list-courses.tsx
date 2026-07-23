@@ -1,8 +1,8 @@
 "use client";
 import { useQuery } from "@tanstack/react-query";
 import { getCourses } from "../query/get-department";
-import { CourseCard } from "./course-card";
 import { AddCourse } from "./add-course";
+import { CourseCard } from "./course-card";
 
 export function ListCourses({ id }: { id: string }) {
   const { data, isLoading, error } = useQuery(getCourses({ id }));

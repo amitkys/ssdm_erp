@@ -3,7 +3,7 @@ import { inArray } from "drizzle-orm";
 import { NextResponse } from "next/server";
 import * as z from "zod";
 import { db } from "@/lib/db";
-import { StudentDocumentsTable, AdmittedStudentTable } from "@/lib/db/schema";
+import { AdmittedStudentTable, StudentDocumentsTable } from "@/lib/db/schema";
 
 const arrayPreprocessSchema = z.preprocess((val) => {
   if (val === null || val === undefined || val === "") {
@@ -24,29 +24,79 @@ const arrayPreprocessSchema = z.preprocess((val) => {
   return [];
 }, z.array(z.string()));
 
-const dateTransform = z.any().optional().nullable().transform((val) => {
-  if (!val || String(val).trim() === "") return undefined;
-  try {
-    const d = new Date(val);
-    return isNaN(d.getTime()) ? undefined : d;
-  } catch {
-    return undefined;
-  }
-});
+const dateTransform = z
+  .any()
+  .optional()
+  .nullable()
+  .transform((val) => {
+    if (!val || String(val).trim() === "") {
+      return undefined;
+    }
+    try {
+      const d = new Date(val);
+      return isNaN(d.getTime()) ? undefined : d;
+    } catch {
+      return undefined;
+    }
+  });
 
 const studentDocumentsItemSchema = z.object({
-  id: z.string().optional().nullable().transform((val) => val || createId()),
+  id: z
+    .string()
+    .optional()
+    .nullable()
+    .transform((val) => val || createId()),
   studentId: z.string().min(1, "Student ID is required"),
-  Aadhar: z.string().optional().nullable().transform((val) => val || null),
-  cast: z.string().optional().nullable().transform((val) => val || null),
-  domicile: z.string().optional().nullable().transform((val) => val || null),
-  income: z.string().optional().nullable().transform((val) => val || null),
-  pwd: z.string().optional().nullable().transform((val) => val || null),
-  previousLC: z.string().optional().nullable().transform((val) => val || null),
-  previousMigration: z.string().optional().nullable().transform((val) => val || null),
-  previousMarksheet: z.string().optional().nullable().transform((val) => val || null),
-  photo: z.string().optional().nullable().transform((val) => val || null),
-  signature: z.string().optional().nullable().transform((val) => val || null),
+  Aadhar: z
+    .string()
+    .optional()
+    .nullable()
+    .transform((val) => val || null),
+  cast: z
+    .string()
+    .optional()
+    .nullable()
+    .transform((val) => val || null),
+  domicile: z
+    .string()
+    .optional()
+    .nullable()
+    .transform((val) => val || null),
+  income: z
+    .string()
+    .optional()
+    .nullable()
+    .transform((val) => val || null),
+  pwd: z
+    .string()
+    .optional()
+    .nullable()
+    .transform((val) => val || null),
+  previousLC: z
+    .string()
+    .optional()
+    .nullable()
+    .transform((val) => val || null),
+  previousMigration: z
+    .string()
+    .optional()
+    .nullable()
+    .transform((val) => val || null),
+  previousMarksheet: z
+    .string()
+    .optional()
+    .nullable()
+    .transform((val) => val || null),
+  photo: z
+    .string()
+    .optional()
+    .nullable()
+    .transform((val) => val || null),
+  signature: z
+    .string()
+    .optional()
+    .nullable()
+    .transform((val) => val || null),
   currentCourseMarkSheets: arrayPreprocessSchema.optional().default([]),
   createdAt: dateTransform,
   updatedAt: dateTransform,
@@ -69,7 +119,8 @@ export async function POST(req: Request) {
       return NextResponse.json(
         {
           success: false,
-          message: "Invalid onConflict parameter. Supported values: 'fail', 'ignore'",
+          message:
+            "Invalid onConflict parameter. Supported values: 'fail', 'ignore'",
         },
         { status: 400 },
       );
@@ -89,7 +140,8 @@ export async function POST(req: Request) {
       return NextResponse.json(
         {
           success: false,
-          message: "Request body must be a JSON array of student document objects",
+          message:
+            "Request body must be a JSON array of student document objects",
         },
         { status: 400 },
       );
@@ -97,7 +149,10 @@ export async function POST(req: Request) {
 
     if (body.length === 0) {
       return NextResponse.json(
-        { success: false, message: "The student documents list cannot be empty" },
+        {
+          success: false,
+          message: "The student documents list cannot be empty",
+        },
         { status: 400 },
       );
     }
@@ -124,19 +179,24 @@ export async function POST(req: Request) {
     const records = parsed.data;
 
     // 2. Referenced Data Existence Validation (studentId)
-    const uniqueStudentIds = Array.from(new Set(records.map((r) => r.studentId)));
+    const uniqueStudentIds = Array.from(
+      new Set(records.map((r) => r.studentId)),
+    );
     const existingStudents = await db
       .select({ id: AdmittedStudentTable.id })
       .from(AdmittedStudentTable)
       .where(inArray(AdmittedStudentTable.id, uniqueStudentIds));
     const existingStudentIdsSet = new Set(existingStudents.map((s) => s.id));
-    const missingStudentIds = uniqueStudentIds.filter((id) => !existingStudentIdsSet.has(id));
+    const missingStudentIds = uniqueStudentIds.filter(
+      (id) => !existingStudentIdsSet.has(id),
+    );
 
     if (missingStudentIds.length > 0) {
       return NextResponse.json(
         {
           success: false,
-          message: "Referenced student entities do not exist in admitted_students.",
+          message:
+            "Referenced student entities do not exist in admitted_students.",
           errors: { missingStudentIds },
         },
         { status: 400 },
@@ -184,8 +244,11 @@ export async function POST(req: Request) {
         return NextResponse.json(
           {
             success: false,
-            message: "Database insertion failed: A duplicate record already exists.",
-            detail: dbError.detail || "Unique constraint violation on student documents.",
+            message:
+              "Database insertion failed: A duplicate record already exists.",
+            detail:
+              dbError.detail ||
+              "Unique constraint violation on student documents.",
           },
           { status: 409 },
         );
@@ -195,8 +258,10 @@ export async function POST(req: Request) {
         return NextResponse.json(
           {
             success: false,
-            message: "Database insertion failed: A foreign key constraint was violated.",
-            detail: dbError.detail || "studentId references a non-existent student.",
+            message:
+              "Database insertion failed: A foreign key constraint was violated.",
+            detail:
+              dbError.detail || "studentId references a non-existent student.",
           },
           { status: 400 },
         );

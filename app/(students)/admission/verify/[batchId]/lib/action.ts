@@ -45,7 +45,15 @@ export const fetchEnrolledStudent = async ({
             "You have already registered and completed your admission payment.",
         };
       } else {
-        // Registered but payment is pending/failed
+        // Registered but payment is pending/failed — only allow sem-1 through
+        if (admittedStudent.currentSemesterCount !== 1) {
+          return {
+            success: false,
+            message:
+              "You are already registered. Please sign in to the Student Portal using your credentials to continue with fee payment.",
+          };
+        }
+
         return {
           success: true,
           verification: true,

@@ -1,13 +1,22 @@
 "use client";
 import {
+  Calculator,
+  ChevronDown,
+  ChevronUp,
+  GraduationCap,
+  MapPin,
+  Percent,
+  School,
+} from "lucide-react";
+import { useEffect, useState } from "react";
+import { Controller, type UseFormReturn } from "react-hook-form";
+import {
   Card,
   CardContent,
+  CardDescription,
   CardHeader,
   CardTitle,
-  CardDescription,
 } from "@/components/ui/card";
-import { AcademicDetailsType } from "../lib/zod-type/student-data";
-import { Controller, type UseFormReturn } from "react-hook-form";
 import {
   Field,
   FieldContent,
@@ -15,16 +24,7 @@ import {
   FieldLabel,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { useEffect, useState } from "react";
-import {
-  GraduationCap,
-  School,
-  MapPin,
-  Calculator,
-  ChevronDown,
-  ChevronUp,
-  Percent,
-} from "lucide-react";
+import type { AcademicDetailsType } from "../lib/zod-type/student-data";
 
 export const PreviousAcademicDetailsForm = ({
   form,

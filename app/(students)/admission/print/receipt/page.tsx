@@ -2,6 +2,7 @@ import { eq, inArray } from "drizzle-orm";
 import { redirect } from "next/navigation";
 import { getCollegeConfig } from "@/lib/college-config";
 import { db } from "@/lib/db";
+
 import {
   admissionOpenTable,
   batchTable,
@@ -57,14 +58,18 @@ export default async function PrintableReceiptPage({
   const tuitionFee = batch.perSemesterFee;
 
   // Check if student has practical subjects
-  const allSubjectIds = [
-    student.subMJC,
-    ...(student.subMIC || []),
-    ...(student.subMDC || []),
-    ...(student.subAEC || []),
-    ...(student.subSEC || []),
-    ...(student.subVAC || []),
-  ].filter(Boolean) as string[];
+  // Semester 7 students only have MJC and MIC subjects (no MDC, AEC, SEC, VAC)
+  const isSemester7 = payment.semesterCount === 7;
+  const allSubjectIds = isSemester7
+    ? ([student.subMJC, ...(student.subMIC || [])].filter(Boolean) as string[])
+    : ([
+        student.subMJC,
+        ...(student.subMIC || []),
+        ...(student.subMDC || []),
+        ...(student.subAEC || []),
+        ...(student.subSEC || []),
+        ...(student.subVAC || []),
+      ].filter(Boolean) as string[]);
 
   let hasPractical = false;
   if (allSubjectIds.length > 0) {
@@ -80,11 +85,16 @@ export default async function PrintableReceiptPage({
     where: eq(admissionOpenTable.batchId, student.batchId),
   });
 
-  const practicalFee = hasPractical ? (admissionOpen?.practicalFee ?? 500) : 0;
+  const practicalFee = hasPractical ? (admissionOpen?.practicalFee ?? 600) : 0;
   const totalAmount = Number(payment.amount);
   const lateFee = Math.max(0, totalAmount - tuitionFee - practicalFee);
 
   const college = getCollegeConfig();
+
+  const getSemesterRoman = (num: number) => {
+    const roman = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII"];
+    return roman[num - 1] || String(num);
+  };
 
   return (
     <div className="min-h-screen bg-white text-slate-900 p-8 print:p-0 max-w-4xl mx-auto font-sans selection:bg-slate-200">
@@ -99,13 +109,14 @@ export default async function PrintableReceiptPage({
           Affiliated with University • Government Registered Institution
         </p>
         <p className="text-xs text-slate-500 font-mono">
-          Email: support@ssdmcollege.ac.in • Web: www.ssdmcollege.ac.in
+          Email: {getCollegeConfig().email} • Web: santsandhyadasmahilacollege.org
         </p>
       </div>
 
       <div className="my-6 print:my-2 text-center">
         <span className="border-2 border-slate-900 px-6 py-1.5 text-xs font-black uppercase tracking-widest bg-slate-50">
-          Admission Fee Receipt (Semester I)
+          Admission Fee Receipt (Semester{" "}
+          {getSemesterRoman(payment.semesterCount)})
         </span>
       </div>
 

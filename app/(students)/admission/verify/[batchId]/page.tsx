@@ -1,7 +1,7 @@
-import { VerificationCard } from "./_components/verificationCard";
-import { getCollegeConfig } from "@/lib/college-config";
-import { SiteHeader } from "@/components/informative/site-header";
 import { SiteFooter } from "@/components/informative/site-footer";
+import { SiteHeader } from "@/components/informative/site-header";
+import { getCollegeConfig } from "@/lib/college-config";
+import { VerificationCard } from "./_components/verificationCard";
 
 export default async function VerifyPage({
   params,

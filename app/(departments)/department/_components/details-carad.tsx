@@ -17,7 +17,9 @@ export const DetailsCard = ({ id, name }: { id: string; name: string }) => {
         role="button"
         tabIndex={0}
         onKeyDown={(e) => {
-          if (e.key === "Enter" || e.key === " ") setOpen(true);
+          if (e.key === "Enter" || e.key === " ") {
+            setOpen(true);
+          }
         }}
       >
         <CardHeader>

@@ -179,10 +179,11 @@ export function NoticeBoard({
             type="button"
             key={t.key}
             onClick={() => setTab(t.key)}
-            className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-[11px] font-bold transition-all whitespace-nowrap ${tab === t.key
+            className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-[11px] font-bold transition-all whitespace-nowrap ${
+              tab === t.key
                 ? "bg-blue-900 text-white shadow"
                 : "text-slate-500 hover:text-slate-800 hover:bg-white"
-              }`}
+            }`}
           >
             {t.icon}
             {t.label}

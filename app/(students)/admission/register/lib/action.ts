@@ -1,23 +1,20 @@
 "use server";
 
+import { and, eq, inArray, max } from "drizzle-orm";
+import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { user } from "@/lib/db/schema/auth-schema";
+import { batchTable, subjectTable } from "@/lib/db/schema/department";
 import {
   AdmittedStudentTable,
   EnrolledStudentTable,
-  StudentPreviousAcademicRecordTable,
   StudentDocumentsTable,
+  StudentPreviousAcademicRecordTable,
 } from "@/lib/db/schema/student";
 import {
-  subjectTable,
-  batchTable,
-} from "@/lib/db/schema/department";
-import { user } from "@/lib/db/schema/auth-schema";
-import { and, eq, inArray, count } from "drizzle-orm";
-import {
-  registerStudentSchema,
   type RegisterStudentPayload,
+  registerStudentSchema,
 } from "./zod-type/register-student-type";
-import { auth } from "@/lib/auth";
 
 /**
  * Generate student password from their name and Aadhar number.
@@ -39,7 +36,8 @@ function generateStudentPassword(name: string, aadharNumber: string): string {
  * Format: uan@student.ssdm.local
  */
 function generateStudentEmail(uan: string): string {
-  return `${uan.toLowerCase()}@student.ssdm.local`;
+  // Strip non-alphanumeric chars (including invisible Unicode from spreadsheet paste)
+  return `${uan.replace(/[^a-zA-Z0-9]/g, "").toLowerCase()}@student.ssdm.local`;
 }
 
 /**
@@ -66,12 +64,7 @@ async function backgroundSignupStudent({
 
     if (!existingUser) {
       await auth.api.signUpEmail({
-        body: {
-          name,
-          email,
-          password,
-          role: "student",
-        },
+        body: { name, email, password, role: "student" },
       });
     }
   } catch (error) {
@@ -221,13 +214,18 @@ export async function registerStudent(payload: RegisterStudentPayload) {
 
     // 3. Transaction: insert admitted student, academic record, and documents atomically
     const data = await db.transaction(async (tx) => {
-      // Count admitted students in this batch (inside tx for concurrency safety)
-      const [{ studentCount }] = await tx
-        .select({ studentCount: count() })
+      // Find the highest existing serial number in this batch (inside tx for concurrency safety)
+      const [{ maxRoll }] = await tx
+        .select({ maxRoll: max(AdmittedStudentTable.collegeRoll) })
         .from(AdmittedStudentTable)
         .where(eq(AdmittedStudentTable.batchId, personal.batch));
 
-      const serialNumber = (studentCount + 1).toString().padStart(3, "0");
+      let lastSerial = 0;
+      if (maxRoll) {
+        lastSerial = parseInt(maxRoll.slice(-3), 10) || 0;
+      }
+
+      const serialNumber = (lastSerial + 1).toString().padStart(3, "0");
       const collegeRoll = `${currentYear}${courseCode}${serialNumber}`;
 
       // 3a. Insert admitted student
@@ -395,4 +393,3 @@ export const fetchActiveSubjects = async () => {
     return { success: false as const, message: "Failed to fetch subjects" };
   }
 };
-
