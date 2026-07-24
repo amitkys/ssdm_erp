@@ -3,6 +3,7 @@ import {
   IconBook,
   IconBook2,
   IconCalendarEvent,
+  IconCertificate,
   IconClipboardCheck,
   IconFileText,
   IconHierarchy2,
@@ -95,34 +96,18 @@ export function getMenuList(pathname: string): Group[] {
     {
       groupLabel: "Student Operations",
       menus: [
-        // {
-        //   href: "/admission",
-        //   label: "Admission",
-        //   icon: IconUserCheck,
-        //   active:
-        //     pathname === "/admission" ||
-        //     pathname.startsWith("/admission/register") ||
-        //     pathname.startsWith("/admission/payment") ||
-        //     pathname.startsWith("/admission/verify"),
-        // },
-        // {
-        //   href: "/promote-students",
-        //   label: "Promote Students",
-        //   icon: IconTrendingUp,
-        //   active: pathname.startsWith("/promote-students"),
-        // },
         {
           href: "/student-records",
           label: "Student Records",
           icon: IconSchool,
           active: pathname.startsWith("/student-records"),
         },
-        // {
-        //   href: "/examination",
-        //   label: "Examination",
-        //   icon: IconClipboardCheck,
-        //   active: pathname.startsWith("/examination"),
-        // },
+        {
+          href: "/certificate-requests",
+          label: "Certificate Requests",
+          icon: IconCertificate,
+          active: pathname.startsWith("/certificate-requests"),
+        },
         {
           href: "/admission-dcr",
           label: "Admission DCR",

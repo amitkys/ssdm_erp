@@ -1,0 +1,153 @@
+import { eq, inArray, or } from "drizzle-orm";
+import { NextResponse } from "next/server";
+import { db } from "@/lib/db";
+import { CertificateRequestTable } from "@/lib/db/schema/certificate";
+import { GcmPgEncryption } from "@/lib/getepay-encrypt";
+
+export async function POST(req: Request) {
+  try {
+    const url = new URL(req.url);
+    let requestId = url.searchParams.get("requestId");
+
+    // Parse body if it exists
+    let body: any = {};
+    try {
+      body = await req.json();
+    } catch {
+      try {
+        const formData = await req.formData();
+        body = Object.fromEntries(formData.entries());
+      } catch {
+        // Fallback
+      }
+    }
+
+    const rawResponse =
+      body.response ||
+      body.resp ||
+      url.searchParams.get("response") ||
+      url.searchParams.get("resp") ||
+      null;
+
+    if (!rawResponse) {
+      console.warn("[Certificate Callback API] Missing response ciphertext");
+      return NextResponse.json(
+        { status: "error", message: "Missing response payload" },
+        { status: 400 },
+      );
+    }
+
+    const responseCiphertext = String(rawResponse).trim().includes(" ")
+      ? String(rawResponse).trim().replace(/ /g, "+")
+      : String(rawResponse).trim();
+
+    const getepayKey = process.env.GETEPAY_KEY;
+    const getepayIv = process.env.GETEPAY_IV;
+
+    if (!getepayKey || !getepayIv) {
+      throw new Error(
+        "Missing GetEpay encryption keys in system configuration.",
+      );
+    }
+
+    const isProduction = process.env.NODE_ENV === "production";
+    const encryptor = new GcmPgEncryption(getepayIv, getepayKey, isProduction);
+    const decryptedText = await encryptor.decrypt(responseCiphertext);
+    const decrypted = JSON.parse(decryptedText);
+
+    console.log(
+      "[Certificate Callback API] Decrypted Callback Payload:",
+      decrypted,
+    );
+
+    // Validate gateway credentials in response
+    const configuredMid = String(process.env.GETEPAY_MID || "").trim();
+    const responseMid =
+      decrypted?.mid || decrypted?.merchantId || decrypted?.merchantCode || "";
+
+    if (
+      configuredMid &&
+      responseMid &&
+      String(responseMid).trim() !== configuredMid
+    ) {
+      throw new Error("Merchant ID mismatch in gateway response.");
+    }
+
+    // Extract fields
+    const responseRequestId = decrypted.merchantOrderNo;
+    if (!requestId && responseRequestId) {
+      requestId = responseRequestId;
+    }
+
+    if (!requestId) {
+      throw new Error(
+        "Unable to identify certificate request records (missing requestId).",
+      );
+    }
+
+    const txnStatus = String(
+      decrypted.txnStatus || decrypted.paymentStatus || decrypted.status || "",
+    )
+      .trim()
+      .toUpperCase();
+
+    const bankTxnNo =
+      decrypted.getepayTxnId ||
+      decrypted.bankTxnNo ||
+      decrypted.referenceNo ||
+      null;
+
+    const txnAmount = decrypted.txnAmount || decrypted.totalAmount || null;
+
+    const lookupIds = [requestId, responseRequestId].filter(Boolean) as string[];
+
+    const existingRequest = await db.query.CertificateRequestTable.findFirst({
+      where: or(
+        inArray(CertificateRequestTable.id, lookupIds),
+        inArray(CertificateRequestTable.transactionId, lookupIds),
+      ),
+      with: { certificate: true },
+    });
+
+    if (!existingRequest) {
+      throw new Error(
+        `Certificate request record ${requestId} not found in database.`,
+      );
+    }
+
+    requestId = existingRequest.id;
+
+    const isSuccess = txnStatus === "SUCCESS";
+    const status = isSuccess ? "PENDING" : "CANCELLED";
+
+    const finalAmount = isSuccess
+      ? txnAmount
+        ? Number(String(txnAmount).replace(/,/g, ""))
+        : existingRequest.certificate.fee
+      : null;
+
+    await db
+      .update(CertificateRequestTable)
+      .set({
+        status,
+        amount: finalAmount,
+        transactionId: bankTxnNo || (isSuccess ? `CERT-TXN-${Date.now()}` : null),
+        updatedAt: new Date(),
+      })
+      .where(eq(CertificateRequestTable.id, requestId));
+
+    return NextResponse.json({
+      status: "success",
+      message: "Certificate payment callback processed successfully",
+    });
+  } catch (error: any) {
+    console.error("[Certificate Callback API] Error:", error);
+    return NextResponse.json(
+      {
+        status: "error",
+        message: "Something went wrong while processing certificate callback.",
+      },
+      { status: 500 },
+    );
+  }
+}
