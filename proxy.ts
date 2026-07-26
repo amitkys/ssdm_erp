@@ -13,6 +13,7 @@ const adminRoutes = [
   "/admission-open",
   "/fee-collection",
   "/tender",
+  "/certificate-requests",
 ];
 
 // Student-only route prefixes
@@ -28,10 +29,13 @@ const publicRoutes = [
   "/api/dev/insert-old-students",
   "/api/upload",
   "/api/payments",
+  "/api/certificate-payments",
   "/auth/signin",
   "/admission",
   "/examination",
   "/payment-success",
+  "/certificate-payment-success",
+  "/student/certificates/mock-checkout",
   "/gallery",
   "/infrastructure",
   "/student-zone",

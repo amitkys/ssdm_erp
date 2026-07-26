@@ -1,9 +1,48 @@
+import {
+  dehydrate,
+  HydrationBoundary,
+  QueryClient,
+} from "@tanstack/react-query";
+import { headers } from "next/headers";
+import { redirect } from "next/navigation";
 import { ContentLayout } from "@/components/content-layout";
+import { auth } from "@/lib/auth";
+import { CertificatePageContent } from "./_components/certificate-page-content";
+import {
+  getCertificateTypesQuery,
+  getStudentCertificateRequestsQuery,
+} from "./query/get-certificate-data";
 
-export default function StudentCertificatesPage() {
+export default async function StudentCertificatesPage() {
+  const session = await auth.api.getSession({ headers: await headers() });
+
+  if (!session || session.user.role !== "student") {
+    redirect("/auth/signin");
+  }
+
+  const queryClient = new QueryClient();
+
+  await Promise.all([
+    queryClient.prefetchQuery(getCertificateTypesQuery()),
+    queryClient.prefetchQuery(getStudentCertificateRequestsQuery()),
+  ]);
+
   return (
     <ContentLayout title="Certificates">
-      <div>Certificates — coming soon</div>
+      <HydrationBoundary state={dehydrate(queryClient)}>
+        <div className="max-w-5xl mx-auto space-y-8 p-1 sm:p-4">
+          <div className="flex flex-col gap-1">
+            <h1 className="text-2xl font-black text-slate-800 tracking-tight">
+              Request Certificate
+            </h1>
+            <p className="text-sm text-slate-500 font-medium">
+              Request official college certificates, complete online fee payment,
+              and track administrative approval status.
+            </p>
+          </div>
+          <CertificatePageContent />
+        </div>
+      </HydrationBoundary>
     </ContentLayout>
   );
 }
