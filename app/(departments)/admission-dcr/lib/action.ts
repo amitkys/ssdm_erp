@@ -203,6 +203,7 @@ export async function getDCRReport(filters: DCRFilters = {}) {
         createdAt: StudentFeePaymentTable.createdAt,
         studentName: AdmittedStudentTable.name,
         uan: AdmittedStudentTable.UAN,
+        collegeRoll: AdmittedStudentTable.collegeRoll,
         courseName: courseTable.name,
         sessionName: academicSessionTable.name,
       })
@@ -230,6 +231,7 @@ export async function getDCRReport(filters: DCRFilters = {}) {
         createdAt: p.createdAt.toISOString(),
         studentName: p.studentName,
         uan: p.uan,
+        collegeRoll: p.collegeRoll,
         courseName: p.courseName,
         sessionName: p.sessionName,
       })),

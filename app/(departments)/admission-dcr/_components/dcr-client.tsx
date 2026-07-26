@@ -38,6 +38,7 @@ interface DCRRecord {
   createdAt: string;
   studentName: string;
   uan: string;
+  collegeRoll: string;
   courseName: string;
   sessionName: string;
 }
@@ -129,6 +130,7 @@ export default function DCRClient({
       "S.No",
       "Transaction ID",
       "Student Name",
+      "College Roll No.",
       "UAN Reference",
       "Course / Batch",
       "Payment Mode",
@@ -149,6 +151,7 @@ export default function DCRClient({
         i + 1,
         `"${p.transactionId}"`,
         `"${p.studentName.replace(/"/g, '""')}"`,
+        `"${p.collegeRoll || ""}"`,
         `"${p.uan}"`,
         `"${courseBatch.replace(/"/g, '""')}"`,
         `"${p.paymentMode}"`,
@@ -458,6 +461,7 @@ export default function DCRClient({
                   <th className="p-4 text-center w-12">S.No.</th>
                   <th className="p-4">Transaction ID</th>
                   <th className="p-4">Candidate Name</th>
+                  <th className="p-4 text-center">College Roll No.</th>
                   <th className="p-4 text-center">UAN Reference</th>
                   <th className="p-4">Course / Session</th>
                   <th className="p-4 text-center">Payment Mode</th>
@@ -487,6 +491,9 @@ export default function DCRClient({
                       </td>
                       <td className="p-4 text-slate-900 font-extrabold capitalize">
                         {p.studentName}
+                      </td>
+                      <td className="p-4 text-center font-mono select-all text-slate-800">
+                        {p.collegeRoll}
                       </td>
                       <td className="p-4 text-center font-mono select-all text-slate-800">
                         {p.uan}
@@ -519,7 +526,7 @@ export default function DCRClient({
                 <tr className="bg-slate-50 font-bold text-slate-900 border-t-2 border-slate-200">
                   <td
                     className="p-4 text-right pr-4 uppercase tracking-wider text-[9px]"
-                    colSpan={6}
+                    colSpan={7}
                   >
                     Total Collection in Range
                   </td>
