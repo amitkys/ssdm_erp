@@ -42,7 +42,7 @@ export const EnrolledStudentTable = pgTable(
     DOB: date(),
     admissionType: text(),
     subMJC: varchar({ length: 128 })
-      .references(() => subjectTable.id, { onDelete: "cascade" })
+      .references(() => subjectTable.id)
       .notNull(),
     subMIC: jsonb().$type<string[]>().default([]),
     subMDC: jsonb().$type<string[]>().default([]),
@@ -50,7 +50,7 @@ export const EnrolledStudentTable = pgTable(
     subSEC: jsonb().$type<string[]>().default([]),
     subVAC: jsonb().$type<string[]>().default([]),
     batchId: varchar({ length: 128 })
-      .references(() => batchTable.id, { onDelete: "cascade" })
+      .references(() => batchTable.id)
       .notNull(),
     isSubmitted: boolean().default(false),
     isFeePaid: boolean().default(false),
@@ -103,11 +103,11 @@ export const AdmittedStudentTable = pgTable(
     reservation: text(),
     isMinority: boolean().default(false),
     batchId: varchar({ length: 128 })
-      .references(() => batchTable.id, { onDelete: "cascade" })
+      .references(() => batchTable.id)
       .notNull(),
     currentSemesterCount: integer().notNull().default(1),
     subMJC: varchar({ length: 128 })
-      .references(() => subjectTable.id, { onDelete: "cascade" })
+      .references(() => subjectTable.id)
       .notNull(),
     subMIC: jsonb().$type<string[]>().default([]),
     subMDC: jsonb().$type<string[]>().default([]),
@@ -151,7 +151,7 @@ export const StudentPreviousAcademicRecordTable = pgTable(
       .primaryKey()
       .$defaultFn(() => createId()),
     studentId: varchar({ length: 128 })
-      .references(() => AdmittedStudentTable.id, { onDelete: "cascade" })
+      .references(() => AdmittedStudentTable.id)
       .notNull(),
 
     // Higher Secondary School Records
@@ -188,7 +188,7 @@ export const StudentDocumentsTable = pgTable("student_documents", {
     .primaryKey()
     .$defaultFn(() => createId()),
   studentId: varchar({ length: 128 })
-    .references(() => AdmittedStudentTable.id, { onDelete: "cascade" })
+    .references(() => AdmittedStudentTable.id)
     .notNull(),
   Aadhar: text(),
   cast: text(),
@@ -210,7 +210,7 @@ export const StudentFeePaymentTable = pgTable("student_fee_payment", {
     .primaryKey()
     .$defaultFn(() => createId()),
   studentId: varchar({ length: 128 })
-    .references(() => AdmittedStudentTable.id, { onDelete: "cascade" })
+    .references(() => AdmittedStudentTable.id)
     .notNull(),
   semesterCount: integer().notNull(),
   amount: integer().notNull().default(0),
@@ -229,7 +229,7 @@ export const StudentRemarkTable = pgTable(
       .primaryKey()
       .$defaultFn(() => createId()),
     studentId: varchar({ length: 128 })
-      .references(() => AdmittedStudentTable.id, { onDelete: "cascade" })
+      .references(() => AdmittedStudentTable.id)
       .notNull(),
     remarkBy: varchar({ length: 128 }).notNull(), // Admin/Super Admin User ID
     remarkType: varchar({ length: 30 }).notNull().default("Other"), // Academic, Attendance, Discipline, Other

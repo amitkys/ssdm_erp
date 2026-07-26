@@ -84,7 +84,7 @@ export const courseTable = pgTable(
     type: varchar({ length: 30 }).notNull().default("UG Regular"),
     description: text(),
     departmentId: varchar({ length: 128 })
-      .references(() => departmentTable.id, { onDelete: "cascade" })
+      .references(() => departmentTable.id)
       .notNull(),
     duration: integer().notNull().default(4),
     isActive: boolean().default(true),
@@ -105,10 +105,10 @@ export const batchTable = pgTable("batch", {
     .primaryKey()
     .$defaultFn(() => createId()),
   courseId: varchar({ length: 128 })
-    .references(() => courseTable.id, { onDelete: "cascade" })
+    .references(() => courseTable.id, )
     .notNull(),
   academicSessionId: varchar({ length: 128 })
-    .references(() => academicSessionTable.id, { onDelete: "cascade" })
+    .references(() => academicSessionTable.id )
     .notNull(),
   perSemesterFee: integer().notNull(),
   isActive: boolean().default(true),
@@ -122,7 +122,7 @@ export const admissionOpenTable = pgTable("admission_open", {
     .primaryKey()
     .$defaultFn(() => createId()),
   batchId: varchar({ length: 128 })
-    .references(() => batchTable.id, { onDelete: "cascade" })
+    .references(() => batchTable.id)
     .notNull(),
   startDate: date().notNull(),
   endDate: date().notNull(),
@@ -139,7 +139,7 @@ export const semesterAdmissionOpenTable = pgTable("semester_admission_open", {
     .primaryKey()
     .$defaultFn(() => createId()),
   academicSessionId: varchar({ length: 128 })
-    .references(() => academicSessionTable.id, { onDelete: "cascade" })
+    .references(() => academicSessionTable.id)
     .notNull(),
   semesterCount: integer().notNull(),
   practicalFee: integer(),
