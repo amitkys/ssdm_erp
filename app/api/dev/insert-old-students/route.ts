@@ -201,7 +201,10 @@ export async function POST(req: Request) {
       with: { course: true },
     });
 
-    const batchInfoMap = new Map<string, { courseCode: string; perSemesterFee: number }>();
+    const batchInfoMap = new Map<
+      string,
+      { courseCode: string; perSemesterFee: number }
+    >();
     for (const batch of batchesWithCourse) {
       if (!batch.course) {
         return NextResponse.json(
@@ -232,130 +235,146 @@ export async function POST(req: Request) {
       const credentials: StudentCredential[] = [];
 
       if (onConflict === "ignore") {
-        const { result, insertedCount, ignoredCount, authResults } = await db.transaction(async (tx) => {
-          const allValues = [];
+        const { result, insertedCount, ignoredCount, authResults } =
+          await db.transaction(async (tx) => {
+            const allValues = [];
 
-          for (const [batchId, batchStudents] of studentsByBatch) {
-            const batchInfo = batchInfoMap.get(batchId)!;
+            for (const [batchId, batchStudents] of studentsByBatch) {
+              const batchInfo = batchInfoMap.get(batchId)!;
 
-            // Find the highest existing serial number in this batch
-            const [{ maxRoll }] = await tx
-              .select({ maxRoll: max(AdmittedStudentTable.collegeRoll) })
-              .from(AdmittedStudentTable)
-              .where(eq(AdmittedStudentTable.batchId, batchId));
+              // Find the highest existing serial number in this batch
+              const [{ maxRoll }] = await tx
+                .select({ maxRoll: max(AdmittedStudentTable.collegeRoll) })
+                .from(AdmittedStudentTable)
+                .where(eq(AdmittedStudentTable.batchId, batchId));
 
-            let lastSerial = 0;
-            if (maxRoll) {
-              lastSerial = parseInt(maxRoll.slice(-3), 10) || 0;
+              let lastSerial = 0;
+              if (maxRoll) {
+                lastSerial = parseInt(maxRoll.slice(-3), 10) || 0;
+              }
+
+              for (let i = 0; i < batchStudents.length; i++) {
+                const s = batchStudents[i];
+                const serialNumber = (lastSerial + i + 1)
+                  .toString()
+                  .padStart(3, "0");
+                const collegeRoll = `${OLD_YEAR}${batchInfo.courseCode}${serialNumber}`;
+
+                const email = generateStudentEmail(s.UAN);
+                const password = generateStudentPassword(s.name, s.UAN);
+
+                credentials.push({
+                  UAN: s.UAN,
+                  name: s.name,
+                  email,
+                  password,
+                  collegeRoll,
+                });
+
+                const rawUniqueNum = (s.universityRoll || s.UAN).replace(
+                  /[^0-9]/g,
+                  "",
+                );
+                const placeholderAadhar = rawUniqueNum
+                  .slice(-12)
+                  .padStart(12, "0");
+                const placeholderPhone = rawUniqueNum
+                  .slice(-10)
+                  .padStart(10, "0");
+
+                allValues.push({
+                  id: createId(),
+                  UAN: s.UAN,
+                  registrationNumber: s.registrationNumber,
+                  universityRoll: s.universityRoll,
+                  collegeRoll,
+                  admissionNumber: null,
+                  confidentialNumber: null,
+                  profileNumber: null,
+                  admissionType: s.admissionType,
+                  ABCID: null,
+                  name: s.name,
+                  avatar: "",
+                  DOB: "2000-01-01", // Placeholder — student will update
+                  AadharNumber: placeholderAadhar,
+                  phone: placeholderPhone,
+                  email, // UAN-based email for auth login
+                  gender: s.gender as any,
+                  fathersName: s.fathersName,
+                  mothersName: "", // Placeholder — student will update
+                  religion: "", // Placeholder — student will update
+                  caste: "GEN" as const, // Placeholder — student will update
+                  reservation: s.reservation,
+                  isMinority: false,
+                  batchId: s.batchId,
+                  currentSemesterCount: s.semester,
+                  subMJC: s.MJC,
+                  subMIC: [s.MJC], // Same as MJC
+                  subMDC: [s.MJC], // Same as MJC
+                  subAEC: [s.MJC], // Same as MJC
+                  subSEC: [s.MJC], // Same as MJC
+                  subVAC: [s.MJC], // Same as MJC
+                  city: "", // Placeholder — student will update
+                  district: "", // Placeholder — student will update
+                  state: "", // Placeholder — student will update
+                  pinCode: 0, // Placeholder — student will update
+                  isInternshipStarted: false,
+                  internshipFee: 0,
+                  isProfileCompleted: false, // Student must complete profile on first login
+                  isDetained: false,
+                  isPassed: false,
+                  isActive: true,
+                  detainRemark: "",
+                });
+              }
             }
 
-            for (let i = 0; i < batchStudents.length; i++) {
-              const s = batchStudents[i];
-              const serialNumber = (lastSerial + i + 1)
-                .toString()
-                .padStart(3, "0");
-              const collegeRoll = `${OLD_YEAR}${batchInfo.courseCode}${serialNumber}`;
-
-              const email = generateStudentEmail(s.UAN);
-              const password = generateStudentPassword(s.name, s.UAN);
-
-              credentials.push({
-                UAN: s.UAN,
-                name: s.name,
-                email,
-                password,
-                collegeRoll,
+            const insertedAdmittedStudents = await tx
+              .insert(AdmittedStudentTable)
+              .values(allValues)
+              .onConflictDoNothing()
+              .returning({
+                id: AdmittedStudentTable.id,
+                UAN: AdmittedStudentTable.UAN,
               });
 
-              const rawUniqueNum = (s.universityRoll || s.UAN).replace(/[^0-9]/g, "");
-              const placeholderAadhar = rawUniqueNum.slice(-12).padStart(12, "0");
-              const placeholderPhone = rawUniqueNum.slice(-10).padStart(10, "0");
+            const insertedCount = insertedAdmittedStudents.length;
+            const ignoredCount = allValues.length - insertedCount;
 
-              allValues.push({
-                id: createId(),
-                UAN: s.UAN,
-                registrationNumber: s.registrationNumber,
-                universityRoll: s.universityRoll,
-                collegeRoll,
-                admissionNumber: null,
-                confidentialNumber: null,
-                profileNumber: null,
-                admissionType: s.admissionType,
-                ABCID: null,
-                name: s.name,
-                avatar: "",
-                DOB: "2000-01-01", // Placeholder — student will update
-                AadharNumber: placeholderAadhar,
-                phone: placeholderPhone,
-                email, // UAN-based email for auth login
-                gender: s.gender as any,
-                fathersName: s.fathersName,
-                mothersName: "", // Placeholder — student will update
-                religion: "", // Placeholder — student will update
-                caste: "GEN" as const, // Placeholder — student will update
-                reservation: s.reservation,
-                isMinority: false,
-                batchId: s.batchId,
-                currentSemesterCount: s.semester,
-                subMJC: s.MJC,
-                subMIC: [s.MJC], // Same as MJC
-                subMDC: [s.MJC], // Same as MJC
-                subAEC: [s.MJC], // Same as MJC
-                subSEC: [s.MJC], // Same as MJC
-                subVAC: [s.MJC], // Same as MJC
-                city: "", // Placeholder — student will update
-                district: "", // Placeholder — student will update
-                state: "", // Placeholder — student will update
-                pinCode: 0, // Placeholder — student will update
-                isInternshipStarted: false,
-                internshipFee: 0,
-                isProfileCompleted: false, // Student must complete profile on first login
-                isDetained: false,
-                isPassed: false,
-                isActive: true,
-                detainRemark: "",
-              });
-            }
-          }
+            // Insert successful payment records for successfully inserted students
+            // const paymentsToInsert = [];
+            // const insertedUanMap = new Map(insertedAdmittedStudents.map((r) => [r.UAN, r.id]));
 
-          const insertedAdmittedStudents = await tx
-            .insert(AdmittedStudentTable)
-            .values(allValues)
-            .onConflictDoNothing()
-            .returning({ id: AdmittedStudentTable.id, UAN: AdmittedStudentTable.UAN });
+            // for (const s of students) {
+            //   const studentId = insertedUanMap.get(s.UAN);
+            //   if (studentId) {
+            //     const batchInfo = batchInfoMap.get(s.batchId)!;
+            //     paymentsToInsert.push({
+            //       id: createId(),
+            //       studentId: studentId,
+            //       semesterCount: s.semester,
+            //       amount: batchInfo.perSemesterFee,
+            //       paymentMode: "OFFLINE",
+            //       transactionId: `LEGACY_${s.UAN}`,
+            //       status: "Success",
+            //     });
+            //   }
+            // }
 
-          const insertedCount = insertedAdmittedStudents.length;
-          const ignoredCount = allValues.length - insertedCount;
+            // if (paymentsToInsert.length > 0) {
+            //   await tx.insert(StudentFeePaymentTable).values(paymentsToInsert);
+            // }
 
-          // Insert successful payment records for successfully inserted students
-          // const paymentsToInsert = [];
-          // const insertedUanMap = new Map(insertedAdmittedStudents.map((r) => [r.UAN, r.id]));
+            // Create Better Auth user accounts for all inserted students
+            const authResults = await createAuthAccounts(credentials);
 
-          // for (const s of students) {
-          //   const studentId = insertedUanMap.get(s.UAN);
-          //   if (studentId) {
-          //     const batchInfo = batchInfoMap.get(s.batchId)!;
-          //     paymentsToInsert.push({
-          //       id: createId(),
-          //       studentId: studentId,
-          //       semesterCount: s.semester,
-          //       amount: batchInfo.perSemesterFee,
-          //       paymentMode: "OFFLINE",
-          //       transactionId: `LEGACY_${s.UAN}`,
-          //       status: "Success",
-          //     });
-          //   }
-          // }
-
-          // if (paymentsToInsert.length > 0) {
-          //   await tx.insert(StudentFeePaymentTable).values(paymentsToInsert);
-          // }
-
-          // Create Better Auth user accounts for all inserted students
-          const authResults = await createAuthAccounts(credentials);
-
-          return { result: insertedAdmittedStudents, insertedCount, ignoredCount, authResults };
-        });
+            return {
+              result: insertedAdmittedStudents,
+              insertedCount,
+              ignoredCount,
+              authResults,
+            };
+          });
 
         return NextResponse.json({
           success: true,
@@ -410,7 +429,10 @@ export async function POST(req: Request) {
               collegeRoll,
             });
 
-            const rawUniqueNum = (s.universityRoll || s.UAN).replace(/[^0-9]/g, "");
+            const rawUniqueNum = (s.universityRoll || s.UAN).replace(
+              /[^0-9]/g,
+              "",
+            );
             const placeholderAadhar = rawUniqueNum.slice(-12).padStart(12, "0");
             const placeholderPhone = rawUniqueNum.slice(-10).padStart(10, "0");
 
@@ -464,7 +486,10 @@ export async function POST(req: Request) {
         const insertedAdmittedStudents = await tx
           .insert(AdmittedStudentTable)
           .values(allValues)
-          .returning({ id: AdmittedStudentTable.id, UAN: AdmittedStudentTable.UAN });
+          .returning({
+            id: AdmittedStudentTable.id,
+            UAN: AdmittedStudentTable.UAN,
+          });
 
         // Insert successful payment records for all inserted students
         // const paymentsToInsert = [];
@@ -605,10 +630,7 @@ async function createAuthAccounts(
       });
       created++;
     } catch (error) {
-      console.error(
-        `[Auth Account Creation] Failed for ${cred.UAN}:`,
-        error,
-      );
+      console.error(`[Auth Account Creation] Failed for ${cred.UAN}:`, error);
       skipped++;
     }
   }

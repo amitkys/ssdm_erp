@@ -16,7 +16,10 @@ export async function verifySecretCode(code: string) {
   try {
     const secret = process.env.MISC_PAYMENT_SECRET_CODE;
     if (!secret) {
-      return { success: false, message: "Secret code not configured on server" };
+      return {
+        success: false,
+        message: "Secret code not configured on server",
+      };
     }
     if (code !== secret) {
       return { success: false, message: "Invalid secret code" };
@@ -43,9 +46,7 @@ async function generateInvoiceNumber(): Promise<string> {
       maxInvoice: sql<string>`MAX(${miscellaneousPaymentTable.invoiceNumber})`,
     })
     .from(miscellaneousPaymentTable)
-    .where(
-      ilike(miscellaneousPaymentTable.invoiceNumber, `${prefix}%`),
-    );
+    .where(ilike(miscellaneousPaymentTable.invoiceNumber, `${prefix}%`));
 
   let nextSerial = 1;
   if (result?.maxInvoice) {

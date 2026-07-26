@@ -18,7 +18,9 @@ async function main() {
     const subjects = await db.select().from(subjectTable);
 
     if (batches.length === 0 || subjects.length === 0) {
-      console.error("❌ Pre-requisites not met. Please seed departments and batches first.");
+      console.error(
+        "❌ Pre-requisites not met. Please seed departments and batches first.",
+      );
       process.exit(1);
     }
 
@@ -32,8 +34,9 @@ async function main() {
     const paymentsToInsert = [];
 
     // Helper to pick random element
-    const pickRandom = <T>(arr: T[]): T => arr[Math.floor(Math.random() * arr.length)];
-    const mjcSubjects = subjects.filter(s => s.code.includes("MJC"));
+    const pickRandom = <T>(arr: T[]): T =>
+      arr[Math.floor(Math.random() * arr.length)];
+    const mjcSubjects = subjects.filter((s) => s.code.includes("MJC"));
 
     // We will generate 12 admitted students
     for (let i = 0; i < 12; i++) {
@@ -56,7 +59,10 @@ async function main() {
         ABCID: `ABC-${faker.string.numeric(12)}`,
         name: faker.person.fullName(),
         avatar: "",
-        DOB: faker.date.birthdate({ min: 18, max: 24, mode: "age" }).toISOString().split("T")[0],
+        DOB: faker.date
+          .birthdate({ min: 18, max: 24, mode: "age" })
+          .toISOString()
+          .split("T")[0],
         AadharNumber: faker.string.numeric(12),
         phone: faker.string.numeric(10),
         email: faker.internet.email().toLowerCase(),
@@ -82,7 +88,7 @@ async function main() {
       // i = 9: Payment made today (Pending) - should not appear in success collections
       // i = 10: Payment made today (Failed) - should not appear in success collections
       // i = 11: Payment made 5 days ago (Success, Semester 1)
-      
+
       let payDate = new Date();
       let semesterCount = 1;
       let status = "Success";
@@ -90,9 +96,17 @@ async function main() {
       let paymentMode = pickRandom(["UPI", "Card", "Net Banking"]);
 
       if (i >= 3 && i <= 5) {
-        payDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 3);
+        payDate = new Date(
+          now.getFullYear(),
+          now.getMonth(),
+          now.getDate() - 3,
+        );
       } else if (i === 6 || i === 7) {
-        payDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 40);
+        payDate = new Date(
+          now.getFullYear(),
+          now.getMonth(),
+          now.getDate() - 40,
+        );
       } else if (i === 8) {
         semesterCount = 2; // Semester 2
       } else if (i === 9) {
@@ -100,7 +114,11 @@ async function main() {
       } else if (i === 10) {
         status = "Failed";
       } else if (i === 11) {
-        payDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 5);
+        payDate = new Date(
+          now.getFullYear(),
+          now.getMonth(),
+          now.getDate() - 5,
+        );
       }
 
       paymentsToInsert.push({
@@ -122,9 +140,13 @@ async function main() {
 
     // Insert Payments
     await db.insert(StudentFeePaymentTable).values(paymentsToInsert);
-    console.log(`✅ Seeded ${paymentsToInsert.length} mock payment transactions.`);
+    console.log(
+      `✅ Seeded ${paymentsToInsert.length} mock payment transactions.`,
+    );
 
-    console.log("🎉 Seeding complete! You can now verify the Admission DCR dashboard.");
+    console.log(
+      "🎉 Seeding complete! You can now verify the Admission DCR dashboard.",
+    );
     process.exit(0);
   } catch (error) {
     console.error("❌ Seeding failed:", error);

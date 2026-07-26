@@ -63,31 +63,27 @@
 // [//   ],
 // );
 
-
-
-
 // {
 //   UAN:
-//   registrationNumber: 
+//   registrationNumber:
 //   subMJC:
-//   batchId: 
-//   caste: 
-//   name: 
-//   email: 
-//   phone: 
-//   gender: 
-//   reservation: 
-//   aadharNumber: 
-//   fathersName: 
-//   mothersName: 
-//   DOB: 
+//   batchId:
+//   caste:
+//   name:
+//   email:
+//   phone:
+//   gender:
+//   reservation:
+//   aadharNumber:
+//   fathersName:
+//   mothersName:
+//   DOB:
 //   subMIC:
 //   subMDC:
 //   subAEC:
 //   subVAC:
 //   subSEC:
 // }
-
 
 // [
 //   {

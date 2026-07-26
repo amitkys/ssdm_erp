@@ -6,10 +6,7 @@ import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { AdmittedStudentTable, subjectTable } from "@/lib/db/schema";
 import { user } from "@/lib/db/schema/auth-schema";
-import {
-  completeProfileSchema,
-  type CompleteProfileSchema,
-} from "./zod-type";
+import { completeProfileSchema, type CompleteProfileSchema } from "./zod-type";
 
 /**
  * Find the admitted student record for the currently authenticated user.
@@ -78,20 +75,30 @@ export async function fetchIncompleteProfile() {
         // Fields the student needs to fill in (may have placeholder values)
         DOB: student.DOB === "2000-01-01" ? "" : student.DOB,
         AadharNumber: (() => {
-          const rawUniqueNum = (student.universityRoll || student.UAN).replace(/[^0-9]/g, "");
+          const rawUniqueNum = (student.universityRoll || student.UAN).replace(
+            /[^0-9]/g,
+            "",
+          );
           const placeholderAadhar = rawUniqueNum.slice(-12).padStart(12, "0");
-          return student.AadharNumber === placeholderAadhar || student.AadharNumber === "000000000000"
+          return student.AadharNumber === placeholderAadhar ||
+            student.AadharNumber === "000000000000"
             ? ""
             : student.AadharNumber;
         })(),
         phone: (() => {
-          const rawUniqueNum = (student.universityRoll || student.UAN).replace(/[^0-9]/g, "");
+          const rawUniqueNum = (student.universityRoll || student.UAN).replace(
+            /[^0-9]/g,
+            "",
+          );
           const placeholderPhone = rawUniqueNum.slice(-10).padStart(10, "0");
-          return student.phone === placeholderPhone || student.phone === "0000000000"
+          return student.phone === placeholderPhone ||
+            student.phone === "0000000000"
             ? ""
             : student.phone;
         })(),
-        personalEmail: student.email.endsWith("@student.ssdm.local") ? "" : student.email,
+        personalEmail: student.email.endsWith("@student.ssdm.local")
+          ? ""
+          : student.email,
         gender: student.gender || "",
         mothersName: student.mothersName || "",
         religion: student.religion || "",
@@ -119,10 +126,7 @@ export async function fetchIncompleteProfile() {
     };
   } catch (error) {
     console.error("[fetchIncompleteProfile] Error:", error);
-    return {
-      success: false as const,
-      message: "Failed to fetch profile data",
-    };
+    return { success: false as const, message: "Failed to fetch profile data" };
   }
 }
 
@@ -149,7 +153,8 @@ export async function completeStudentProfile(payload: CompleteProfileSchema) {
     if (student.isProfileCompleted) {
       return {
         success: false as const,
-        message: "Profile has already been completed. No further edits allowed.",
+        message:
+          "Profile has already been completed. No further edits allowed.",
       };
     }
 

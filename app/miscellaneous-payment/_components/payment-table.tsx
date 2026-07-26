@@ -38,7 +38,12 @@ interface PaymentTableProps {
 export function PaymentTable({ onPrintReceipt }: PaymentTableProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
-  const { data: payments, isPending, isError, error } = useGetMiscPayments(debouncedSearch);
+  const {
+    data: payments,
+    isPending,
+    isError,
+    error,
+  } = useGetMiscPayments(debouncedSearch);
 
   // Simple debounce with timeout
   const handleSearchChange = (value: string) => {
@@ -96,8 +101,12 @@ export function PaymentTable({ onPrintReceipt }: PaymentTableProps) {
                   <TableHead>Name</TableHead>
                   <TableHead>Amount (₹)</TableHead>
                   <TableHead className="hidden md:table-cell">Reason</TableHead>
-                  <TableHead className="hidden lg:table-cell">Address</TableHead>
-                  <TableHead className="hidden lg:table-cell">Purpose</TableHead>
+                  <TableHead className="hidden lg:table-cell">
+                    Address
+                  </TableHead>
+                  <TableHead className="hidden lg:table-cell">
+                    Purpose
+                  </TableHead>
                   <TableHead>Date</TableHead>
                   <TableHead className="text-right">Action</TableHead>
                 </TableRow>
@@ -109,7 +118,9 @@ export function PaymentTable({ onPrintReceipt }: PaymentTableProps) {
                       {payment.invoiceNumber}
                     </TableCell>
                     <TableCell>{payment.name}</TableCell>
-                    <TableCell>₹{payment.amount.toLocaleString("en-IN")}</TableCell>
+                    <TableCell>
+                      ₹{payment.amount.toLocaleString("en-IN")}
+                    </TableCell>
                     <TableCell className="hidden md:table-cell max-w-[200px] truncate">
                       {payment.reason}
                     </TableCell>
