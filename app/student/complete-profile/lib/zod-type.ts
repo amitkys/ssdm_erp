@@ -47,10 +47,10 @@ export const completeProfileSchema = z.object({
 
   // Academic Details
   subMIC: z.string().min(1, "Minor Subject (MIC) is required"),
-  subMDC: z.string().min(1, "Multidisciplinary Course (MDC) is required"),
-  subAEC: z.string().min(1, "Ability Enhancement Course (AEC) is required"),
-  subSEC: z.string().min(1, "Skill Enhancement Course (SEC) is required"),
-  subVAC: z.string().min(1, "Value Added Course (VAC) is required"),
+  subMDC: z.string().optional(),
+  subAEC: z.string().optional(),
+  subSEC: z.string().optional(),
+  subVAC: z.string().optional(),
 });
 
 export type CompleteProfileSchema = z.infer<typeof completeProfileSchema>;

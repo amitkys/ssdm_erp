@@ -184,11 +184,11 @@ export async function completeStudentProfile(payload: CompleteProfileSchema) {
           state: data.state,
           pinCode: parseInt(data.pinCode, 10),
           // Academic Details as arrays
-          subMIC: [data.subMIC],
-          subMDC: [data.subMDC],
-          subAEC: [data.subAEC],
-          subSEC: [data.subSEC],
-          subVAC: [data.subVAC],
+          subMIC: data.subMIC ? [data.subMIC] : [],
+          subMDC: data.subMDC ? [data.subMDC] : [],
+          subAEC: data.subAEC ? [data.subAEC] : [],
+          subSEC: data.subSEC ? [data.subSEC] : [],
+          subVAC: data.subVAC ? [data.subVAC] : [],
           isProfileCompleted: true,
           updatedAt: new Date(),
         })
