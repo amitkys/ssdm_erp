@@ -7,8 +7,8 @@ import { db } from "@/lib/db";
 import {
   AdmittedStudentTable,
   batchTable,
-  subjectTable,
   StudentFeePaymentTable,
+  subjectTable,
 } from "@/lib/db/schema";
 import { user } from "@/lib/db/schema/auth-schema";
 
@@ -231,7 +231,7 @@ export async function POST(req: Request) {
 
     // 7. Database insertion inside transaction to ensure atomic student + fee payment creation
     try {
-      const OLD_YEAR = "23"; // Hardcoded year for old students
+      const OLD_YEAR = "25"; // Hardcoded year for old students
       const credentials: StudentCredential[] = [];
 
       if (onConflict === "ignore") {
