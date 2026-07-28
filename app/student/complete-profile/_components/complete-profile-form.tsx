@@ -381,7 +381,7 @@ export function CompleteProfileForm({
               </SelectContent>
             </Select>
           </FormField>
-          <div className="hidden">
+          {/* <div className=""> */}
             <FormField
               label="Multidisciplinary Course (MDC)"
               error={form.formState.errors.subMDC?.message}
@@ -473,7 +473,7 @@ export function CompleteProfileForm({
                 </SelectContent>
               </Select>
             </FormField>
-          </div>
+          {/* </div> */}
 
         </div>
       </div>
