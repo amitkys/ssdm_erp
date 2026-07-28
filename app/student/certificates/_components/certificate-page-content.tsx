@@ -236,11 +236,13 @@ export function CertificatePageContent() {
                   <SelectValue placeholder="Choose certificate type..." />
                 </SelectTrigger>
                 <SelectContent>
-                  {certificateTypes?.map((meta) => (
-                    <SelectItem key={meta.id} value={meta.id} className="text-xs">
-                      {getLabelForType(meta)}
-                    </SelectItem>
-                  ))}
+                  {certificateTypes
+                    ?.filter((meta) => meta.certificate_type !== "CHARACTER")
+                    .map((meta) => (
+                      <SelectItem key={meta.id} value={meta.id} className="text-xs">
+                        {getLabelForType(meta)}
+                      </SelectItem>
+                    ))}
                 </SelectContent>
               </Select>
             </div>
@@ -373,6 +375,9 @@ export function CertificatePageContent() {
                 <TableHeader>
                   <TableRow className="bg-slate-50/60 dark:bg-slate-800/50">
                     <TableHead className="font-bold text-xs text-slate-700 dark:text-slate-300">
+                      Certificate No.
+                    </TableHead>
+                    <TableHead className="font-bold text-xs text-slate-700 dark:text-slate-300">
                       Certificate Type
                     </TableHead>
                     <TableHead className="font-bold text-xs text-slate-700 dark:text-slate-300">
@@ -401,6 +406,9 @@ export function CertificatePageContent() {
 
                     return (
                       <TableRow key={req.id}>
+                        <TableCell className="font-mono text-xs font-bold text-slate-700 dark:text-slate-200">
+                          {req.certificate_No || "—"}
+                        </TableCell>
                         <TableCell className="font-bold text-xs text-slate-800 dark:text-slate-100">
                           {req.certificate_type === "CLC"
                             ? "CLC + CHARACTER"

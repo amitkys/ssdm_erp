@@ -1,6 +1,6 @@
 "use server";
 
-import { and, eq, ilike, inArray, or } from "drizzle-orm";
+import { and, eq, ilike, inArray, isNotNull, or } from "drizzle-orm";
 import { headers } from "next/headers";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
@@ -89,6 +89,17 @@ export async function approveCertificateRequest(params: {
 
     const existing = await db.query.CertificateRequestTable.findFirst({
       where: eq(CertificateRequestTable.id, requestId),
+      with: {
+        student: {
+          with: {
+            batch: {
+              with: {
+                academicSession: true,
+              },
+            },
+          },
+        },
+      },
     });
 
     if (!existing) {
@@ -102,17 +113,94 @@ export async function approveCertificateRequest(params: {
       };
     }
 
+    // Generate certificate_No if not already generated
+    let certNo = existing.certificate_No;
+    if (!certNo) {
+      const certType = existing.certificate_type || "CLC";
+      const targetTypes =
+        certType === "CLC" || certType === "CHARACTER"
+          ? ["CLC", "CHARACTER"]
+          : ["BONAFIDE"];
+
+      const lastApproved = await db.query.CertificateRequestTable.findFirst({
+        where: and(
+          eq(CertificateRequestTable.status, "APPROVED"),
+          inArray(CertificateRequestTable.certificate_type, targetTypes),
+          isNotNull(CertificateRequestTable.certificate_No),
+        ),
+        orderBy: (table, { desc }) => [
+          desc(table.updatedAt),
+          desc(table.createdAt),
+        ],
+      });
+
+      // Derive 4-digit session code from student's academicSession name (e.g. "2026-2030" -> "2630")
+      const sessionName = (existing as any).student?.batch?.academicSession?.name;
+      let sessionCode = "";
+      if (sessionName && sessionName.includes("-")) {
+        const parts = sessionName.split("-").map((s: string) => s.trim());
+        if (parts.length >= 2) {
+          sessionCode = `${parts[0].slice(-2)}${parts[1].slice(-2)}`;
+        }
+      }
+
+      if (!sessionCode) {
+        const curr = new Date().getFullYear();
+        sessionCode = `${String(curr).slice(-2)}${String(curr + 4).slice(-2)}`;
+      }
+
+      let lastSerial = 0;
+      if (lastApproved?.certificate_No) {
+        const parts = lastApproved.certificate_No.split("/");
+        const lastPart = parts[parts.length - 1]; // e.g. "26300001"
+        if (lastPart.startsWith(sessionCode)) {
+          const serialStr = lastPart.slice(sessionCode.length);
+          const parsed = parseInt(serialStr, 10);
+          if (!isNaN(parsed)) {
+            lastSerial = parsed;
+          }
+        }
+      }
+
+      let nextSerialNum = lastSerial + 1;
+      const codePrefix = certType === "BONAFIDE" ? "SSDMBON" : "SSDMCLC";
+
+      // Loop to guarantee unique certificate_No
+      let candidateCertNo = "";
+      let isUnique = false;
+      let attempts = 0;
+
+      while (!isUnique && attempts < 50) {
+        const formattedSerial = nextSerialNum.toString().padStart(4, "0");
+        candidateCertNo = `${codePrefix}/${sessionCode}${formattedSerial}`;
+
+        const existingCertNo = await db.query.CertificateRequestTable.findFirst({
+          where: eq(CertificateRequestTable.certificate_No, candidateCertNo),
+        });
+
+        if (!existingCertNo) {
+          isUnique = true;
+        } else {
+          nextSerialNum++;
+          attempts++;
+        }
+      }
+
+      certNo = candidateCertNo;
+    }
+
     await db
       .update(CertificateRequestTable)
       .set({
         status: "APPROVED",
         division: division.trim(),
         behaviour: behaviour.trim(),
+        certificate_No: certNo,
         updatedAt: new Date(),
       })
       .where(eq(CertificateRequestTable.id, requestId));
 
-    return { success: true };
+    return { success: true, certificate_No: certNo };
   } catch (error) {
     console.error("[approveCertificateRequest] Error:", error);
     return {

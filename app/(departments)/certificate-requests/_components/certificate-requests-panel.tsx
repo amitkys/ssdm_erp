@@ -106,6 +106,7 @@ export function CertificateRequestsPanel() {
               <Table>
                 <TableHeader>
                   <TableRow className="bg-slate-50/50 dark:bg-slate-900/50">
+                    <TableHead className="font-bold">Certificate No.</TableHead>
                     <TableHead className="font-bold">Student Name</TableHead>
                     <TableHead className="font-bold">College Roll</TableHead>
                     <TableHead className="font-bold">Certificate Type</TableHead>
@@ -118,6 +119,9 @@ export function CertificateRequestsPanel() {
                 <TableBody>
                   {requests.map((req: any) => (
                     <TableRow key={req.id}>
+                      <TableCell className="font-mono text-xs font-bold text-slate-700 dark:text-slate-200">
+                        {req.certificate_No || "—"}
+                      </TableCell>
                       <TableCell className="font-bold text-slate-800 dark:text-slate-100">
                         {req.student?.name || "N/A"}
                       </TableCell>

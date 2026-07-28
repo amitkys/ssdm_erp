@@ -147,8 +147,19 @@ export async function GET(
       completionY = String(startYr + duration);
     }
 
+    let displayCertNo =
+      request.certificate_No ||
+      `SSDM${effectiveType}/${request.id.slice(-6).toUpperCase()}`;
+    if (effectiveType === "CHARACTER") {
+      if (displayCertNo.includes("SSDMCLC")) {
+        displayCertNo = displayCertNo.replace("SSDMCLC", "SSDMCHAR");
+      } else if (displayCertNo.includes("/CLC/")) {
+        displayCertNo = displayCertNo.replace("/CLC/", "/CHAR/");
+      }
+    }
+
     const data = {
-      certificateNo: `SSDM/${effectiveType}/${request.id.slice(-6).toUpperCase()}`,
+      certificateNo: displayCertNo,
       name: student?.name || "",
       fatherName: student?.fathersName || "",
       motherName: student?.mothersName || "",
@@ -230,7 +241,7 @@ export async function GET(
   </div>
   <div class="page">
     <div class="logo-row">${logoImgTag()}</div>
-    <p class="en">Sant Sandhya Das Mahila College</p>
+    <p class="en">Sant Sandhyadas Mahila College</p>
     <p class="addr">Barh, Patna - 803213, Bihar</p>
     <p class="affil">(Affiliated to Patliputra University, Patna)</p>
 
@@ -345,7 +356,7 @@ export async function GET(
       <div class="logo-row">
         ${logoImgTag()}
       </div>
-      <p class="en">Sant Sandhya Das Mahila College</p>
+      <p class="en">Sant Sandhyadas Mahila College</p>
       <p class="addr">Barh, Patna - 803213, Bihar</p>
       <p class="affil">(Affiliated to Patliputra University, Patna)</p>
 
@@ -468,7 +479,7 @@ export async function GET(
         ${logoImgTag('seal-logo')}
       </div>
       <div class="head-mid">
-        <p class="main">SANT SANDHYA DAS MAHILA COLLEGE</p>
+        <p class="main">SANT SANDHYADAS MAHILA COLLEGE</p>
         <p class="sub">BARH, PATNA</p>
       </div>
       <div class="code">COLLEGE CODE : 435</div>
