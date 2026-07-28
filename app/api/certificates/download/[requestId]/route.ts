@@ -220,6 +220,7 @@ export async function GET(
       text-align: center; font-weight: 700; font-size: 13.5pt; margin: 7mm 0 5mm;
       text-decoration: underline; text-transform: uppercase; letter-spacing: 0.03em;
     }
+    .bold {font-weight: bold;}
     .meta-row { display: flex; justify-content: space-between; font-size: 12.5pt; margin-bottom: 5mm; }
     .body { text-align: justify; font-size: 13pt; line-height: 1.85; }
     .field-val {
@@ -249,7 +250,7 @@ export async function GET(
     <br>
 
     <div class="meta-row">
-      <span>Certificate No.:- ${escapeHtml(data.certificateNo)}</span>
+      <span>Certificate No.:- <b>${escapeHtml(data.certificateNo)}</b></span>
       <span>Date :- ${escapeHtml(dateStr)}</span>
     </div>
     <br>
@@ -365,7 +366,7 @@ export async function GET(
       <br>
 
       <div class="meta-row">
-        <span>Certificate No.:- ${escapeHtml(data.certificateNo)}</span>
+        <span>Certificate No.:- <b>${escapeHtml(data.certificateNo)}</b></span>
         <span>Date :- ${escapeHtml(dateStr)}</span>
       </div>
 
@@ -490,7 +491,7 @@ export async function GET(
     <br>
     <br>
     <div class="meta-row">
-      <span>Ref no ${dottedVal(data.certificateNo)}</span>
+      <span>Ref no <b>${dottedVal(data.certificateNo)}</b></span>
       <span>Date: ${dottedVal(dateStr)}</span>
     </div>
     <br>
