@@ -101,6 +101,8 @@ export function CompleteProfileForm({
     },
   });
 
+  const isSemSeven = student.currentSemesterCount === 7;
+
   const onSubmit = async (data: CompleteProfileSchema) => {
     setIsSubmitting(true);
     try {
@@ -381,99 +383,101 @@ export function CompleteProfileForm({
               </SelectContent>
             </Select>
           </FormField>
-          <div className="hidden">
-            <FormField
-              label="Multidisciplinary Course (MDC)"
-              error={form.formState.errors.subMDC?.message}
-            >
-              <Select
-                value={form.watch("subMDC") || ""}
-                onValueChange={(val) =>
-                  form.setValue("subMDC", val, { shouldValidate: true })
-                }
+          {!isSemSeven && (
+            <>
+              <FormField
+                label="Multidisciplinary Course (MDC)"
+                error={form.formState.errors.subMDC?.message}
               >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Select Multidisciplinary Course" />
-                </SelectTrigger>
-                <SelectContent>
-                  {subjects.map((subj) => (
-                    <SelectItem key={subj.id} value={subj.id}>
-                      {subj.name} ({subj.code})
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </FormField>
+                <Select
+                  value={form.watch("subMDC") || ""}
+                  onValueChange={(val) =>
+                    form.setValue("subMDC", val, { shouldValidate: true })
+                  }
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select Multidisciplinary Course" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {subjects.map((subj) => (
+                      <SelectItem key={subj.id} value={subj.id}>
+                        {subj.name} ({subj.code})
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </FormField>
 
-            <FormField
-              label="Ability Enhancement Course (AEC)"
-              error={form.formState.errors.subAEC?.message}
-            >
-              <Select
-                value={form.watch("subAEC") || ""}
-                onValueChange={(val) =>
-                  form.setValue("subAEC", val, { shouldValidate: true })
-                }
+              <FormField
+                label="Ability Enhancement Course (AEC)"
+                error={form.formState.errors.subAEC?.message}
               >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Select Ability Enhancement Course" />
-                </SelectTrigger>
-                <SelectContent>
-                  {subjects.map((subj) => (
-                    <SelectItem key={subj.id} value={subj.id}>
-                      {subj.name} ({subj.code})
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </FormField>
+                <Select
+                  value={form.watch("subAEC") || ""}
+                  onValueChange={(val) =>
+                    form.setValue("subAEC", val, { shouldValidate: true })
+                  }
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select Ability Enhancement Course" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {subjects.map((subj) => (
+                      <SelectItem key={subj.id} value={subj.id}>
+                        {subj.name} ({subj.code})
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </FormField>
 
-            <FormField
-              label="Skill Enhancement Course (SEC)"
-              error={form.formState.errors.subSEC?.message}
-            >
-              <Select
-                value={form.watch("subSEC") || ""}
-                onValueChange={(val) =>
-                  form.setValue("subSEC", val, { shouldValidate: true })
-                }
+              <FormField
+                label="Skill Enhancement Course (SEC)"
+                error={form.formState.errors.subSEC?.message}
               >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Select Skill Enhancement Course" />
-                </SelectTrigger>
-                <SelectContent>
-                  {subjects.map((subj) => (
-                    <SelectItem key={subj.id} value={subj.id}>
-                      {subj.name} ({subj.code})
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </FormField>
+                <Select
+                  value={form.watch("subSEC") || ""}
+                  onValueChange={(val) =>
+                    form.setValue("subSEC", val, { shouldValidate: true })
+                  }
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select Skill Enhancement Course" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {subjects.map((subj) => (
+                      <SelectItem key={subj.id} value={subj.id}>
+                        {subj.name} ({subj.code})
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </FormField>
 
-            <FormField
-              label="Value Added Course (VAC)"
-              error={form.formState.errors.subVAC?.message}
-            >
-              <Select
-                value={form.watch("subVAC") || ""}
-                onValueChange={(val) =>
-                  form.setValue("subVAC", val, { shouldValidate: true })
-                }
+              <FormField
+                label="Value Added Course (VAC)"
+                error={form.formState.errors.subVAC?.message}
               >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Select Value Added Course" />
-                </SelectTrigger>
-                <SelectContent>
-                  {subjects.map((subj) => (
-                    <SelectItem key={subj.id} value={subj.id}>
-                      {subj.name} ({subj.code})
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </FormField>
-          </div>
+                <Select
+                  value={form.watch("subVAC") || ""}
+                  onValueChange={(val) =>
+                    form.setValue("subVAC", val, { shouldValidate: true })
+                  }
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select Value Added Course" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {subjects.map((subj) => (
+                      <SelectItem key={subj.id} value={subj.id}>
+                        {subj.name} ({subj.code})
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </FormField>
+            </>
+          )}
 
         </div>
       </div>
