@@ -44,6 +44,7 @@ export const CertificateRequestTable = pgTable(
       .references(() => CertificateMetaDataTable.id)
       .notNull(),
     certificate_type: text().notNull().default("CLC"), // 'CLC', 'CHARACTER', 'BONAFIDE'
+    certificate_No: text().unique(), // academic year + certificate type + college roll + serial no. (generated on admin approval)
     amount: integer(),
     transactionId: varchar({ length: 255 }),
     purpose: text().notNull(),
