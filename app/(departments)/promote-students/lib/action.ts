@@ -387,22 +387,21 @@ export async function updateStudentDetails(studentId: string, input: any) {
       }
     }
 
-    // Convert empty strings to null for unique-constrained columns
-    // PostgreSQL treats multiple '' as duplicates, but allows multiple NULLs
+    // Convert empty ABCID to null — the column is nullable + unique,
+    // so multiple empty strings would violate the unique constraint,
+    // but multiple NULLs are allowed by PostgreSQL.
     const sanitizedABCID = ABCID?.trim() || null;
-    const sanitizedAadharNumber = AadharNumber?.trim() || null;
-    const sanitizedEmail = email?.trim() || null;
 
     // Perform database update
     await db
       .update(AdmittedStudentTable)
       .set({
         name,
-        email: sanitizedEmail,
+        email,
         phone,
         gender,
         DOB,
-        AadharNumber: sanitizedAadharNumber,
+        AadharNumber,
         ABCID: sanitizedABCID,
         fathersName,
         mothersName,
