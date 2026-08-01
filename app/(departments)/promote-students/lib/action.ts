@@ -387,10 +387,11 @@ export async function updateStudentDetails(studentId: string, input: any) {
       }
     }
 
-    // Convert empty ABCID to null — the column is nullable + unique,
-    // so multiple empty strings would violate the unique constraint,
+    // Convert empty strings to null for nullable + unique columns.
+    // Multiple empty strings would violate the unique constraint,
     // but multiple NULLs are allowed by PostgreSQL.
     const sanitizedABCID = ABCID?.trim() || null;
+    const sanitizedUniversityRoll = universityRoll?.trim() || null;
 
     // Perform database update
     await db
@@ -409,7 +410,7 @@ export async function updateStudentDetails(studentId: string, input: any) {
         caste,
         admissionType,
         registrationNumber,
-        universityRoll,
+        universityRoll: sanitizedUniversityRoll,
         city,
         district,
         state,
