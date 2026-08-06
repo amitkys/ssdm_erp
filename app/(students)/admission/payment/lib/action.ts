@@ -1,3 +1,4 @@
+
 "use server";
 
 import { createId } from "@paralleldrive/cuid2";
@@ -501,6 +502,18 @@ export async function processPaymentReturn(responseCiphertext: string) {
 
     // Set paymentId to the actual database CUID
     paymentId = existingPayment.id;
+
+    // IDEMPOTENCY: Don't overwrite a successful payment
+    if (existingPayment.status === "Success") {
+      return {
+        success: true,
+        paymentId,
+        status: "Success",
+        amount: existingPayment.amount,
+        txnId: existingPayment.transactionId,
+        errorMessage: null,
+      };
+    }
 
     const isSuccess = txnStatus === "SUCCESS";
     const status = isSuccess ? "Success" : "Failed";

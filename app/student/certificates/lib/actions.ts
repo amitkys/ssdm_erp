@@ -252,7 +252,7 @@ export async function initiateCertificatePayment(requestId: string) {
     // Update request with generated transaction ID
     await db
       .update(CertificateRequestTable)
-      .set({ transactionId: txnId, updatedAt: new Date() })
+      .set({ transactionId: txnId, paymentStatus: "PENDING", updatedAt: new Date() })
       .where(eq(CertificateRequestTable.id, requestId));
 
     // Build return and callback URLs with requestId
@@ -552,6 +552,19 @@ export async function processCertificatePaymentReturn(
 
     requestId = existingRequest.id;
 
+    // IDEMPOTENCY: Don't overwrite a successful payment
+    if (existingRequest.paymentStatus === "SUCCESS") {
+      return {
+        success: true,
+        requestId,
+        status: existingRequest.status,
+        paymentStatus: "SUCCESS",
+        amount: existingRequest.amount ?? existingRequest.certificate.fee,
+        txnId: existingRequest.transactionId || null,
+        errorMessage: null,
+      };
+    }
+
     const isSuccess = txnStatus === "SUCCESS";
 
     if (isSuccess) {
@@ -563,6 +576,7 @@ export async function processCertificatePaymentReturn(
         .update(CertificateRequestTable)
         .set({
           status: "PENDING",
+          paymentStatus: "SUCCESS",
           transactionId: bankTxnNo || existingRequest.transactionId || `CERT-TXN-${Date.now()}`,
           amount,
           updatedAt: new Date(),
@@ -572,7 +586,8 @@ export async function processCertificatePaymentReturn(
       await db
         .update(CertificateRequestTable)
         .set({
-          status: "CANCELLED",
+          paymentStatus: "FAILED",
+          // status stays "INITIATE" — student can retry payment
           updatedAt: new Date(),
         })
         .where(eq(CertificateRequestTable.id, requestId));
@@ -581,7 +596,8 @@ export async function processCertificatePaymentReturn(
     return {
       success: true,
       requestId,
-      status: isSuccess ? "PENDING" : "CANCELLED",
+      status: isSuccess ? "PENDING" : "INITIATE",
+      paymentStatus: isSuccess ? "SUCCESS" : "FAILED",
       amount: isSuccess
         ? txnAmount
           ? Number(String(txnAmount).replace(/,/g, ""))

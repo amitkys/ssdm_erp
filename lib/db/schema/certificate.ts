@@ -49,6 +49,7 @@ export const CertificateRequestTable = pgTable(
     transactionId: varchar({ length: 255 }),
     purpose: text().notNull(),
     status: varchar({ length: 20 }).notNull().default("INITIATE"),
+    paymentStatus: varchar({ length: 20 }), // null | 'PENDING' | 'SUCCESS' | 'FAILED'
     behaviour: text(),
     division: text(),
     passingMonth: text(),
