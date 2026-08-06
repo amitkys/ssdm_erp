@@ -23,6 +23,7 @@ export default async function CertificatePaymentSuccessPage({
   let paymentResult: {
     requestId: string;
     status: string;
+    paymentStatus: string | null;
     amount: number | null;
     txnId: string | null;
     certificateType: string;
@@ -57,7 +58,7 @@ export default async function CertificatePaymentSuccessPage({
         with: { certificate: true, student: true },
       });
 
-      if (request && request.status !== "INITIATE") {
+      if (request && request.paymentStatus && request.paymentStatus !== "PENDING") {
         break;
       }
 
@@ -70,11 +71,12 @@ export default async function CertificatePaymentSuccessPage({
       paymentResult = {
         requestId: request.id,
         status: request.status,
+        paymentStatus: request.paymentStatus,
         amount: request.amount ?? request.certificate.fee,
         txnId: request.transactionId,
         certificateType: request.certificate_type,
         errorMessage:
-          request.status === "CANCELLED"
+          request.paymentStatus === "FAILED"
             ? "Transaction failed or was cancelled."
             : null,
       };
@@ -83,7 +85,7 @@ export default async function CertificatePaymentSuccessPage({
     }
   }
 
-  const isSuccess = paymentResult?.status === "PENDING" || paymentResult?.status === "APPROVED";
+  const isSuccess = paymentResult?.paymentStatus === "SUCCESS";
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col font-sans selection:bg-blue-900 selection:text-white">

@@ -116,6 +116,14 @@ export async function POST(req: Request) {
     // Set paymentId to the actual database CUID
     paymentId = existingPayment.id;
 
+    // IDEMPOTENCY: Don't overwrite a successful payment
+    if (existingPayment.status === "Success") {
+      return NextResponse.json({
+        status: "success",
+        message: "Payment already processed successfully (idempotent)",
+      });
+    }
+
     // Verify amount mismatch
     if (txnStatus === "SUCCESS" && txnAmount !== null) {
       const expectedAmount = Number(existingPayment.amount);

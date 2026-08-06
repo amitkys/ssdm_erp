@@ -427,10 +427,23 @@ export function CertificatePageContent() {
                           {req.status === "INITIATE" && (
                             <Badge
                               variant="outline"
-                              className="bg-amber-50 text-amber-700 border-amber-300 gap-1 text-[10px] font-bold"
+                              className={
+                                req.paymentStatus === "FAILED"
+                                  ? "bg-rose-50 text-rose-700 border-rose-300 gap-1 text-[10px] font-bold"
+                                  : "bg-amber-50 text-amber-700 border-amber-300 gap-1 text-[10px] font-bold"
+                              }
                             >
-                              <IconClock className="h-3 w-3" />
-                              INITIATED (Unpaid)
+                              {req.paymentStatus === "FAILED" ? (
+                                <>
+                                  <IconAlertCircle className="h-3 w-3" />
+                                  Payment Failed — Retry
+                                </>
+                              ) : (
+                                <>
+                                  <IconClock className="h-3 w-3" />
+                                  INITIATED (Unpaid)
+                                </>
+                              )}
                             </Badge>
                           )}
                           {req.status === "PENDING" && (
