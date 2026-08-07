@@ -539,7 +539,6 @@ export async function processCertificatePaymentReturn(
       txnAmount,
     });
 
-    const lookupIds = [urlRequestId, requestId].filter(Boolean) as string[];
     const lookupIds = Array.from(
       new Set(
         [
