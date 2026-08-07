@@ -1,4 +1,4 @@
-import { eq, or } from "drizzle-orm";
+import { eq, inArray, or } from "drizzle-orm";
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import {
@@ -12,6 +12,12 @@ export async function POST(req: Request) {
   try {
     const url = new URL(req.url);
     let paymentId = url.searchParams.get("paymentId");
+
+    console.log("[Callback API] Incoming callback request:", {
+      method: req.method,
+      url: req.url,
+      paymentId,
+    });
 
     // Parse body if it exists
     let body: any = {};
@@ -33,6 +39,11 @@ export async function POST(req: Request) {
       url.searchParams.get("response") ||
       url.searchParams.get("resp") ||
       null;
+
+    console.log("[Callback API] Raw response extraction:", {
+      hasRawResponse: !!rawResponse,
+      paymentId,
+    });
 
     if (!rawResponse) {
       console.warn("[Callback API] Missing response ciphertext");
@@ -102,19 +113,46 @@ export async function POST(req: Request) {
     const paymentMode = decrypted.paymentMode || "Online";
     const txnAmount = decrypted.txnAmount || decrypted.totalAmount || null;
 
+    console.log("[Callback API] Extracted fields:", {
+      responsePaymentId,
+      paymentId,
+      txnStatus,
+      bankTxnNo,
+      txnAmount,
+    });
+
+    // Build robust lookup IDs to handle GetEpay's merchantOrderNo field swap
+    const lookupIds = Array.from(
+      new Set(
+        [
+          paymentId,
+          responsePaymentId,
+          decrypted.merchantTransactionId,
+        ].filter(
+          (id): id is string => typeof id === "string" && id.trim().length > 0,
+        ),
+      ),
+    );
+
     const existingPayment = await db.query.StudentFeePaymentTable.findFirst({
       where: or(
-        eq(StudentFeePaymentTable.id, paymentId),
-        eq(StudentFeePaymentTable.transactionId, paymentId),
+        inArray(StudentFeePaymentTable.id, lookupIds),
+        inArray(StudentFeePaymentTable.transactionId, lookupIds),
       ),
     });
 
     if (!existingPayment) {
-      throw new Error(`Payment record ${paymentId} not found in database.`);
+      throw new Error(`Payment record not found for IDs: ${lookupIds.join(", ")}`);
     }
 
     // Set paymentId to the actual database CUID
     paymentId = existingPayment.id;
+
+    console.log("[Callback API] Found payment record:", {
+      paymentId: existingPayment.id,
+      currentStatus: existingPayment.status,
+      studentId: existingPayment.studentId,
+    });
 
     // IDEMPOTENCY: Don't overwrite a successful payment
     if (existingPayment.status === "Success") {
@@ -185,6 +223,13 @@ export async function POST(req: Request) {
           .where(eq(EnrolledStudentTable.UAN, student.UAN));
       }
     }
+
+    console.log("[Callback API] Payment updated successfully:", {
+      paymentId,
+      status,
+      isSuccess,
+      transactionId: bankTxnNo,
+    });
 
     return NextResponse.json({
       status: "success",

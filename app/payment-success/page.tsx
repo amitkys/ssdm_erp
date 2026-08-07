@@ -45,7 +45,7 @@ export default async function PaymentSuccessPage({ searchParams }: PageProps) {
       new Promise((resolve) => setTimeout(resolve, ms));
     let payment = null;
 
-    for (let attempt = 1; attempt <= 5; attempt++) {
+    for (let attempt = 1; attempt <= 8; attempt++) {
       payment = await db.query.StudentFeePaymentTable.findFirst({
         where: eq(StudentFeePaymentTable.id, lookupPaymentId),
         with: { student: true },
@@ -55,11 +55,11 @@ export default async function PaymentSuccessPage({ searchParams }: PageProps) {
         break;
       }
 
-      if (attempt < 5) {
+      if (attempt < 8) {
         console.log(
-          `[PaymentSuccessPage] Attempt ${attempt}: Status is ${payment?.status || "Unknown"}. Waiting for webhook callback...`,
+          `[PaymentSuccessPage] Attempt ${attempt}/8: Status is ${payment?.status || "Unknown"}. Waiting for webhook callback...`,
         );
-        await sleep(1200);
+        await sleep(800);
       }
     }
 
