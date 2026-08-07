@@ -143,6 +143,9 @@ export async function POST(req: Request) {
       requestId: existingRequest.id,
       certificateType: existingRequest.certificate?.certificate_type,
       currentStatus: existingRequest.status,
+      currentPaymentStatus: existingRequest.paymentStatus,
+    });
+
     });
     // IDEMPOTENCY: Don't overwrite a successful payment
     if (existingRequest.paymentStatus === "SUCCESS") {
@@ -197,6 +200,7 @@ export async function POST(req: Request) {
     console.log("[Certificate Callback API] Payment updated successfully:", {
       requestId,
       status,
+      paymentStatus,
       isSuccess,
       finalAmount,
       transactionId: bankTxnNo,

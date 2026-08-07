@@ -94,6 +94,7 @@ async function handleRedirect(req: Request) {
     console.log("[Certificate Redirect API] Redirect target:", {
       targetRequestId,
       resultStatus: result.status,
+      resultPaymentStatus: result.paymentStatus,
       resultSuccess: result.success,
     });
 

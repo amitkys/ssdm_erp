@@ -52,20 +52,27 @@ export default async function CertificatePaymentSuccessPage({
       new Promise((resolve) => setTimeout(resolve, ms));
     let request = null;
 
-    for (let attempt = 1; attempt <= 5; attempt++) {
+    for (let attempt = 1; attempt <= 8; attempt++) {
       request = await db.query.CertificateRequestTable.findFirst({
         where: eq(CertificateRequestTable.id, lookupRequestId),
         with: { certificate: true, student: true },
+      });
+
+      console.log(`[CertificatePaymentSuccess] Poll attempt ${attempt}/8:`, {
+        requestId: lookupRequestId,
+        status: request?.status,
+        paymentStatus: request?.paymentStatus,
       });
 
       if (request && request.paymentStatus && request.paymentStatus !== "PENDING") {
         break;
       }
 
-      if (attempt < 5) {
-        await sleep(1200);
+      if (attempt < 8) {
+        await sleep(800);
       }
     }
+
 
     if (request) {
       paymentResult = {
