@@ -65,7 +65,7 @@ async function handleRedirect(req: Request) {
       ? String(rawResponse).trim().replace(/ /g, "+")
       : String(rawResponse).trim();
 
-    const result = await processPaymentReturn(responseCiphertext);
+    const result = await processPaymentReturn(responseCiphertext, paymentId);
     console.log("[Redirect API] Processed payment return result:", result);
 
     const targetPaymentId = paymentId || result.paymentId;

@@ -144,9 +144,38 @@ export async function POST(req: Request) {
       certificateType: existingRequest.certificate?.certificate_type,
       currentStatus: existingRequest.status,
     });
+    // IDEMPOTENCY: Don't overwrite a successful payment
+    if (existingRequest.paymentStatus === "SUCCESS") {
+      return NextResponse.json({
+        status: "success",
+        message: "Payment already processed successfully (idempotent)",
+      });
+    }
 
     const isSuccess = txnStatus === "SUCCESS";
-    const status = isSuccess ? "PENDING" : "CANCELLED";
+
+    // Amount verification (matching admission callback)
+    if (isSuccess && txnAmount !== null) {
+      const expectedAmount = Number(existingRequest.certificate.fee);
+      const receivedAmount = Number(String(txnAmount).replace(/,/g, ""));
+      if (Math.abs(expectedAmount - receivedAmount) > 0.01) {
+        console.error(
+          `[Certificate Callback API] Amount mismatch: Expected ${expectedAmount}, Received ${receivedAmount}`,
+        );
+        await db
+          .update(CertificateRequestTable)
+          .set({ paymentStatus: "FAILED", updatedAt: new Date() })
+          .where(eq(CertificateRequestTable.id, requestId));
+
+        return NextResponse.json(
+          { status: "error", message: "Amount mismatch" },
+          { status: 400 },
+        );
+      }
+    }
+
+    const status = isSuccess ? "PENDING" : existingRequest.status;
+    const paymentStatus = isSuccess ? "SUCCESS" : "FAILED";
 
     const finalAmount = isSuccess
       ? txnAmount
@@ -158,8 +187,9 @@ export async function POST(req: Request) {
       .update(CertificateRequestTable)
       .set({
         status,
+        paymentStatus,
         amount: finalAmount,
-        transactionId: bankTxnNo || (isSuccess ? `CERT-TXN-${Date.now()}` : null),
+        transactionId: bankTxnNo || (isSuccess ? `CERT-TXN-${Date.now()}` : existingRequest.transactionId),
         updatedAt: new Date(),
       })
       .where(eq(CertificateRequestTable.id, requestId));

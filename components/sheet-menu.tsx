@@ -16,7 +16,8 @@ import {
 
 export function SheetMenu() {
   const pathname = usePathname();
-  const isStudent = pathname?.startsWith("/student");
+  const isStudent =
+    pathname === "/student" || pathname?.startsWith("/student/");
 
   return (
     <Sheet>

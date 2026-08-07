@@ -132,9 +132,7 @@ export async function getStudentPaymentDetails(params: {
       }
     } else {
       // Semester 1: practical fee from admission open table
-      practicalFee = hasPractical
-        ? (admissionOpen?.practicalFee ?? 600)
-        : 0;
+      practicalFee = hasPractical ? (admissionOpen?.practicalFee ?? 600) : 0;
 
       if (admissionOpen) {
         const currentDate = new Date();
@@ -433,7 +431,10 @@ export async function simulateCallback(params: {
   }
 }
 
-export async function processPaymentReturn(responseCiphertext: string) {
+export async function processPaymentReturn(
+  responseCiphertext: string,
+  urlPaymentId?: string | null,
+) {
   try {
     const getepayKey = process.env.GETEPAY_KEY;
     const getepayIv = process.env.GETEPAY_IV;
@@ -468,7 +469,6 @@ export async function processPaymentReturn(responseCiphertext: string) {
     }
 
     // Extract fields
-    let paymentId = decrypted.merchantOrderNo;
     const txnStatus = String(
       decrypted.txnStatus || decrypted.paymentStatus || decrypted.status || "",
     )
@@ -482,7 +482,21 @@ export async function processPaymentReturn(responseCiphertext: string) {
     const paymentMode = decrypted.paymentMode || "Online";
     const errorMessage = decrypted.message || decrypted.errorMessage || null;
 
-    if (!paymentId) {
+    const lookupIds = Array.from(
+      new Set(
+        [
+          urlPaymentId,
+          decrypted.merchantOrderNo,
+          decrypted.merchantTransactionId,
+          decrypted.getepayTxnId,
+          decrypted.bankTxnNo,
+        ].filter(
+          (id): id is string => typeof id === "string" && id.trim().length > 0,
+        ),
+      ),
+    );
+
+    if (lookupIds.length === 0) {
       throw new Error(
         "Missing merchantOrderNo (paymentId) in response payload.",
       );
@@ -490,8 +504,8 @@ export async function processPaymentReturn(responseCiphertext: string) {
 
     const existingPayment = await db.query.StudentFeePaymentTable.findFirst({
       where: or(
-        eq(StudentFeePaymentTable.id, paymentId),
-        eq(StudentFeePaymentTable.transactionId, paymentId),
+        inArray(StudentFeePaymentTable.id, lookupIds),
+        inArray(StudentFeePaymentTable.transactionId, lookupIds),
       ),
     });
 
@@ -500,7 +514,19 @@ export async function processPaymentReturn(responseCiphertext: string) {
     }
 
     // Set paymentId to the actual database CUID
-    paymentId = existingPayment.id;
+    let paymentId = existingPayment.id;
+
+    // IDEMPOTENCY: Don't overwrite a successful payment
+    if (existingPayment.status === "Success") {
+      return {
+        success: true,
+        paymentId,
+        status: "Success",
+        amount: existingPayment.amount,
+        txnId: existingPayment.transactionId,
+        errorMessage: null,
+      };
+    }
 
     const isSuccess = txnStatus === "SUCCESS";
     const status = isSuccess ? "Success" : "Failed";
