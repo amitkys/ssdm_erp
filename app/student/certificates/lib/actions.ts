@@ -71,10 +71,7 @@ export async function getStudentCertificateRequests() {
     return { success: true, data: requests, student };
   } catch (error) {
     console.error("[getStudentCertificateRequests] Error:", error);
-    return {
-      success: false,
-      message: "Failed to fetch certificate requests.",
-    };
+    return { success: false, message: "Failed to fetch certificate requests." };
   }
 }
 
@@ -93,8 +90,13 @@ export async function requestCertificate(params: {
       return { success: false, message: "Unauthorized" };
     }
 
-    const { certificateId, certificate_type, purpose, passingMonth, passingYear } =
-      params;
+    const {
+      certificateId,
+      certificate_type,
+      purpose,
+      passingMonth,
+      passingYear,
+    } = params;
 
     // Validate certificate type
     if (!["CLC", "CHARACTER", "BONAFIDE"].includes(certificate_type)) {
@@ -128,18 +130,20 @@ export async function requestCertificate(params: {
 
     const requestId = createId();
 
-    await db.insert(CertificateRequestTable).values({
-      id: requestId,
-      studentId: student.id,
-      certificateId,
-      certificate_type,
-      purpose,
-      passingMonth,
-      passingYear,
-      status: "INITIATE",
-      amount: null,
-      transactionId: null,
-    });
+    await db
+      .insert(CertificateRequestTable)
+      .values({
+        id: requestId,
+        studentId: student.id,
+        certificateId,
+        certificate_type,
+        purpose,
+        passingMonth,
+        passingYear,
+        status: "INITIATE",
+        amount: null,
+        transactionId: null,
+      });
 
     return { success: true, requestId };
   } catch (error) {
@@ -252,7 +256,11 @@ export async function initiateCertificatePayment(requestId: string) {
     // Update request with generated transaction ID
     await db
       .update(CertificateRequestTable)
-      .set({ transactionId: txnId, paymentStatus: "PENDING", updatedAt: new Date() })
+      .set({
+        transactionId: txnId,
+        paymentStatus: "PENDING",
+        updatedAt: new Date(),
+      })
       .where(eq(CertificateRequestTable.id, requestId));
 
     // Build return and callback URLs with requestId
@@ -297,10 +305,7 @@ export async function initiateCertificatePayment(requestId: string) {
       udf10: "",
     };
 
-    console.log(
-      "[initiateCertificatePayment] GetEpay Payload:",
-      payloadJson,
-    );
+    console.log("[initiateCertificatePayment] GetEpay Payload:", payloadJson);
 
     // Encrypt payload
     const isProduction = process.env.NODE_ENV === "production";
@@ -344,11 +349,7 @@ export async function initiateCertificatePayment(requestId: string) {
       );
 
       if (decrypted && decrypted.paymentUrl) {
-        return {
-          success: true,
-          paymentUrl: decrypted.paymentUrl,
-          requestId,
-        };
+        return { success: true, paymentUrl: decrypted.paymentUrl, requestId };
       } else {
         if (!isProduction) {
           console.warn(
@@ -364,8 +365,7 @@ export async function initiateCertificatePayment(requestId: string) {
         return {
           success: false,
           message:
-            decrypted.message ||
-            "GetEpay returned an error in the response.",
+            decrypted.message || "GetEpay returned an error in the response.",
         };
       }
     } else {
@@ -435,9 +435,7 @@ export async function simulateCertificateCallback(params: {
 
     const isProduction = process.env.NODE_ENV === "production";
     const encryptor = new GcmPgEncryption(getepayIv, getepayKey, isProduction);
-    const encryptedText = await encryptor.encrypt(
-      JSON.stringify(mockResponse),
-    );
+    const encryptedText = await encryptor.encrypt(JSON.stringify(mockResponse));
 
     // Send callback to local route
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
@@ -501,10 +499,7 @@ export async function processCertificatePaymentReturn(
     // Validate gateway credentials
     const configuredMid = String(process.env.GETEPAY_MID || "").trim();
     const responseMid =
-      decrypted?.mid ||
-      decrypted?.merchantId ||
-      decrypted?.merchantCode ||
-      "";
+      decrypted?.mid || decrypted?.merchantId || decrypted?.merchantCode || "";
     if (
       configuredMid &&
       responseMid &&
@@ -525,11 +520,22 @@ export async function processCertificatePaymentReturn(
       decrypted.bankTxnNo ||
       decrypted.referenceNo ||
       null;
-    const errorMessage =
-      decrypted.message || decrypted.errorMessage || null;
+    const errorMessage = decrypted.message || decrypted.errorMessage || null;
     const txnAmount = decrypted.txnAmount || decrypted.totalAmount || null;
 
-    const lookupIds = [urlRequestId, requestId].filter(Boolean) as string[];
+    const lookupIds = Array.from(
+      new Set(
+        [
+          urlRequestId,
+          decrypted.merchantOrderNo,
+          decrypted.merchantTransactionId,
+          decrypted.getepayTxnId,
+          decrypted.bankTxnNo,
+        ].filter(
+          (id): id is string => typeof id === "string" && id.trim().length > 0,
+        ),
+      ),
+    );
 
     if (lookupIds.length === 0) {
       throw new Error(
@@ -537,14 +543,13 @@ export async function processCertificatePaymentReturn(
       );
     }
 
-    const existingRequest =
-      await db.query.CertificateRequestTable.findFirst({
-        where: or(
-          inArray(CertificateRequestTable.id, lookupIds),
-          inArray(CertificateRequestTable.transactionId, lookupIds),
-        ),
-        with: { certificate: true },
-      });
+    const existingRequest = await db.query.CertificateRequestTable.findFirst({
+      where: or(
+        inArray(CertificateRequestTable.id, lookupIds),
+        inArray(CertificateRequestTable.transactionId, lookupIds),
+      ),
+      with: { certificate: true },
+    });
 
     if (!existingRequest) {
       throw new Error("Certificate request record not found in system.");
@@ -577,7 +582,10 @@ export async function processCertificatePaymentReturn(
         .set({
           status: "PENDING",
           paymentStatus: "SUCCESS",
-          transactionId: bankTxnNo || existingRequest.transactionId || `CERT-TXN-${Date.now()}`,
+          transactionId:
+            bankTxnNo ||
+            existingRequest.transactionId ||
+            `CERT-TXN-${Date.now()}`,
           amount,
           updatedAt: new Date(),
         })
