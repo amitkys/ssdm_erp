@@ -529,6 +529,22 @@ export async function processCertificatePaymentReturn(
       decrypted.message || decrypted.errorMessage || null;
     const txnAmount = decrypted.txnAmount || decrypted.totalAmount || null;
 
+    // GetEpay often returns merchantTransactionId in merchantOrderNo field
+    if (urlRequestId && requestId && requestId !== urlRequestId) {
+      console.warn(
+        "[processCertificatePaymentReturn] merchantOrderNo mismatch — GetEpay returned txnId instead of requestId:",
+        { merchantOrderNo: requestId, urlRequestId },
+      );
+    }
+
+    console.log("[processCertificatePaymentReturn] Extracted fields:", {
+      requestId,
+      urlRequestId,
+      txnStatus,
+      bankTxnNo,
+      txnAmount,
+    });
+
     const lookupIds = [urlRequestId, requestId].filter(Boolean) as string[];
 
     if (lookupIds.length === 0) {
@@ -582,6 +598,14 @@ export async function processCertificatePaymentReturn(
           updatedAt: new Date(),
         })
         .where(eq(CertificateRequestTable.id, requestId));
+
+      console.log("[processCertificatePaymentReturn] DB updated to SUCCESS:", {
+        requestId,
+        status: "PENDING",
+        paymentStatus: "SUCCESS",
+        amount,
+        transactionId: bankTxnNo,
+      });
     } else {
       await db
         .update(CertificateRequestTable)
@@ -591,6 +615,12 @@ export async function processCertificatePaymentReturn(
           updatedAt: new Date(),
         })
         .where(eq(CertificateRequestTable.id, requestId));
+
+      console.log("[processCertificatePaymentReturn] DB updated to FAILED:", {
+        requestId,
+        paymentStatus: "FAILED",
+        txnStatus,
+      });
     }
 
     return {

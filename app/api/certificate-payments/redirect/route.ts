@@ -7,6 +7,12 @@ async function handleRedirect(req: Request) {
   try {
     const requestId = url.searchParams.get("requestId");
 
+    console.log("[Certificate Redirect API] Incoming redirect request:", {
+      method: req.method,
+      url: req.url,
+      requestId,
+    });
+
     let body: Record<string, unknown> = {};
     if (req.method === "POST") {
       try {
@@ -85,6 +91,13 @@ async function handleRedirect(req: Request) {
     );
 
     const targetRequestId = requestId || result.requestId;
+    console.log("[Certificate Redirect API] Redirect target:", {
+      targetRequestId,
+      resultStatus: result.status,
+      resultPaymentStatus: result.paymentStatus,
+      resultSuccess: result.success,
+    });
+
     if (targetRequestId) {
       return NextResponse.redirect(
         new URL(

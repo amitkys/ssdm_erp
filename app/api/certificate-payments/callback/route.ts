@@ -9,6 +9,12 @@ export async function POST(req: Request) {
     const url = new URL(req.url);
     let requestId = url.searchParams.get("requestId");
 
+    console.log("[Certificate Callback API] Incoming callback request:", {
+      method: req.method,
+      url: req.url,
+      requestId,
+    });
+
     // Parse body if it exists
     let body: any = {};
     try {
@@ -28,6 +34,11 @@ export async function POST(req: Request) {
       url.searchParams.get("response") ||
       url.searchParams.get("resp") ||
       null;
+
+    console.log("[Certificate Callback API] Raw response extraction:", {
+      hasRawResponse: !!rawResponse,
+      requestId,
+    });
 
     if (!rawResponse) {
       console.warn("[Certificate Callback API] Missing response ciphertext");
@@ -79,6 +90,11 @@ export async function POST(req: Request) {
       requestId = responseRequestId;
     }
 
+    console.log("[Certificate Callback API] Extracted fields:", {
+      responseRequestId,
+      requestId,
+    });
+
     if (!requestId) {
       throw new Error(
         "Unable to identify certificate request records (missing requestId).",
@@ -99,6 +115,12 @@ export async function POST(req: Request) {
 
     const txnAmount = decrypted.txnAmount || decrypted.totalAmount || null;
 
+    console.log("[Certificate Callback API] Transaction details:", {
+      txnStatus,
+      bankTxnNo,
+      txnAmount,
+    });
+
     const lookupIds = [requestId, responseRequestId].filter(Boolean) as string[];
 
     const existingRequest = await db.query.CertificateRequestTable.findFirst({
@@ -116,6 +138,13 @@ export async function POST(req: Request) {
     }
 
     requestId = existingRequest.id;
+
+    console.log("[Certificate Callback API] Found certificate request:", {
+      requestId: existingRequest.id,
+      certificateType: existingRequest.certificate?.certificate_type,
+      currentStatus: existingRequest.status,
+      currentPaymentStatus: existingRequest.paymentStatus,
+    });
 
     // IDEMPOTENCY: Don't overwrite a successful payment
     if (existingRequest.paymentStatus === "SUCCESS") {
@@ -166,6 +195,15 @@ export async function POST(req: Request) {
         updatedAt: new Date(),
       })
       .where(eq(CertificateRequestTable.id, requestId));
+
+    console.log("[Certificate Callback API] Payment updated successfully:", {
+      requestId,
+      status,
+      paymentStatus,
+      isSuccess,
+      finalAmount,
+      transactionId: bankTxnNo,
+    });
 
     return NextResponse.json({
       status: "success",
