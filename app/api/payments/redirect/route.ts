@@ -7,6 +7,12 @@ async function handleRedirect(req: Request) {
   try {
     const paymentId = url.searchParams.get("paymentId");
 
+    console.log("[Redirect API] Incoming redirect request:", {
+      method: req.method,
+      url: req.url,
+      paymentId,
+    });
+
     let body: Record<string, unknown> = {};
     if (req.method === "POST") {
       try {
@@ -69,6 +75,12 @@ async function handleRedirect(req: Request) {
     console.log("[Redirect API] Processed payment return result:", result);
 
     const targetPaymentId = paymentId || result.paymentId;
+    console.log("[Redirect API] Redirect target:", {
+      targetPaymentId,
+      resultStatus: result.status,
+      resultSuccess: result.success,
+    });
+
     if (targetPaymentId) {
       return NextResponse.redirect(
         new URL(`/payment-success?paymentId=${targetPaymentId}`, appUrl),
