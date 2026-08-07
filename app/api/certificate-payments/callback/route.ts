@@ -146,6 +146,7 @@ export async function POST(req: Request) {
       currentPaymentStatus: existingRequest.paymentStatus,
     });
 
+    });
     // IDEMPOTENCY: Don't overwrite a successful payment
     if (existingRequest.paymentStatus === "SUCCESS") {
       return NextResponse.json({
