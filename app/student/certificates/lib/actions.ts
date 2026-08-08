@@ -11,6 +11,10 @@ import {
 } from "@/lib/db/schema/certificate";
 import { AdmittedStudentTable } from "@/lib/db/schema/student";
 import { GcmPgEncryption } from "@/lib/getepay-encrypt";
+import {
+  sanitizeForGateway,
+  safeJsonParse,
+} from "@/lib/sanitize-for-gateway";
 
 // ─── HELPERS ────────────────────────────────────────────────────────────────────
 
@@ -277,6 +281,11 @@ export async function initiateCertificatePayment(requestId: string) {
     const finalReturnUrl = buildUrlWithId(returnUrl, requestId);
     const finalCallbackUrl = buildUrlWithId(callbackUrl, requestId);
 
+    // Sanitize student details for gateway compatibility (strip non-ASCII)
+    const safeName = sanitizeForGateway(student.name || "Student");
+    const safePhone = sanitizeForGateway(student.phone || "");
+    const safeEmail = sanitizeForGateway(student.email || "");
+
     // Prepare payload for GetEpay (identical structure to admission)
     const payloadJson = {
       mid: String(mid).trim(),
@@ -292,10 +301,10 @@ export async function initiateCertificatePayment(requestId: string) {
       bankId: "455",
       txnType: "single",
       productType: "IPG",
-      txnNote: `Certificate Payment for ${student.name || "Student"} - ${requestId}`,
-      udf1: student.phone || "",
-      udf2: student.email || "",
-      udf3: student.name || "",
+      txnNote: `Certificate Payment for ${safeName} - ${requestId}`,
+      udf1: safePhone,
+      udf2: safeEmail,
+      udf3: safeName,
       udf4: "",
       udf5: "",
       udf6: "",
@@ -342,7 +351,7 @@ export async function initiateCertificatePayment(requestId: string) {
 
     if (resJson && isSuccessStatus(resJson.status) && resJson.response) {
       const decryptedText = await encryptor.decrypt(resJson.response);
-      const decrypted = JSON.parse(decryptedText);
+      const decrypted = safeJsonParse(decryptedText);
       console.log(
         "[initiateCertificatePayment] Decrypted GetEpay Response:",
         decrypted,
@@ -489,7 +498,7 @@ export async function processCertificatePaymentReturn(
     const isProduction = process.env.NODE_ENV === "production";
     const encryptor = new GcmPgEncryption(getepayIv, getepayKey, isProduction);
     const decryptedText = await encryptor.decrypt(cleanCiphertext);
-    const decrypted = JSON.parse(decryptedText);
+    const decrypted = safeJsonParse(decryptedText);
 
     console.log(
       "[processCertificatePaymentReturn] Decrypted return payload:",

@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { CertificateRequestTable } from "@/lib/db/schema/certificate";
 import { GcmPgEncryption } from "@/lib/getepay-encrypt";
+import { safeJsonParse } from "@/lib/sanitize-for-gateway";
 
 export async function POST(req: Request) {
   try {
@@ -64,7 +65,7 @@ export async function POST(req: Request) {
     const isProduction = process.env.NODE_ENV === "production";
     const encryptor = new GcmPgEncryption(getepayIv, getepayKey, isProduction);
     const decryptedText = await encryptor.decrypt(responseCiphertext);
-    const decrypted = JSON.parse(decryptedText);
+    const decrypted = safeJsonParse(decryptedText);
 
     console.log(
       "[Certificate Callback API] Decrypted Callback Payload:",

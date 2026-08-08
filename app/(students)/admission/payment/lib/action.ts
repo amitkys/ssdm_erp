@@ -13,6 +13,10 @@ import {
   subjectTable,
 } from "@/lib/db/schema";
 import { GcmPgEncryption } from "@/lib/getepay-encrypt";
+import {
+  sanitizeForGateway,
+  safeJsonParse,
+} from "@/lib/sanitize-for-gateway";
 
 export async function getStudentPaymentDetails(params: {
   uan?: string;
@@ -251,6 +255,11 @@ export async function initiatePayment(params: {
     const finalReturnUrl = buildUrlWithPaymentId(returnUrl, paymentId);
     const finalCallbackUrl = buildUrlWithPaymentId(callbackUrl, paymentId);
 
+    // Sanitize student details for gateway compatibility (strip non-ASCII)
+    const safeName = sanitizeForGateway(student.name || "Student");
+    const safePhone = sanitizeForGateway(student.phone || "");
+    const safeEmail = sanitizeForGateway(student.email || "");
+
     // 3. Prepare payload for GetEpay
     const payloadJson = {
       mid: String(mid).trim(),
@@ -266,10 +275,10 @@ export async function initiatePayment(params: {
       bankId: "455",
       txnType: "single",
       productType: "IPG",
-      txnNote: `Payment for ${student.name || "Student"} - ${paymentId}`,
-      udf1: student.phone || "",
-      udf2: student.email || "",
-      udf3: student.name || "",
+      txnNote: `Payment for ${safeName} - ${paymentId}`,
+      udf1: safePhone,
+      udf2: safeEmail,
+      udf3: safeName,
       udf4: "",
       udf5: "",
       udf6: "",
@@ -314,7 +323,7 @@ export async function initiatePayment(params: {
     if (resJson && isSuccessStatus(resJson.status) && resJson.response) {
       // Decrypt response
       const decryptedText = await encryptor.decrypt(resJson.response);
-      const decrypted = JSON.parse(decryptedText);
+      const decrypted = safeJsonParse(decryptedText);
       console.log("[initiatePayment] Decrypted GetEpay Response:", decrypted);
       // console.log(decrypted)
 
@@ -452,7 +461,7 @@ export async function processPaymentReturn(
     const isProduction = process.env.NODE_ENV === "production";
     const encryptor = new GcmPgEncryption(getepayIv, getepayKey, isProduction);
     const decryptedText = await encryptor.decrypt(cleanCiphertext);
-    const decrypted = JSON.parse(decryptedText);
+    const decrypted = safeJsonParse(decryptedText);
 
     console.log("[processPaymentReturn] Decrypted return payload:", decrypted);
 

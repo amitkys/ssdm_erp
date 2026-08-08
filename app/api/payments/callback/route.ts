@@ -7,6 +7,7 @@ import {
   StudentFeePaymentTable,
 } from "@/lib/db/schema/student";
 import { GcmPgEncryption } from "@/lib/getepay-encrypt";
+import { safeJsonParse } from "@/lib/sanitize-for-gateway";
 
 export async function POST(req: Request) {
   try {
@@ -69,7 +70,7 @@ export async function POST(req: Request) {
     const isProduction = process.env.NODE_ENV === "production";
     const encryptor = new GcmPgEncryption(getepayIv, getepayKey, isProduction);
     const decryptedText = await encryptor.decrypt(responseCiphertext);
-    const decrypted = JSON.parse(decryptedText);
+    const decrypted = safeJsonParse(decryptedText);
 
     console.log("[Callback API] Decrypted Callback Payload:", decrypted);
 
