@@ -122,17 +122,7 @@ export async function approveCertificateRequest(params: {
           ? ["CLC", "CHARACTER"]
           : ["BONAFIDE"];
 
-      const lastApproved = await db.query.CertificateRequestTable.findFirst({
-        where: and(
-          eq(CertificateRequestTable.status, "APPROVED"),
-          inArray(CertificateRequestTable.certificate_type, targetTypes),
-          isNotNull(CertificateRequestTable.certificate_No),
-        ),
-        orderBy: (table, { desc }) => [
-          desc(table.updatedAt),
-          desc(table.createdAt),
-        ],
-      });
+      const codePrefix = certType === "BONAFIDE" ? "SSDMBON" : "SSDMCLC";
 
       // Derive 4-digit session code from student's academicSession name (e.g. "2026-2030" -> "2630")
       const sessionName = (existing as any).student?.batch?.academicSession?.name;
@@ -149,56 +139,89 @@ export async function approveCertificateRequest(params: {
         sessionCode = `${String(curr).slice(-2)}${String(curr + 4).slice(-2)}`;
       }
 
-      let lastSerial = 0;
-      if (lastApproved?.certificate_No) {
-        const parts = lastApproved.certificate_No.split("/");
-        const lastPart = parts[parts.length - 1]; // e.g. "26300001"
-        if (lastPart.startsWith(sessionCode)) {
-          const serialStr = lastPart.slice(sessionCode.length);
-          const parsed = parseInt(serialStr, 10);
-          if (!isNaN(parsed)) {
-            lastSerial = parsed;
+      // Find the true highest serial by fetching ALL certificates of matching types
+      // that have a certificate_No, then parsing their serial numbers.
+      // This avoids the previous bug where ordering by updatedAt/createdAt
+      // could return a stale/lower serial if a record was re-updated.
+      const allApprovedWithNo = await db.query.CertificateRequestTable.findMany({
+        where: and(
+          inArray(CertificateRequestTable.certificate_type, targetTypes),
+          isNotNull(CertificateRequestTable.certificate_No),
+        ),
+        columns: {
+          certificate_No: true,
+        },
+      });
+
+      const expectedPrefix = `${codePrefix}/`;
+      let maxSerial = 0;
+
+      for (const row of allApprovedWithNo) {
+        const no = row.certificate_No;
+        if (!no || !no.startsWith(expectedPrefix)) continue;
+        const suffix = no.slice(expectedPrefix.length); // e.g. "23270050"
+        if (!suffix.startsWith(sessionCode)) continue;
+        const serialStr = suffix.slice(sessionCode.length);
+        const parsed = parseInt(serialStr, 10);
+        if (!isNaN(parsed) && parsed > maxSerial) {
+          maxSerial = parsed;
+        }
+      }
+
+      let nextSerialNum = maxSerial + 1;
+
+      // Use a transaction to guarantee uniqueness between check and update
+      certNo = await db.transaction(async (tx) => {
+        // Loop to guarantee unique certificate_No
+        let candidateCertNo = "";
+        let isUnique = false;
+        let attempts = 0;
+
+        while (!isUnique && attempts < 50) {
+          const formattedSerial = nextSerialNum.toString().padStart(4, "0");
+          candidateCertNo = `${codePrefix}/${sessionCode}${formattedSerial}`;
+
+          const existingCertNo = await tx.query.CertificateRequestTable.findFirst({
+            where: eq(CertificateRequestTable.certificate_No, candidateCertNo),
+          });
+
+          if (!existingCertNo) {
+            isUnique = true;
+          } else {
+            nextSerialNum++;
+            attempts++;
           }
         }
-      }
 
-      let nextSerialNum = lastSerial + 1;
-      const codePrefix = certType === "BONAFIDE" ? "SSDMBON" : "SSDMCLC";
-
-      // Loop to guarantee unique certificate_No
-      let candidateCertNo = "";
-      let isUnique = false;
-      let attempts = 0;
-
-      while (!isUnique && attempts < 50) {
-        const formattedSerial = nextSerialNum.toString().padStart(4, "0");
-        candidateCertNo = `${codePrefix}/${sessionCode}${formattedSerial}`;
-
-        const existingCertNo = await db.query.CertificateRequestTable.findFirst({
-          where: eq(CertificateRequestTable.certificate_No, candidateCertNo),
-        });
-
-        if (!existingCertNo) {
-          isUnique = true;
-        } else {
-          nextSerialNum++;
-          attempts++;
+        if (!isUnique) {
+          throw new Error("Could not generate a unique certificate number after 50 attempts.");
         }
-      }
 
-      certNo = candidateCertNo;
+        await tx
+          .update(CertificateRequestTable)
+          .set({
+            status: "APPROVED",
+            division: division.trim(),
+            behaviour: behaviour.trim(),
+            certificate_No: candidateCertNo,
+            updatedAt: new Date(),
+          })
+          .where(eq(CertificateRequestTable.id, requestId));
+
+        return candidateCertNo;
+      });
+    } else {
+      // certificate_No already exists, just update status/division/behaviour
+      await db
+        .update(CertificateRequestTable)
+        .set({
+          status: "APPROVED",
+          division: division.trim(),
+          behaviour: behaviour.trim(),
+          updatedAt: new Date(),
+        })
+        .where(eq(CertificateRequestTable.id, requestId));
     }
-
-    await db
-      .update(CertificateRequestTable)
-      .set({
-        status: "APPROVED",
-        division: division.trim(),
-        behaviour: behaviour.trim(),
-        certificate_No: certNo,
-        updatedAt: new Date(),
-      })
-      .where(eq(CertificateRequestTable.id, requestId));
 
     return { success: true, certificate_No: certNo };
   } catch (error) {
