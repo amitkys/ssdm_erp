@@ -6,7 +6,7 @@ import { SiteHeader } from "@/components/informative/site-header";
 import { getCollegeConfig } from "@/lib/college-config";
 import { db } from "@/lib/db";
 import { CertificateRequestTable } from "@/lib/db/schema/certificate";
-import { CheckCircle2, XCircle, ArrowRight } from "lucide-react";
+import { CheckCircle2, XCircle, ArrowRight, FileText } from "lucide-react";
 
 interface PageProps {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
@@ -142,12 +142,20 @@ export default async function CertificatePaymentSuccessPage({
                     </div>
                   </div>
 
-                  <div className="flex gap-4">
+                  <div className="flex gap-3">
+                    <Link
+                      href={`/student/certificates/receipt?requestId=${paymentResult?.requestId}`}
+                      target="_blank"
+                      className="flex-1 py-3.5 bg-slate-800 hover:bg-slate-900 text-white rounded-2xl text-sm font-semibold transition text-center shadow-lg flex items-center justify-center gap-2"
+                    >
+                      <FileText className="h-4 w-4" />
+                      Download Receipt
+                    </Link>
                     <Link
                       href="/student/certificates"
                       className="flex-1 py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl text-sm font-semibold transition text-center shadow-lg flex items-center justify-center gap-2"
                     >
-                      View My Certificate Requests
+                      View My Requests
                       <ArrowRight className="h-4 w-4" />
                     </Link>
                   </div>
