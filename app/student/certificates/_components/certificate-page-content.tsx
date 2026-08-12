@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   getCertificateTypesQuery,
@@ -46,6 +47,7 @@ import {
   IconClock,
   IconAlertCircle,
   IconArrowRight,
+  IconReceipt2,
 } from "@tabler/icons-react";
 
 const MONTHS = [
@@ -475,41 +477,58 @@ export function CertificatePageContent() {
                           )}
                         </TableCell>
                         <TableCell className="text-right">
-                          {req.status === "INITIATE" && (
-                            <div className="flex items-center justify-end gap-2">
-                              <Button
-                                size="sm"
-                                onClick={() => payMutation.mutate(req.id)}
-                                disabled={
-                                  payMutation.isPending || cancelMutation.isPending
-                                }
-                                className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg h-7 text-xs font-bold gap-1"
+                          <div className="flex items-center justify-end gap-2">
+                            {req.status === "INITIATE" && (
+                              <>
+                                <Button
+                                  size="sm"
+                                  onClick={() => payMutation.mutate(req.id)}
+                                  disabled={
+                                    payMutation.isPending || cancelMutation.isPending
+                                  }
+                                  className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg h-7 text-xs font-bold gap-1"
+                                >
+                                  {payMutation.isPending ? (
+                                    <IconLoader2 className="h-3 w-3 animate-spin" />
+                                  ) : (
+                                    <IconCreditCard className="h-3 w-3" />
+                                  )}
+                                  Pay Now
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => cancelMutation.mutate(req.id)}
+                                  disabled={
+                                    payMutation.isPending || cancelMutation.isPending
+                                  }
+                                  className="border-slate-300 text-slate-600 hover:bg-slate-100 rounded-lg h-7 text-xs font-bold gap-1"
+                                >
+                                  {cancelMutation.isPending ? (
+                                    <IconLoader2 className="h-3 w-3 animate-spin" />
+                                  ) : (
+                                    <IconX className="h-3 w-3" />
+                                  )}
+                                  Cancel
+                                </Button>
+                              </>
+                            )}
+                            {(req.status === "PENDING" || req.status === "APPROVED") && (
+                              <Link
+                                href={`/student/certificates/receipt?requestId=${req.id}`}
+                                target="_blank"
                               >
-                                {payMutation.isPending ? (
-                                  <IconLoader2 className="h-3 w-3 animate-spin" />
-                                ) : (
-                                  <IconCreditCard className="h-3 w-3" />
-                                )}
-                                Pay Now
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => cancelMutation.mutate(req.id)}
-                                disabled={
-                                  payMutation.isPending || cancelMutation.isPending
-                                }
-                                className="border-slate-300 text-slate-600 hover:bg-slate-100 rounded-lg h-7 text-xs font-bold gap-1"
-                              >
-                                {cancelMutation.isPending ? (
-                                  <IconLoader2 className="h-3 w-3 animate-spin" />
-                                ) : (
-                                  <IconX className="h-3 w-3" />
-                                )}
-                                Cancel
-                              </Button>
-                            </div>
-                          )}
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="border-indigo-300 text-indigo-700 hover:bg-indigo-50 rounded-lg h-7 text-xs font-bold gap-1"
+                                >
+                                  <IconReceipt2 className="h-3 w-3" />
+                                  Receipt
+                                </Button>
+                              </Link>
+                            )}
+                          </div>
                         </TableCell>
                       </TableRow>
                     );
