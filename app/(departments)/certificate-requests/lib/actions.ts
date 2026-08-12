@@ -1,6 +1,6 @@
 "use server";
 
-import { and, eq, ilike, inArray, isNotNull, or } from "drizzle-orm";
+import { and, eq, ilike, inArray, isNotNull, or, sql } from "drizzle-orm";
 import { headers } from "next/headers";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
@@ -139,77 +139,81 @@ export async function approveCertificateRequest(params: {
         sessionCode = `${String(curr).slice(-2)}${String(curr + 4).slice(-2)}`;
       }
 
-      // Find the true highest serial by fetching ALL certificates of matching types
-      // that have a certificate_No, then parsing their serial numbers.
-      // This avoids the previous bug where ordering by updatedAt/createdAt
-      // could return a stale/lower serial if a record was re-updated.
-      const allApprovedWithNo = await db.query.CertificateRequestTable.findMany({
-        where: and(
-          inArray(CertificateRequestTable.certificate_type, targetTypes),
-          isNotNull(CertificateRequestTable.certificate_No),
-        ),
-        columns: {
-          certificate_No: true,
-        },
-      });
-
       const expectedPrefix = `${codePrefix}/`;
-      let maxSerial = 0;
 
-      for (const row of allApprovedWithNo) {
-        const no = row.certificate_No;
-        if (!no || !no.startsWith(expectedPrefix)) continue;
-        const suffix = no.slice(expectedPrefix.length); // e.g. "23270050"
-        if (!suffix.startsWith(sessionCode)) continue;
-        const serialStr = suffix.slice(sessionCode.length);
-        const parsed = parseInt(serialStr, 10);
-        if (!isNaN(parsed) && parsed > maxSerial) {
-          maxSerial = parsed;
+      // Retry loop to handle race conditions on the unique constraint.
+      // If two concurrent approvals generate the same certificate_No,
+      // the DB unique constraint will reject one. We catch that and retry
+      // with a fresh max serial lookup inside the transaction.
+      const MAX_RETRIES = 5;
+      let lastError: unknown = null;
+
+      for (let retry = 0; retry < MAX_RETRIES; retry++) {
+        try {
+          certNo = await db.transaction(async (tx) => {
+            // Lock all rows of matching certificate types that have a certificate_No
+            // using FOR UPDATE to prevent concurrent transactions from reading
+            // the same max serial. This serialises certificate_No generation.
+            const lockedRows = await tx.execute(
+              sql`SELECT "certificate_No" FROM "certificate_request"
+                  WHERE "certificate_type" IN (${sql.join(targetTypes.map(t => sql`${t}`), sql`, `)})
+                    AND "certificate_No" IS NOT NULL
+                  FOR UPDATE`
+            );
+
+            let maxSerial = 0;
+            for (const row of lockedRows.rows as { certificate_No: string }[]) {
+              const no = row.certificate_No;
+              if (!no || !no.startsWith(expectedPrefix)) continue;
+              const suffix = no.slice(expectedPrefix.length);
+              if (!suffix.startsWith(sessionCode)) continue;
+              const serialStr = suffix.slice(sessionCode.length);
+              const parsed = parseInt(serialStr, 10);
+              if (!isNaN(parsed) && parsed > maxSerial) {
+                maxSerial = parsed;
+              }
+            }
+
+            const nextSerialNum = maxSerial + 1;
+            const formattedSerial = nextSerialNum.toString().padStart(4, "0");
+            const candidateCertNo = `${codePrefix}/${sessionCode}${formattedSerial}`;
+
+            await tx
+              .update(CertificateRequestTable)
+              .set({
+                status: "APPROVED",
+                division: division.trim(),
+                behaviour: behaviour.trim(),
+                certificate_No: candidateCertNo,
+                updatedAt: new Date(),
+              })
+              .where(eq(CertificateRequestTable.id, requestId));
+
+            return candidateCertNo;
+          });
+
+          // Transaction succeeded — break out of the retry loop
+          lastError = null;
+          break;
+        } catch (err: any) {
+          lastError = err;
+          // Check if this is the unique constraint violation (PG error code 23505)
+          const pgCode = err?.code ?? err?.cause?.code;
+          if (pgCode === "23505") {
+            // Retry with a fresh serial lookup
+            console.warn(
+              `[approveCertificateRequest] Unique constraint collision on retry ${retry + 1}, retrying...`
+            );
+            continue;
+          }
+          // For any other error, throw immediately
+          throw err;
         }
       }
 
-      let nextSerialNum = maxSerial + 1;
-
-      // Use a transaction to guarantee uniqueness between check and update
-      certNo = await db.transaction(async (tx) => {
-        // Loop to guarantee unique certificate_No
-        let candidateCertNo = "";
-        let isUnique = false;
-        let attempts = 0;
-
-        while (!isUnique && attempts < 50) {
-          const formattedSerial = nextSerialNum.toString().padStart(4, "0");
-          candidateCertNo = `${codePrefix}/${sessionCode}${formattedSerial}`;
-
-          const existingCertNo = await tx.query.CertificateRequestTable.findFirst({
-            where: eq(CertificateRequestTable.certificate_No, candidateCertNo),
-          });
-
-          if (!existingCertNo) {
-            isUnique = true;
-          } else {
-            nextSerialNum++;
-            attempts++;
-          }
-        }
-
-        if (!isUnique) {
-          throw new Error("Could not generate a unique certificate number after 50 attempts.");
-        }
-
-        await tx
-          .update(CertificateRequestTable)
-          .set({
-            status: "APPROVED",
-            division: division.trim(),
-            behaviour: behaviour.trim(),
-            certificate_No: candidateCertNo,
-            updatedAt: new Date(),
-          })
-          .where(eq(CertificateRequestTable.id, requestId));
-
-        return candidateCertNo;
-      });
+      if (lastError) {
+        throw lastError;
+      }
     } else {
       // certificate_No already exists, just update status/division/behaviour
       await db
