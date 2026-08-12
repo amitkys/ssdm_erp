@@ -125,6 +125,12 @@ export function getMenuList(pathname: string): Group[] {
           active: pathname.startsWith("/certificate-requests"),
         },
         {
+          href: "/admission-overview",
+          label: "Admission Overview",
+          icon: IconTrendingUp,
+          active: pathname.startsWith("/admission-overview"),
+        },
+        {
           href: "/admission-dcr",
           label: "Admission DCR",
           icon: IconFileText,

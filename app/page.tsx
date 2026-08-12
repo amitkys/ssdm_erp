@@ -19,6 +19,7 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { AcademicsSection } from "@/components/informative/academics-section";
+import { FacultyMarquee } from "@/components/informative/faculty-marquee";
 import { NoticeBoard } from "@/components/informative/notice-board";
 import { SiteFooter } from "@/components/informative/site-footer";
 import { SiteHeader } from "@/components/informative/site-header";
@@ -670,6 +671,9 @@ export default async function Page() {
             <AcademicsSection />
           </div>
         </section>
+
+        {/* Faculty Members Marquee Section */}
+        <FacultyMarquee />
 
         {/* Contact Us Section */}
         <section
