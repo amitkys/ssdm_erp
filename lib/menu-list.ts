@@ -136,6 +136,12 @@ export function getMenuList(pathname: string): Group[] {
           icon: IconFileText,
           active: pathname.startsWith("/admission-dcr"),
         },
+        {
+          href: "/certificate-dcr",
+          label: "Certificate DCR",
+          icon: IconCertificate,
+          active: pathname.startsWith("/certificate-dcr"),
+        },
       ],
     },
   ];
