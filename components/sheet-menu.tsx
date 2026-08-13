@@ -51,7 +51,9 @@ export function SheetMenu() {
             )}
           </Button>
         </SheetHeader>
-        {isStudent ? <StudentMenu isOpen /> : <Menu isOpen />}
+        <div className="flex-1 overflow-hidden">
+          {isStudent ? <StudentMenu isOpen /> : <Menu isOpen />}
+        </div>
       </SheetContent>
     </Sheet>
   );
