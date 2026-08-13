@@ -1,8 +1,8 @@
 "use client";
 
-import { faculties } from "@/lib/faculty-data";
-import type { Faculty } from "@/lib/faculty-data";
 import { User } from "lucide-react";
+import type { Faculty } from "@/lib/faculty-data";
+import { faculties } from "@/lib/faculty-data";
 
 function getInitials(name: string): string {
   return name
@@ -221,13 +221,13 @@ export function FacultyMarquee() {
         </div>
 
         {/* Marquee container — pauses on hover anywhere in the track area */}
-        <div className="marquee-wrapper relative">
+        <div className="marquee-wrapper relative overflow-hidden">
           {/* Edge fades */}
           <div className="absolute left-0 top-0 bottom-0 w-20 sm:w-40 bg-gradient-to-r from-slate-900 to-transparent z-20 pointer-events-none" />
           <div className="absolute right-0 top-0 bottom-0 w-20 sm:w-40 bg-gradient-to-l from-slate-900 to-transparent z-20 pointer-events-none" />
 
           {/* Scrolling track */}
-          <div className="flex gap-6 animate-marquee">
+          <div className="flex w-max shrink-0 flex-nowrap gap-6 animate-marquee">
             {/* First set */}
             {activeFaculties.map((faculty) => (
               <FacultyCard key={`first-${faculty.id}`} faculty={faculty} />

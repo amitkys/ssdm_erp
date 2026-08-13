@@ -20,6 +20,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { AcademicsSection } from "@/components/informative/academics-section";
 import { FacultyMarquee } from "@/components/informative/faculty-marquee";
+import { IndependenceDayBanner } from "@/components/informative/independence-day-banner";
 import { NoticeBoard } from "@/components/informative/notice-board";
 import { SiteFooter } from "@/components/informative/site-footer";
 import { SiteHeader } from "@/components/informative/site-header";
@@ -107,6 +108,7 @@ export default async function Page() {
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col font-sans selection:bg-blue-900 selection:text-white">
       <SiteHeader collegeName={config.name} />
+      <IndependenceDayBanner />
 
       {/* Main Content */}
       <main className="flex-grow">
@@ -127,7 +129,7 @@ export default async function Page() {
             <div className="absolute -bottom-40 -right-40 w-96 h-96 bg-indigo-600/20 rounded-full blur-3xl" />
           </div>
 
-          <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center space-y-8 animate-in fade-in duration-700">
+          <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 text-center space-y-8 animate-in fade-in duration-700 my-auto">
             {/* Accreditation Badge */}
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-blue-200 text-xs font-semibold uppercase tracking-wider">
               <Award className="h-4 w-4" /> Affiliated to Patliputra University
@@ -261,7 +263,7 @@ export default async function Page() {
                             Online Admission Open
                           </p>
                           <p className="text-[10px] text-slate-400">
-                            Enroll for the academic session 2026-2027
+                            Enroll for the current Academic Session
                           </p>
                         </div>
                       </div>
@@ -269,7 +271,7 @@ export default async function Page() {
                     </Link>
 
                     <Link
-                      href="/auth/student/signin"
+                      href="/auth/signin"
                       className="group flex items-center justify-between p-3.5 bg-white border border-slate-200 hover:border-blue-900 rounded-xl transition-all shadow-sm"
                     >
                       <div className="flex items-center gap-3">
@@ -289,7 +291,7 @@ export default async function Page() {
                     </Link>
 
                     <Link
-                      href="/auth/admin/signin"
+                      href="/auth/signin"
                       className="group flex items-center justify-between p-3.5 bg-white border border-slate-200 hover:border-blue-900 rounded-xl transition-all shadow-sm"
                     >
                       <div className="flex items-center gap-3">
