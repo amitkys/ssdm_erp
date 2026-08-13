@@ -1,3 +1,4 @@
+import { createId } from "@paralleldrive/cuid2";
 import { relations, sql } from "drizzle-orm";
 import {
   check,
@@ -7,24 +8,25 @@ import {
   timestamp,
   varchar,
 } from "drizzle-orm/pg-core";
-import { createId } from "@paralleldrive/cuid2";
 import { AdmittedStudentTable } from "./student";
 
 // ─── CERTIFICATE FEE CONFIGURATION (single-row config) ─────────────────────────
 
-export const CertificateMetaDataTable = pgTable("certificate_meta_data", {
-  id: varchar({ length: 128 })
-    .primaryKey()
-    .$defaultFn(() => createId()),
-  certificate_type: text().notNull(),
-  fee: integer().notNull(),
-  createdAt: timestamp().defaultNow().notNull(),
-  updatedAt: timestamp().defaultNow().notNull(),
-},
+export const CertificateMetaDataTable = pgTable(
+  "certificate_meta_data",
+  {
+    id: varchar({ length: 128 })
+      .primaryKey()
+      .$defaultFn(() => createId()),
+    certificate_type: text().notNull(),
+    fee: integer().notNull(),
+    createdAt: timestamp().defaultNow().notNull(),
+    updatedAt: timestamp().defaultNow().notNull(),
+  },
   (table) => [
     check(
       "certificate_type_check",
-      sql`${table.certificate_type} IN ('CLC', 'CHARACTER', 'BONAFIDE')`,
+      sql`${table.certificate_type} IN ('CLC', 'CHARACTER', 'BONAFIDE', 'TEST')`,
     ),
   ],
 );

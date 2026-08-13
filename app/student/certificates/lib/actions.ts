@@ -11,10 +11,7 @@ import {
 } from "@/lib/db/schema/certificate";
 import { AdmittedStudentTable } from "@/lib/db/schema/student";
 import { GcmPgEncryption } from "@/lib/getepay-encrypt";
-import {
-  sanitizeForGateway,
-  safeJsonParse,
-} from "@/lib/sanitize-for-gateway";
+import { safeJsonParse, sanitizeForGateway } from "@/lib/sanitize-for-gateway";
 
 // ─── HELPERS ────────────────────────────────────────────────────────────────────
 
@@ -103,7 +100,7 @@ export async function requestCertificate(params: {
     } = params;
 
     // Validate certificate type
-    if (!["CLC", "CHARACTER", "BONAFIDE"].includes(certificate_type)) {
+    if (!["CLC", "CHARACTER", "BONAFIDE", "TEST"].includes(certificate_type)) {
       return { success: false, message: "Invalid certificate type." };
     }
 
@@ -129,7 +126,7 @@ export async function requestCertificate(params: {
     });
 
     if (!certMeta) {
-      return { success: false, message: "Invalid certificate metadata." };
+      return { success: false, message: " metadata." };
     }
 
     const requestId = createId();
@@ -241,7 +238,18 @@ export async function initiateCertificatePayment(requestId: string) {
     const getepayKey = process.env.GETEPAY_KEY;
     const getepayIv = process.env.GETEPAY_IV;
     const getepayUrl = process.env.GETEPAY_URL;
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+    // Derive base URL from dedicated env vars, then NEXT_PUBLIC_APP_URL
+    const getBaseUrl = () => {
+      // If GETEPAY_RETURN_URL is set, extract its origin (most reliable in production)
+      if (process.env.GETEPAY_RETURN_URL) {
+        try {
+          const u = new URL(process.env.GETEPAY_RETURN_URL);
+          return u.origin;
+        } catch { /* fall through */ }
+      }
+      return process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+    };
+    const appUrl = getBaseUrl();
 
     const returnUrl = `${appUrl}/api/certificate-payments/redirect`;
     const callbackUrl = `${appUrl}/api/certificate-payments/callback`;
@@ -447,7 +455,17 @@ export async function simulateCertificateCallback(params: {
     const encryptedText = await encryptor.encrypt(JSON.stringify(mockResponse));
 
     // Send callback to local route
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+    // Derive base URL from dedicated env vars, then NEXT_PUBLIC_APP_URL
+    const getBaseUrl = () => {
+      if (process.env.GETEPAY_RETURN_URL) {
+        try {
+          const u = new URL(process.env.GETEPAY_RETURN_URL);
+          return u.origin;
+        } catch { /* fall through */ }
+      }
+      return process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+    };
+    const appUrl = getBaseUrl();
     const callbackUrl = `${appUrl}/api/certificate-payments/callback?requestId=${requestId}`;
 
     const res = await fetch(callbackUrl, {

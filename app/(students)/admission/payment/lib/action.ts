@@ -412,8 +412,17 @@ export async function simulateCallback(params: {
     const encryptor = new GcmPgEncryption(getepayIv, getepayKey, isProduction);
     const encryptedText = await encryptor.encrypt(JSON.stringify(mockResponse));
 
-    // Send callback to local route
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+    // Derive base URL from dedicated env vars, then NEXT_PUBLIC_APP_URL
+    const getBaseUrl = () => {
+      if (process.env.GETEPAY_RETURN_URL) {
+        try {
+          const u = new URL(process.env.GETEPAY_RETURN_URL);
+          return u.origin;
+        } catch { /* fall through */ }
+      }
+      return process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+    };
+    const appUrl = getBaseUrl();
     const callbackUrl = `${appUrl}/api/payments/callback?paymentId=${paymentId}`;
 
     const res = await fetch(callbackUrl, {
