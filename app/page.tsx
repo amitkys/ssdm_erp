@@ -21,6 +21,7 @@ import Link from "next/link";
 import { AcademicsSection } from "@/components/informative/academics-section";
 import { FacultyMarquee } from "@/components/informative/faculty-marquee";
 import { IndependenceDayBanner } from "@/components/informative/independence-day-banner";
+import { IndependenceDayCarousel } from "@/components/informative/independence-day-carousel";
 import { NoticeBoard } from "@/components/informative/notice-board";
 import { SiteFooter } from "@/components/informative/site-footer";
 import { SiteHeader } from "@/components/informative/site-header";
@@ -108,8 +109,8 @@ export default async function Page() {
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col font-sans selection:bg-blue-900 selection:text-white">
       <SiteHeader collegeName={config.name} />
-      <IndependenceDayBanner />
-
+      {/* <IndependenceDayBanner /> */}
+      <IndependenceDayCarousel />
       {/* Main Content */}
       <main className="flex-grow">
         {/* Hero Banner Section */}

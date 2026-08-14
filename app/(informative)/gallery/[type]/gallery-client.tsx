@@ -18,6 +18,31 @@ import type { CollegeConfig } from "@/lib/college-config";
 // Photo Items
 const photoItems = [
   {
+    src: "/images/15aug1.jpeg",
+    title: "80th Independence Day Celebration",
+    category: "80th Independence",
+  },
+  {
+    src: "/images/15aug2.jpeg",
+    title: "Flag Hoisting Ceremony",
+    category: "80th Independence",
+  },
+  {
+    src: "/images/15aug3.jpeg",
+    title: "Independence Day Parade",
+    category: "80th Independence",
+  },
+  {
+    src: "/images/15aug4.jpeg",
+    title: "Cultural Programme",
+    category: "80th Independence",
+  },
+  {
+    src: "/images/15aug5.jpeg",
+    title: "Patriotic Celebrations",
+    category: "80th Independence",
+  },
+  {
     src: "/images/gallery_campus.png",
     title: "Main Campus Entrance",
     category: "Campus",
@@ -95,7 +120,7 @@ export default function GalleryClient({
   config: CollegeConfig;
 }) {
   // State for photo filter
-  const [activeFilter, setActiveFilter] = useState("All");
+  const [activeFilter, setActiveFilter] = useState("80th Independence");
   // State for video modal player
   const [activeVideo, setActiveVideo] = useState<string | null>(null);
 
@@ -105,7 +130,7 @@ export default function GalleryClient({
       ? photoItems
       : photoItems.filter((item) => item.category === activeFilter);
 
-  const categories = ["All", "Campus", "Academics", "Technology", "Research"];
+  const categories = ["80th Independence", "All", "Campus", "Academics", "Technology", "Research"];
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col font-sans">
