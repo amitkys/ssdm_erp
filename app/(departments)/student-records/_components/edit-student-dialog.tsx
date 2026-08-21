@@ -32,14 +32,24 @@ import {
   editStudentZodSchema,
 } from "../lib/zod-type/edit-student-type";
 import { useMutUpdateStudent } from "../query/mut-update-student";
+import { useGetActiveSubjects } from "@/app/(departments)/enrolled-student/query/get-active-subjects";
 
 interface EditStudentDialogProps {
   student: any;
 }
 
+const getInitialSubjectArr = (val: any): string[] => {
+  if (Array.isArray(val)) return val;
+  if (typeof val === "string" && val.trim()) return [val.trim()];
+  return [];
+};
+
 export function EditStudentDialog({ student }: EditStudentDialogProps) {
   const [open, setOpen] = useState(false);
   const updateStudent = useMutUpdateStudent();
+  const { data: subjects = [] } = useGetActiveSubjects();
+
+  const mjcSubject = subjects.find((s) => s.id === student.subMJC);
 
   // Convert DOB from Date to YYYY-MM-DD string if it's a Date object
   const formattedDOB = student.DOB
@@ -70,6 +80,11 @@ export function EditStudentDialog({ student }: EditStudentDialogProps) {
       district: student.district || "",
       state: student.state || "",
       pinCode: student.pinCode ? Number(student.pinCode) : undefined,
+      subMIC: getInitialSubjectArr(student.subMIC),
+      subMDC: getInitialSubjectArr(student.subMDC),
+      subAEC: getInitialSubjectArr(student.subAEC),
+      subSEC: getInitialSubjectArr(student.subSEC),
+      subVAC: getInitialSubjectArr(student.subVAC),
     },
   });
 
@@ -104,6 +119,11 @@ export function EditStudentDialog({ student }: EditStudentDialogProps) {
             district: student.district || "",
             state: student.state || "",
             pinCode: student.pinCode ? Number(student.pinCode) : undefined,
+            subMIC: getInitialSubjectArr(student.subMIC),
+            subMDC: getInitialSubjectArr(student.subMDC),
+            subAEC: getInitialSubjectArr(student.subAEC),
+            subSEC: getInitialSubjectArr(student.subSEC),
+            subVAC: getInitialSubjectArr(student.subVAC),
           });
         }
         setOpen(nextOpen);
@@ -531,6 +551,187 @@ export function EditStudentDialog({ student }: EditStudentDialogProps) {
                       aria-invalid={fieldState.invalid}
                       placeholder="6-digit PIN"
                     />
+                    <FieldError errors={[fieldState.error]} />
+                  </FieldContent>
+                </Field>
+              )}
+            />
+
+            {/* Academic Subjects Header */}
+            <div className="col-span-full border-t pt-4 mt-2">
+              <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1">
+                Academic Subjects Assignment
+              </h4>
+              <p className="text-[11px] text-muted-foreground mb-1">
+                Update assigned subjects for MIC, MDC, AEC, SEC, and VAC. Major Subject (MJC) is read-only.
+              </p>
+            </div>
+
+            {/* Major Subject (MJC) - Read-Only */}
+            <Field>
+              <FieldLabel>Major Subject (MJC)</FieldLabel>
+              <FieldContent>
+                <Input
+                  value={
+                    mjcSubject
+                      ? `${mjcSubject.name} (${mjcSubject.code})`
+                      : student.subMJC || "Read-only"
+                  }
+                  disabled
+                  className="bg-muted cursor-not-allowed opacity-75"
+                />
+              </FieldContent>
+            </Field>
+
+            {/* Minor Subject (MIC) */}
+            <Controller
+              control={form.control}
+              name="subMIC"
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel>Minor Subject (MIC)</FieldLabel>
+                  <FieldContent>
+                    <NativeSelect
+                      value={field.value?.[0] || ""}
+                      onChange={(e) =>
+                        field.onChange(e.target.value ? [e.target.value] : [])
+                      }
+                      aria-invalid={fieldState.invalid}
+                      className="w-full"
+                    >
+                      <NativeSelectOption value="">
+                        Select Minor Subject (MIC)
+                      </NativeSelectOption>
+                      {subjects.map((s) => (
+                        <NativeSelectOption key={s.id} value={s.id}>
+                          {s.name} ({s.code})
+                        </NativeSelectOption>
+                      ))}
+                    </NativeSelect>
+                    <FieldError errors={[fieldState.error]} />
+                  </FieldContent>
+                </Field>
+              )}
+            />
+
+            {/* Multidisciplinary Course (MDC) */}
+            <Controller
+              control={form.control}
+              name="subMDC"
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel>Multidisciplinary Course (MDC)</FieldLabel>
+                  <FieldContent>
+                    <NativeSelect
+                      value={field.value?.[0] || ""}
+                      onChange={(e) =>
+                        field.onChange(e.target.value ? [e.target.value] : [])
+                      }
+                      aria-invalid={fieldState.invalid}
+                      className="w-full"
+                    >
+                      <NativeSelectOption value="">
+                        Select Multidisciplinary Course (MDC)
+                      </NativeSelectOption>
+                      {subjects.map((s) => (
+                        <NativeSelectOption key={s.id} value={s.id}>
+                          {s.name} ({s.code})
+                        </NativeSelectOption>
+                      ))}
+                    </NativeSelect>
+                    <FieldError errors={[fieldState.error]} />
+                  </FieldContent>
+                </Field>
+              )}
+            />
+
+            {/* Ability Enhancement Course (AEC) */}
+            <Controller
+              control={form.control}
+              name="subAEC"
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel>Ability Enhancement Course (AEC)</FieldLabel>
+                  <FieldContent>
+                    <NativeSelect
+                      value={field.value?.[0] || ""}
+                      onChange={(e) =>
+                        field.onChange(e.target.value ? [e.target.value] : [])
+                      }
+                      aria-invalid={fieldState.invalid}
+                      className="w-full"
+                    >
+                      <NativeSelectOption value="">
+                        Select Ability Enhancement Course (AEC)
+                      </NativeSelectOption>
+                      {subjects.map((s) => (
+                        <NativeSelectOption key={s.id} value={s.id}>
+                          {s.name} ({s.code})
+                        </NativeSelectOption>
+                      ))}
+                    </NativeSelect>
+                    <FieldError errors={[fieldState.error]} />
+                  </FieldContent>
+                </Field>
+              )}
+            />
+
+            {/* Skill Enhancement Course (SEC) */}
+            <Controller
+              control={form.control}
+              name="subSEC"
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel>Skill Enhancement Course (SEC)</FieldLabel>
+                  <FieldContent>
+                    <NativeSelect
+                      value={field.value?.[0] || ""}
+                      onChange={(e) =>
+                        field.onChange(e.target.value ? [e.target.value] : [])
+                      }
+                      aria-invalid={fieldState.invalid}
+                      className="w-full"
+                    >
+                      <NativeSelectOption value="">
+                        Select Skill Enhancement Course (SEC)
+                      </NativeSelectOption>
+                      {subjects.map((s) => (
+                        <NativeSelectOption key={s.id} value={s.id}>
+                          {s.name} ({s.code})
+                        </NativeSelectOption>
+                      ))}
+                    </NativeSelect>
+                    <FieldError errors={[fieldState.error]} />
+                  </FieldContent>
+                </Field>
+              )}
+            />
+
+            {/* Value Added Course (VAC) */}
+            <Controller
+              control={form.control}
+              name="subVAC"
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel>Value Added Course (VAC)</FieldLabel>
+                  <FieldContent>
+                    <NativeSelect
+                      value={field.value?.[0] || ""}
+                      onChange={(e) =>
+                        field.onChange(e.target.value ? [e.target.value] : [])
+                      }
+                      aria-invalid={fieldState.invalid}
+                      className="w-full"
+                    >
+                      <NativeSelectOption value="">
+                        Select Value Added Course (VAC)
+                      </NativeSelectOption>
+                      {subjects.map((s) => (
+                        <NativeSelectOption key={s.id} value={s.id}>
+                          {s.name} ({s.code})
+                        </NativeSelectOption>
+                      ))}
+                    </NativeSelect>
                     <FieldError errors={[fieldState.error]} />
                   </FieldContent>
                 </Field>
