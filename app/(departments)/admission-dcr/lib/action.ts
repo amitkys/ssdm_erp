@@ -202,6 +202,9 @@ export async function getDCRReport(filters: DCRFilters = {}) {
         paymentMode: StudentFeePaymentTable.paymentMode,
         createdAt: StudentFeePaymentTable.createdAt,
         studentName: AdmittedStudentTable.name,
+        fathersName: AdmittedStudentTable.fathersName,
+        mothersName: AdmittedStudentTable.mothersName,
+        dob: AdmittedStudentTable.DOB,
         uan: AdmittedStudentTable.UAN,
         collegeRoll: AdmittedStudentTable.collegeRoll,
         courseName: courseTable.name,
@@ -230,6 +233,13 @@ export async function getDCRReport(filters: DCRFilters = {}) {
         paymentMode: p.paymentMode,
         createdAt: p.createdAt.toISOString(),
         studentName: p.studentName,
+        fathersName: p.fathersName,
+        mothersName: p.mothersName,
+        dob: p.dob
+          ? typeof p.dob === "string"
+            ? p.dob.split("T")[0]
+            : new Date(p.dob).toISOString().split("T")[0]
+          : "",
         uan: p.uan,
         collegeRoll: p.collegeRoll,
         courseName: p.courseName,

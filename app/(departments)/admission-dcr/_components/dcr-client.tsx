@@ -37,6 +37,9 @@ interface DCRRecord {
   paymentMode: string;
   createdAt: string;
   studentName: string;
+  fathersName?: string;
+  mothersName?: string;
+  dob?: string;
   uan: string;
   collegeRoll: string;
   courseName: string;
@@ -130,6 +133,9 @@ export default function DCRClient({
       "S.No",
       "Transaction ID",
       "Student Name",
+      "Father's Name",
+      "Mother's Name",
+      "DOB",
       "College Roll No.",
       "UAN Reference",
       "Course / Batch",
@@ -146,13 +152,21 @@ export default function DCRClient({
         "en-IN",
       )} ${new Date(p.createdAt).toLocaleTimeString("en-IN")}`;
       const courseBatch = `${p.courseName} - ${p.sessionName}`;
+      const dobStr = p.dob
+        ? new Date(
+            p.dob.includes("T") ? p.dob : `${p.dob}T00:00:00`,
+          ).toLocaleDateString("en-IN")
+        : "";
 
       const row = [
         i + 1,
         `"${p.transactionId}"`,
-        `"${p.studentName.replace(/"/g, '""')}"`,
+        `"${(p.studentName || "").replace(/"/g, '""')}"`,
+        `"${(p.fathersName || "").replace(/"/g, '""')}"`,
+        `"${(p.mothersName || "").replace(/"/g, '""')}"`,
+        `"${dobStr}"`,
         `"${p.collegeRoll || ""}"`,
-        `"${p.uan}"`,
+        `"${p.uan || ""}"`,
         `"${courseBatch.replace(/"/g, '""')}"`,
         `"${p.paymentMode}"`,
         p.amount,
