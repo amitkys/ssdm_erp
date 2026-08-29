@@ -2,6 +2,7 @@
 
 import { format } from "date-fns";
 import { EditStudentDialog } from "./edit-student-dialog";
+import { useGetActiveSubjects } from "@/app/(departments)/enrolled-student/query/get-active-subjects";
 
 interface StudentExpandedDetailsProps {
   student: any;
@@ -10,9 +11,18 @@ interface StudentExpandedDetailsProps {
 export function StudentExpandedDetails({
   student,
 }: StudentExpandedDetailsProps) {
+  const { data: subjects = [] } = useGetActiveSubjects();
+
   const formattedDOB = student.DOB
     ? format(new Date(student.DOB), "PPP")
     : "N/A";
+
+  const getSubLabel = (idOrArr: any) => {
+    const id = Array.isArray(idOrArr) ? idOrArr[0] : idOrArr;
+    if (!id) return "N/A";
+    const sub = subjects.find((s) => s.id === id);
+    return sub ? `${sub.name} (${sub.code})` : "N/A";
+  };
 
   return (
     <div className="p-4 bg-muted/30 border rounded-lg gap-6 flex flex-col animate-in fade-in slide-in-from-top-1 duration-200">
@@ -22,13 +32,13 @@ export function StudentExpandedDetails({
             Detailed Profile
           </h3>
           <p className="text-xs text-muted-foreground">
-            Detailed personal, academic, and contact records.
+            Detailed personal, academic, subject, and contact records.
           </p>
         </div>
         <EditStudentDialog student={student} />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Personal Details Card */}
         <div className="space-y-3 bg-card p-3 rounded-md border shadow-sm">
           <h4 className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground border-b pb-1.5">
@@ -150,6 +160,44 @@ export function StudentExpandedDetails({
             <span className="text-muted-foreground">College Roll:</span>
             <span className="font-medium font-mono text-foreground">
               {student.collegeRoll || "N/A"}
+            </span>
+          </div>
+        </div>
+
+        {/* Assigned Subjects Card */}
+        <div className="space-y-3 bg-card p-3 rounded-md border shadow-sm">
+          <h4 className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground border-b pb-1.5">
+            Assigned Subjects
+          </h4>
+          <div className="grid grid-cols-2 gap-y-2 text-xs">
+            <span className="text-muted-foreground font-semibold">MJC (Major):</span>
+            <span className="font-medium text-foreground truncate" title={getSubLabel(student.subMJC)}>
+              {getSubLabel(student.subMJC)}
+            </span>
+
+            <span className="text-muted-foreground">MIC (Minor):</span>
+            <span className="font-medium text-foreground truncate" title={getSubLabel(student.subMIC)}>
+              {getSubLabel(student.subMIC)}
+            </span>
+
+            <span className="text-muted-foreground">MDC:</span>
+            <span className="font-medium text-foreground truncate" title={getSubLabel(student.subMDC)}>
+              {getSubLabel(student.subMDC)}
+            </span>
+
+            <span className="text-muted-foreground">AEC:</span>
+            <span className="font-medium text-foreground truncate" title={getSubLabel(student.subAEC)}>
+              {getSubLabel(student.subAEC)}
+            </span>
+
+            <span className="text-muted-foreground">SEC:</span>
+            <span className="font-medium text-foreground truncate" title={getSubLabel(student.subSEC)}>
+              {getSubLabel(student.subSEC)}
+            </span>
+
+            <span className="text-muted-foreground">VAC:</span>
+            <span className="font-medium text-foreground truncate" title={getSubLabel(student.subVAC)}>
+              {getSubLabel(student.subVAC)}
             </span>
           </div>
         </div>

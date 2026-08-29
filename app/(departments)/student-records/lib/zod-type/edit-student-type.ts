@@ -26,6 +26,11 @@ export const editStudentZodSchema = z.object({
     .int()
     .min(100000, "Pin Code must be 6 digits")
     .max(999999, "Pin Code must be 6 digits"),
+  subMIC: z.array(z.string()),
+  subMDC: z.array(z.string()),
+  subAEC: z.array(z.string()),
+  subSEC: z.array(z.string()),
+  subVAC: z.array(z.string()),
 });
 
 export type EditStudentSchema = z.infer<typeof editStudentZodSchema>;

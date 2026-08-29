@@ -353,6 +353,11 @@ export async function updateStudentDetails(studentId: string, input: any) {
       district,
       state,
       pinCode,
+      subMIC,
+      subMDC,
+      subAEC,
+      subSEC,
+      subVAC,
     } = parsedInput.data;
 
     // Check if Aadhar is already used by another student
@@ -415,6 +420,11 @@ export async function updateStudentDetails(studentId: string, input: any) {
         district,
         state,
         pinCode,
+        subMIC: subMIC || [],
+        subMDC: subMDC || [],
+        subAEC: subAEC || [],
+        subSEC: subSEC || [],
+        subVAC: subVAC || [],
         updatedAt: new Date(),
       })
       .where(eq(AdmittedStudentTable.id, studentId));
