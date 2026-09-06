@@ -37,6 +37,7 @@ interface DCRRecord {
   paymentMode: string;
   createdAt: string;
   studentName: string;
+  studentPhone: string;
   fathersName?: string;
   mothersName?: string;
   dob?: string;
@@ -133,6 +134,7 @@ export default function DCRClient({
       "S.No",
       "Transaction ID",
       "Student Name",
+      "Mobile No.",
       "Father's Name",
       "Mother's Name",
       "DOB",
@@ -162,6 +164,7 @@ export default function DCRClient({
         i + 1,
         `"${p.transactionId}"`,
         `"${(p.studentName || "").replace(/"/g, '""')}"`,
+        `"${p.studentPhone || ""}"`,
         `"${(p.fathersName || "").replace(/"/g, '""')}"`,
         `"${(p.mothersName || "").replace(/"/g, '""')}"`,
         `"${dobStr}"`,
