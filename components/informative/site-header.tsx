@@ -37,6 +37,16 @@ const navLinks = [
       { label: "Syllabus", href: "/student-zone/syllabus" },
     ],
   },
+  {
+    label: "Admit Card",
+    href: "#",
+    items: [
+      {
+        label: "Non-Teaching Staff Recruitment 2026",
+        href: "https://exam.id0.uk",
+      },
+    ],
+  },
   { label: "Contact", href: "/#contact" },
 ];
 
@@ -87,11 +97,11 @@ export function SiteHeader({ collegeName }: { collegeName: string }) {
           </Link>
 
           {/* Desktop links */}
-          <nav className="hidden md:flex items-center gap-6">
+          <nav className="hidden md:flex items-center gap-4">
             {navLinks.map((l) =>
               l.items ? (
                 <div key={l.label} className="relative group py-4">
-                  <button className="flex items-center gap-1 text-[13px] font-semibold text-slate-600 hover:text-blue-900 transition-colors focus:outline-none cursor-pointer">
+                  <button className="flex items-center gap-1 text-[13px] font-semibold text-slate-600 hover:text-blue-900 transition-colors focus:outline-none cursor-pointer whitespace-nowrap">
                     {l.label}
                     <ChevronDown className="h-3.5 w-3.5 transition-transform duration-200 group-hover:rotate-180" />
                   </button>
@@ -101,6 +111,10 @@ export function SiteHeader({ collegeName }: { collegeName: string }) {
                       <Link
                         key={item.href}
                         href={item.href}
+                        {...(item.href.startsWith("http") && {
+                          target: "_blank",
+                          rel: "noopener noreferrer",
+                        })}
                         className="block px-4 py-2.5 rounded-lg text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-blue-900 transition-colors"
                       >
                         {item.label}
@@ -112,7 +126,7 @@ export function SiteHeader({ collegeName }: { collegeName: string }) {
                 <Link
                   key={l.href}
                   href={l.href}
-                  className="text-[13px] font-semibold text-slate-600 hover:text-blue-900 transition-colors"
+                  className="text-[13px] font-semibold text-slate-600 hover:text-blue-900 transition-colors whitespace-nowrap"
                 >
                   {l.label}
                 </Link>
@@ -120,7 +134,7 @@ export function SiteHeader({ collegeName }: { collegeName: string }) {
             )}
             <Link
               href="/admission"
-              className="ml-2 px-5 py-2 rounded-lg text-xs font-bold bg-blue-900 text-white hover:bg-blue-800 shadow-md shadow-blue-900/10 transition-all"
+              className="ml-2 px-5 py-2 rounded-lg text-xs font-bold bg-blue-900 text-white hover:bg-blue-800 shadow-md shadow-blue-900/10 transition-all whitespace-nowrap"
             >
               Online Admission
             </Link>
@@ -152,6 +166,10 @@ export function SiteHeader({ collegeName }: { collegeName: string }) {
                     <Link
                       key={item.href}
                       href={item.href}
+                      {...(item.href.startsWith("http") && {
+                        target: "_blank",
+                        rel: "noopener noreferrer",
+                      })}
                       onClick={() => setOpen(false)}
                       className="block pl-6 pr-3 py-2.5 rounded-lg text-sm font-semibold text-slate-700 hover:bg-slate-50"
                     >

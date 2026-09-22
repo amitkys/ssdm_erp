@@ -20,8 +20,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { AcademicsSection } from "@/components/informative/academics-section";
 import { FacultyMarquee } from "@/components/informative/faculty-marquee";
-import { IndependenceDayBanner } from "@/components/informative/independence-day-banner";
-import { IndependenceDayCarousel } from "@/components/informative/independence-day-carousel";
+
 import { NoticeBoard } from "@/components/informative/notice-board";
 import { SiteFooter } from "@/components/informative/site-footer";
 import { SiteHeader } from "@/components/informative/site-header";
@@ -109,8 +108,7 @@ export default async function Page() {
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col font-sans selection:bg-blue-900 selection:text-white">
       <SiteHeader collegeName={config.name} />
-      {/* <IndependenceDayBanner /> */}
-      <IndependenceDayCarousel />
+
       {/* Main Content */}
       <main className="flex-grow">
         {/* Hero Banner Section */}
@@ -200,7 +198,7 @@ export default async function Page() {
                 },
               ].map((stat, i) => (
                 <div
-                  key={i}
+                  key={stat.label}
                   className="bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl p-4 flex flex-col items-center text-center space-y-1 hover:bg-white/10 transition-colors"
                 >
                   <div className="p-2 rounded-xl bg-white/5 mb-1">
@@ -466,7 +464,7 @@ export default async function Page() {
                       desc: "Mentorship, guidance, and active support cells.",
                     },
                   ].map((item, i) => (
-                    <div key={i} className="flex gap-4 group">
+                    <div key={item.title} className="flex gap-4 group">
                       <div className="mt-0.5 shrink-0 w-6 h-6 rounded-full bg-blue-50 flex items-center justify-center text-blue-950 group-hover:bg-blue-900 group-hover:text-white transition-colors duration-300">
                         <Check className="h-3.5 w-3.5" />
                       </div>
