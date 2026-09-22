@@ -101,7 +101,7 @@ export function SiteHeader({ collegeName }: { collegeName: string }) {
             {navLinks.map((l) =>
               l.items ? (
                 <div key={l.label} className="relative group py-4">
-                  <button className="flex items-center gap-1 text-[13px] font-semibold text-slate-600 hover:text-blue-900 transition-colors focus:outline-none cursor-pointer whitespace-nowrap">
+                  <button type="button" className="flex items-center gap-1 text-[13px] font-semibold text-slate-600 hover:text-blue-900 transition-colors focus:outline-none cursor-pointer whitespace-nowrap">
                     {l.label}
                     <ChevronDown className="h-3.5 w-3.5 transition-transform duration-200 group-hover:rotate-180" />
                   </button>
